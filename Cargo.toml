@@ -1,0 +1,19 @@
+[package]
+name = "buckshot"
+version = "0.1.0"
+authors = ["Eugene Toh <eugenetoh54@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+toml = "0.5.8"
+serde_derive = "1.0.125"
+serde = "1.0.125"
+futures = "0.3"
+futures-io = "0.3"
+async-std = "1.6"
+
+[dependencies.async-tls]
+version = "0.10"
+features = ["early-data"]
