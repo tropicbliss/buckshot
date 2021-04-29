@@ -1,4 +1,7 @@
 use crate::constants;
+use reqwest;
+use reqwest::header;
+use reqwest::Error;
 use serde_derive::Deserialize;
 use std::fs::File;
 use std::io::Read;
@@ -46,66 +49,78 @@ impl Sniper {
         }
     }
     // Public facing function which doubles as a sniping implementation chooser for the setup process
-    pub fn setup(&self) {
+    pub fn setup(&self, client: reqwest::Client) {
         if !self.config.microsoft_auth {
             if self.config.gc_snipe {
                 println!(
                     r#""microsoft_auth" is set to false yet "gc_snipe" is set to true. Defaulting to gift code sniping instead."#
                 );
-                self.setup_gc();
+                self.setup_gc(client);
             } else {
-                self.setup_mojang();
+                self.setup_mojang(client);
             }
         } else {
             if self.config.gc_snipe {
-                self.setup_gc();
+                self.setup_gc(client);
             } else {
-                self.setup_msa();
+                self.setup_msa(client);
             }
         }
     }
     // Public facing function which doubles as a sniping implementation chooser for the sniping process
-    pub fn snipe(&self, username_to_snipe: String, offset: i32) {
+    pub fn snipe(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
         if !self.config.microsoft_auth {
             if self.config.gc_snipe {
                 println!(
                     r#""microsoft_auth" is set to false yet "gc_snipe" is set to true. Defaulting to gift code sniping instead."#
                 );
-                self.snipe_gc(username_to_snipe, offset);
+                self.snipe_gc(username_to_snipe, offset, client);
             } else {
-                self.snipe_mojang(username_to_snipe, offset);
+                self.snipe_mojang(username_to_snipe, offset, client);
             }
         } else {
             if self.config.gc_snipe {
-                self.snipe_gc(username_to_snipe, offset);
+                self.snipe_gc(username_to_snipe, offset, client);
             } else {
-                self.snipe_msa(username_to_snipe, offset);
+                self.snipe_msa(username_to_snipe, offset, client);
             }
         }
     }
     // Code runner for setup of Mojang Sniper
-    fn setup_mojang(&self) {
+    fn setup_mojang(&self, client: reqwest::Client) {
         // code
     }
     // Code runner for setup of Microsoft Non-GC Sniper
-    fn setup_msa(&self) {
+    fn setup_msa(&self, client: reqwest::Client) {
         // code
     }
     // Code runner for setup of Microsoft GC Sniper
-    fn setup_gc(&self) {
+    fn setup_gc(&self, client: reqwest::Client) {
         // code
     }
     // Code runner for sniping routine of Mojang Sniper
-    fn snipe_mojang(&self, username_to_snipe: String, offset: i32) {
+    fn snipe_mojang(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
         // code
     }
     // Code runner for sniping routine of Microsoft Non-GC Sniper
-    fn snipe_msa(&self, username_to_snipe: String, offset: i32) {
+    fn snipe_msa(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
         // code
     }
     // Code runner for sniping routine of Microsoft GC Sniper
-    fn snipe_gc(&self, username_to_snipe: String, offset: i32) {
+    fn snipe_gc(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
         // code
     }
-    // The functions below are functions for handling reqwest requests and other miscellaneous tasks
+    // The functions below are functions for handling reqwest requests and other miscellaneous tasks. Requests are synchronous atm for easy maintenance.
+    // Authenticator for Yggdrasil (Mojang)
+    fn authenticate_mojang(&self, client: reqwest::Client) -> String {
+        let body = format!("{\"agent\":{\"name\":\"Minecraft\",\"version\":1},\"username\":\"{}\",\"password\":\"{}\",\"clientToken\":\"Mojang-API-Client\",\"requestUser\":\"true\"}");
+        let res = client
+            .post(format!(
+                "{}/authenticate",
+                constants::YGGDRASIL_ORIGIN_SERVER
+            ))
+            .body(body)
+            .send()
+            .await?;
+    }
 }
