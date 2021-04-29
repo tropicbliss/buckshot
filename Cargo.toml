@@ -13,6 +13,7 @@ serde = "1.0.125"
 futures = "0.3"
 futures-io = "0.3"
 async-std = "1.6"
+reqwest = "0.11.3"
 
 [dependencies.async-tls]
 version = "0.10"
