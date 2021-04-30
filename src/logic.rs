@@ -1,10 +1,11 @@
 use crate::config::Config;
 use crate::constants;
-use reqwest;
+use reqwest::blocking::Client;
+use serde_json::{Result, Value};
 
 pub struct Setup {
     config: Config,
-    client: reqwest::Client,
+    client: Client,
 }
 
 impl Setup {
@@ -12,11 +13,11 @@ impl Setup {
     pub fn new(config: Config) -> Self {
         Setup {
             config: config,
-            client: reqwest::Client::new(),
+            client: Client::new(),
         }
     }
 
-    // Public facing function which doubles as a sniping implementation chooser for the setup process
+    // Public facing function which doubles as a sniping implementation chooser for the setup process. Requests are synchronous atm for easy maintenance.
     pub fn setup(&self) {
         if !self.config.config.microsoft_auth {
             if self.config.config.gc_snipe {
@@ -51,7 +52,7 @@ impl Setup {
         // code
     }
 
-    // The functions below are functions for handling reqwest requests and other miscellaneous tasks.
+    // The functions below are functions for handling reqwest requests and other miscellaneous tasks. Requests are blocking atm for easy maintenance.
     // Authenticator for Yggdrasil (Mojang)
     fn authenticate_mojang(&self) -> String {
         let post_body = format!(
@@ -59,6 +60,17 @@ impl Setup {
             self.config.account.username, self.config.account.password
         );
         let url = format!("{}/authenticate", constants::YGGDRASIL_ORIGIN_SERVER);
+        let res = self.client.post(url).body(post_body).send().unwrap();
+        let status_code = res.status().as_u16();
+        if status_code == 403 {
+            panic!("[Authentication] Authentication error. Check if you have entered your username and password correctly.");
+        }
+        if status_code != 200 {
+            panic!("[Authentication] HTTP status code: {}", status_code);
+        }
+        let body = res.text().unwrap();
+        let json: Value = serde_json::from_str(&body).unwrap();
+        String::from(json["accessToken"].as_str().unwrap())
     }
 }
 
