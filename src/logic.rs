@@ -3,7 +3,7 @@ use crate::constants;
 use reqwest::blocking::Client;
 use reqwest::header;
 use reqwest::header::{HeaderMap, HeaderValue};
-use serde_json::{Result, Value};
+use serde_json::Value;
 
 pub struct Setup {
     config: Config,
@@ -77,7 +77,7 @@ impl Setup {
                 let json: Value = serde_json::from_str(&body).unwrap();
                 String::from(json["accessToken"].as_str().unwrap())
             },
-            er => panic!("[Authentication] HTTP status code: {}", er),
+            er => panic!(format!("[Authentication] HTTP status code: {}", er)),
         }
     }
 
@@ -87,7 +87,7 @@ impl Setup {
         match res.status().as_u16() {
             204 => false,
             403 => true,
-            x => panic!("[SecurityQuestionsCheck] HTTP status code: {}", x),
+            er => panic!(format!("[SecurityQuestionsCheck] HTTP status code: {}", er)),
         }
     }
 
@@ -107,17 +107,39 @@ impl Setup {
                     Some([first, second, third])
                 }
             }
-            er => panic!("[GetSecurityQuestions] HTTP status code: {}", er),
+            er => panic!(format!("[GetSecurityQuestions] HTTP status code: {}", er)),
         }
     }
 
-    fn send_security_questions(&self, questionIDArray: [u64; 3], header: HeaderMap) {
-        // code
+    fn send_security_questions(&self, question_id_array: [u64; 3], header: HeaderMap) {
+        let post_body = format!(
+            r#"[{{"id":{},"answer":"{}"}},{{"id":{},"answer":"{}"}},{{"id":{},"answer":"{}"}}]"#,
+            question_id_array[0],
+            self.config.account.sq1,
+            question_id_array[1],
+            self.config.account.sq2,
+            question_id_array[2],
+            self.config.account.sq3
+        );
+        let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
+        let res = self
+            .client
+            .post(url)
+            .body(post_body)
+            .headers(header)
+            .send()
+            .unwrap();
+        match res.status().as_u16() {
+            403 => panic!("[SendSecurityQuestions] Authentication error. Check if you have entered your security questions correctly."),
+            204 => (),
+            er => panic!(format!("[SendSecurityQuestions] HTTP status code: {}", er)),
+        }
     }
 
     fn authheader_builder(&self, token: String) -> HeaderMap {
         let mut headers = HeaderMap::new();
-        let mut auth_value = HeaderValue::from_static(&token);
+        let token = format!("Bearer {}", token);
+        let mut auth_value = HeaderValue::from_str(&token).unwrap();
         auth_value.set_sensitive(true);
         headers.insert(header::AUTHORIZATION, auth_value);
         headers
