@@ -15,6 +15,7 @@ futures-io = "0.3"
 async-std = "1.6"
 reqwest = { version = "0.11", features = ["blocking"] }
 serde_json = "1.0.64"
+webbrowser = "0.5.5"
 
 [dependencies.async-tls]
 version = "0.10"
