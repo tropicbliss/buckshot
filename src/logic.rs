@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::constants;
 use reqwest;
 
 pub struct Setup {
@@ -53,7 +54,11 @@ impl Setup {
     // The functions below are functions for handling reqwest requests and other miscellaneous tasks.
     // Authenticator for Yggdrasil (Mojang)
     fn authenticate_mojang(&self) -> String {
-        String::from("")
+        let post_body = format!(
+            r#"{{"agent":{{"name":"Minecraft","version":1}},"username":"{}","password":"{}","clientToken":"Mojang-API-Client","requestUser":"true"}}"#,
+            self.config.account.username, self.config.account.password
+        );
+        let url = format!("{}/authenticate", constants::YGGDRASIL_ORIGIN_SERVER);
     }
 }
 
@@ -103,11 +108,5 @@ impl Sniper {
     // Code runner for sniping routine of Microsoft GC Sniper
     fn gc(&self) {
         // code
-    }
-
-    // The functions below are functions for handling reqwest requests and other miscellaneous tasks. Requests are synchronous atm for easy maintenance.
-    // Authenticator for Yggdrasil (Mojang)
-    fn authenticate_mojang(&self) -> String {
-        String::from("")
     }
 }
