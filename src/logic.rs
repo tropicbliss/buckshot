@@ -49,6 +49,7 @@ impl Setup {
                 None => (),
             }
         }
+        self.name_change_eligibility_checker(auth_header.clone());
     }
 
     // Code runner for setup of Microsoft Non-GC Sniper
@@ -133,6 +134,27 @@ impl Setup {
             403 => panic!("[SendSecurityQuestions] Authentication error. Check if you have entered your security questions correctly."),
             204 => (),
             er => panic!(format!("[SendSecurityQuestions] HTTP status code: {}", er)),
+        }
+    }
+
+    fn name_change_eligibility_checker(&self, header: HeaderMap) {
+        let url = format!(
+            "{}/minecraft/profile/namechange",
+            constants::MINECRAFTSERVICES_API_SERVER
+        );
+        let res = self.client.get(url).headers(header).send().unwrap();
+        match res.status().as_u16() {
+            200 => {
+                let body = res.text().unwrap();
+                let json: Value = serde_json::from_str(&body).unwrap();
+                if !json["nameChangeAllowed"].as_bool().unwrap() {
+                    panic!("[NameChangeEligibilityChecker] You cannot name change within the cooldown period.");
+                }
+            }
+            er => panic!(format!(
+                "[NameChangeEligibilityChecker] HTTP status code: {}",
+                er
+            )),
         }
     }
 
