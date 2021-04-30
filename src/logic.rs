@@ -1,6 +1,8 @@
 use crate::config::Config;
 use crate::constants;
 use reqwest::blocking::Client;
+use reqwest::header;
+use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::{Result, Value};
 
 pub struct Setup {
@@ -39,7 +41,14 @@ impl Setup {
 
     // Code runner for setup of Mojang Sniper
     fn mojang(&self) {
-        // code
+        let access_token = self.authenticate_mojang();
+        let auth_header = self.authheader_builder(access_token);
+        if self.is_security_questions_needed(auth_header.clone()) {
+            match self.get_security_questions_id(auth_header.clone()) {
+                Some(x) => self.send_security_questions(x, auth_header.clone()),
+                None => (),
+            }
+        }
     }
 
     // Code runner for setup of Microsoft Non-GC Sniper
@@ -61,16 +70,57 @@ impl Setup {
         );
         let url = format!("{}/authenticate", constants::YGGDRASIL_ORIGIN_SERVER);
         let res = self.client.post(url).body(post_body).send().unwrap();
-        let status_code = res.status().as_u16();
-        if status_code == 403 {
-            panic!("[Authentication] Authentication error. Check if you have entered your username and password correctly.");
+        match res.status().as_u16() {
+            403 => panic!("[Authentication] Authentication error. Check if you have entered your username and password correctly."),
+            200 => {
+                let body = res.text().unwrap();
+                let json: Value = serde_json::from_str(&body).unwrap();
+                String::from(json["accessToken"].as_str().unwrap())
+            },
+            er => panic!("[Authentication] HTTP status code: {}", er),
         }
-        if status_code != 200 {
-            panic!("[Authentication] HTTP status code: {}", status_code);
+    }
+
+    fn is_security_questions_needed(&self, header: HeaderMap) -> bool {
+        let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
+        let res = self.client.get(url).headers(header).send().unwrap();
+        match res.status().as_u16() {
+            204 => false,
+            403 => true,
+            x => panic!("[SecurityQuestionsCheck] HTTP status code: {}", x),
         }
-        let body = res.text().unwrap();
-        let json: Value = serde_json::from_str(&body).unwrap();
-        String::from(json["accessToken"].as_str().unwrap())
+    }
+
+    fn get_security_questions_id(&self, header: HeaderMap) -> Option<[u64; 3]> {
+        let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
+        let res = self.client.get(url).headers(header).send().unwrap();
+        match res.status().as_u16() {
+            200 => {
+                let body = res.text().unwrap();
+                if body.eq("[]") {
+                    None
+                } else {
+                    let json_array: Value = serde_json::from_str(&body).unwrap();
+                    let first = json_array[0]["answer"]["id"].as_u64().unwrap();
+                    let second = json_array[1]["answer"]["id"].as_u64().unwrap();
+                    let third = json_array[2]["answer"]["id"].as_u64().unwrap();
+                    Some([first, second, third])
+                }
+            }
+            er => panic!("[GetSecurityQuestions] HTTP status code: {}", er),
+        }
+    }
+
+    fn send_security_questions(&self, questionIDArray: [u64; 3], header: HeaderMap) {
+        // code
+    }
+
+    fn authheader_builder(&self, token: String) -> HeaderMap {
+        let mut headers = HeaderMap::new();
+        let mut auth_value = HeaderValue::from_static(&token);
+        auth_value.set_sensitive(true);
+        headers.insert(header::AUTHORIZATION, auth_value);
+        headers
     }
 }
 

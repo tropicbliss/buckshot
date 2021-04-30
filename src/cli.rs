@@ -32,7 +32,7 @@ pub fn get_username_choice() -> String {
             break;
         }
     }
-    String::from(input)
+    input
 }
 
 // Get offset similar to get_username_choice() except with string parsing to i32
