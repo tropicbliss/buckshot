@@ -1,126 +1,113 @@
-use crate::constants;
+use crate::config::Config;
 use reqwest;
-use reqwest::header;
-use reqwest::Error;
-use serde_derive::Deserialize;
-use std::fs::File;
-use std::io::Read;
 
-#[derive(Deserialize)]
+pub struct Setup {
+    config: Config,
+    client: reqwest::Client,
+}
+
+impl Setup {
+    // Making a new Setup instance
+    pub fn new(config: Config) -> Self {
+        Setup {
+            config: config,
+            client: reqwest::Client::new(),
+        }
+    }
+
+    // Public facing function which doubles as a sniping implementation chooser for the setup process
+    pub fn setup(&self) {
+        if !self.config.config.microsoft_auth {
+            if self.config.config.gc_snipe {
+                println!(
+                    r#""microsoft_auth" is set to false yet "gc_snipe" is set to true. Defaulting to gift code sniping instead."#
+                );
+                self.gc();
+            } else {
+                self.mojang();
+            }
+        } else {
+            if self.config.config.gc_snipe {
+                self.gc();
+            } else {
+                self.msa();
+            }
+        }
+    }
+
+    // Code runner for setup of Mojang Sniper
+    fn mojang(&self) {
+        // code
+    }
+
+    // Code runner for setup of Microsoft Non-GC Sniper
+    fn msa(&self) {
+        // code
+    }
+
+    // Code runner for setup of Microsoft GC Sniper
+    fn gc(&self) {
+        // code
+    }
+
+    // The functions below are functions for handling reqwest requests and other miscellaneous tasks.
+    // Authenticator for Yggdrasil (Mojang)
+    fn authenticate_mojang(&self) -> String {
+        String::from("")
+    }
+}
+
 pub struct Sniper {
-    pub account: Account,
-    pub config: Config,
-}
-
-#[derive(Deserialize)]
-pub struct Account {
-    pub username: String,
-    pub password: String,
-    pub sq1: String,
-    pub sq2: String,
-    pub sq3: String,
-}
-
-#[derive(Deserialize)]
-pub struct Config {
-    pub auto_offset: bool,
-    pub spread: u32,
-    pub microsoft_auth: bool,
-    pub gc_snipe: bool,
-    pub change_skin: bool,
-    pub skin_model: String,
-    pub skin_filename: String,
+    setup: Setup,
+    username_to_snipe: String,
+    offset: i32,
 }
 
 impl Sniper {
-    // Opens and deserialises config.toml and maps the options to Sniper struct
-    pub fn new() -> Self {
-        match File::open(constants::CONFIG_PATH) {
-            Ok(mut f) => {
-                let mut s = String::new();
-                f.read_to_string(&mut s).unwrap();
-                let config: Result<Sniper, toml::de::Error> = toml::from_str(&s);
-                match config {
-                    Ok(x) => x,
-                    Err(_) => panic!("Cannot parse {}.", constants::CONFIG_PATH),
-                }
-            }
-            Err(_) => panic!("File {} not found.", constants::CONFIG_PATH),
+    pub fn new(setup: Setup, username_to_snipe: String, offset: i32) -> Self {
+        Sniper {
+            setup: setup,
+            username_to_snipe: username_to_snipe,
+            offset: offset,
         }
     }
-    // Public facing function which doubles as a sniping implementation chooser for the setup process
-    pub fn setup(&self, client: reqwest::Client) {
-        if !self.config.microsoft_auth {
-            if self.config.gc_snipe {
-                println!(
-                    r#""microsoft_auth" is set to false yet "gc_snipe" is set to true. Defaulting to gift code sniping instead."#
-                );
-                self.setup_gc(client);
-            } else {
-                self.setup_mojang(client);
-            }
-        } else {
-            if self.config.gc_snipe {
-                self.setup_gc(client);
-            } else {
-                self.setup_msa(client);
-            }
-        }
-    }
+
     // Public facing function which doubles as a sniping implementation chooser for the sniping process
-    pub fn snipe(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
-        if !self.config.microsoft_auth {
-            if self.config.gc_snipe {
+    pub fn snipe(&self) {
+        if !self.setup.config.config.microsoft_auth {
+            if self.setup.config.config.gc_snipe {
                 println!(
                     r#""microsoft_auth" is set to false yet "gc_snipe" is set to true. Defaulting to gift code sniping instead."#
                 );
-                self.snipe_gc(username_to_snipe, offset, client);
+                self.gc();
             } else {
-                self.snipe_mojang(username_to_snipe, offset, client);
+                self.mojang();
             }
         } else {
-            if self.config.gc_snipe {
-                self.snipe_gc(username_to_snipe, offset, client);
+            if self.setup.config.config.gc_snipe {
+                self.gc();
             } else {
-                self.snipe_msa(username_to_snipe, offset, client);
+                self.msa();
             }
         }
     }
-    // Code runner for setup of Mojang Sniper
-    fn setup_mojang(&self, client: reqwest::Client) {
-        // code
-    }
-    // Code runner for setup of Microsoft Non-GC Sniper
-    fn setup_msa(&self, client: reqwest::Client) {
-        // code
-    }
-    // Code runner for setup of Microsoft GC Sniper
-    fn setup_gc(&self, client: reqwest::Client) {
-        // code
-    }
+
     // Code runner for sniping routine of Mojang Sniper
-    fn snipe_mojang(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
+    fn mojang(&self) {
         // code
     }
     // Code runner for sniping routine of Microsoft Non-GC Sniper
-    fn snipe_msa(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
+    fn msa(&self) {
         // code
     }
     // Code runner for sniping routine of Microsoft GC Sniper
-    fn snipe_gc(&self, username_to_snipe: String, offset: i32, client: reqwest::Client) {
+    fn gc(&self) {
         // code
     }
+
     // The functions below are functions for handling reqwest requests and other miscellaneous tasks. Requests are synchronous atm for easy maintenance.
     // Authenticator for Yggdrasil (Mojang)
-    fn authenticate_mojang(&self, client: reqwest::Client) -> String {
-        let body = format!("{\"agent\":{\"name\":\"Minecraft\",\"version\":1},\"username\":\"{}\",\"password\":\"{}\",\"clientToken\":\"Mojang-API-Client\",\"requestUser\":\"true\"}");
-        let res = client
-            .post(format!(
-                "{}/authenticate",
-                constants::YGGDRASIL_ORIGIN_SERVER
-            ))
-            .body(body)
-            .send()
-            .await?;
+    fn authenticate_mojang(&self) -> String {
+        String::from("")
     }
 }

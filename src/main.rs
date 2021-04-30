@@ -1,5 +1,5 @@
-use reqwest;
 mod cli;
+mod config;
 mod constants;
 mod logic;
 mod requests;
@@ -7,10 +7,11 @@ mod socket;
 
 fn main() {
     cli::print_splash_screen();
-    let sniper = logic::Sniper::new();
-    let client = reqwest::Client::new();
-    sniper.setup(client);
+    let config = config::Config::new();
+    let setup = logic::Setup::new(config);
+    setup.setup();
     let username = cli::get_username_choice();
     let offset = cli::get_offset();
-    sniper.snipe(username, offset, client);
+    let sniper = logic::Sniper::new(setup, username, offset);
+    sniper.snipe();
 }
