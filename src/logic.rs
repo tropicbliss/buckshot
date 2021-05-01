@@ -81,7 +81,7 @@ impl Setup {
                 let json: Value = serde_json::from_str(&body).unwrap();
                 String::from(json["accessToken"].as_str().unwrap())
             },
-            er => panic!(format!("[Authentication] HTTP status code: {}", er)),
+            er => panic!("[Authentication] HTTP status code: {}", er),
         }
     }
 
@@ -91,7 +91,7 @@ impl Setup {
         match res.status().as_u16() {
             204 => false,
             403 => true,
-            er => panic!(format!("[SecurityQuestionsCheck] HTTP status code: {}", er)),
+            er => panic!("[SecurityQuestionsCheck] HTTP status code: {}", er),
         }
     }
 
@@ -111,7 +111,7 @@ impl Setup {
                     Some([first, second, third])
                 }
             }
-            er => panic!(format!("[GetSecurityQuestions] HTTP status code: {}", er)),
+            er => panic!("[GetSecurityQuestions] HTTP status code: {}", er),
         }
     }
 
@@ -136,7 +136,7 @@ impl Setup {
         match res.status().as_u16() {
             403 => panic!("[SendSecurityQuestions] Authentication error. Check if you have entered your security questions correctly."),
             204 => (),
-            er => panic!(format!("[SendSecurityQuestions] HTTP status code: {}", er)),
+            er => panic!("[SendSecurityQuestions] HTTP status code: {}", er),
         }
     }
 
@@ -154,10 +154,7 @@ impl Setup {
                     panic!("[NameChangeEligibilityChecker] You cannot name change within the cooldown period.");
                 }
             }
-            er => panic!(format!(
-                "[NameChangeEligibilityChecker] HTTP status code: {}",
-                er
-            )),
+            er => panic!("[NameChangeEligibilityChecker] HTTP status code: {}", er),
         }
     }
 
