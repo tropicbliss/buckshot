@@ -45,21 +45,19 @@ impl Setup {
     // Code runner for setup of Mojang Sniper
     fn mojang(&self) {
         let access_token = self.authenticate_mojang();
-        let auth_header = self.authheader_builder(access_token);
-        if self.is_security_questions_needed(auth_header.clone()) {
-            match self.get_security_questions_id(auth_header.clone()) {
-                Some(x) => self.send_security_questions(x, auth_header.clone()),
+        if self.is_security_questions_needed(&access_token) {
+            match self.get_security_questions_id(&access_token) {
+                Some(x) => self.send_security_questions(x, &access_token),
                 None => (),
             }
         }
-        self.name_change_eligibility_checker(auth_header);
+        self.name_change_eligibility_checker(&access_token);
     }
 
     // Code runner for setup of Microsoft Non-GC Sniper
     fn msa(&self) {
         let access_token = self.authenticate_msa();
-        let auth_header = self.authheader_builder(access_token);
-        self.name_change_eligibility_checker(auth_header);
+        self.name_change_eligibility_checker(&access_token);
     }
 
     // Code runner for setup of Microsoft GC Sniper
@@ -87,9 +85,9 @@ impl Setup {
         }
     }
 
-    fn is_security_questions_needed(&self, header: HeaderMap) -> bool {
+    fn is_security_questions_needed(&self, token: &str) -> bool {
         let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
-        let res = self.client.get(url).headers(header).send().unwrap();
+        let res = self.client.get(url).bearer_auth(token).send().unwrap();
         match res.status().as_u16() {
             204 => false,
             403 => true,
@@ -97,9 +95,9 @@ impl Setup {
         }
     }
 
-    fn get_security_questions_id(&self, header: HeaderMap) -> Option<[u64; 3]> {
+    fn get_security_questions_id(&self, token: &str) -> Option<[u64; 3]> {
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
-        let res = self.client.get(url).headers(header).send().unwrap();
+        let res = self.client.get(url).bearer_auth(token).send().unwrap();
         match res.status().as_u16() {
             200 => {
                 let body = res.text().unwrap();
@@ -117,7 +115,7 @@ impl Setup {
         }
     }
 
-    fn send_security_questions(&self, question_id_array: [u64; 3], header: HeaderMap) {
+    fn send_security_questions(&self, question_id_array: [u64; 3], token: &str) {
         let post_body = format!(
             r#"[{{"id":{},"answer":"{}"}},{{"id":{},"answer":"{}"}},{{"id":{},"answer":"{}"}}]"#,
             question_id_array[0],
@@ -132,7 +130,7 @@ impl Setup {
             .client
             .post(url)
             .body(post_body)
-            .headers(header)
+            .bearer_auth(token)
             .send()
             .unwrap();
         match res.status().as_u16() {
@@ -142,12 +140,12 @@ impl Setup {
         }
     }
 
-    fn name_change_eligibility_checker(&self, header: HeaderMap) {
+    fn name_change_eligibility_checker(&self, token: &str) {
         let url = format!(
             "{}/minecraft/profile/namechange",
             constants::MINECRAFTSERVICES_API_SERVER
         );
-        let res = self.client.get(url).headers(header).send().unwrap();
+        let res = self.client.get(url).bearer_auth(token).send().unwrap();
         match res.status().as_u16() {
             200 => {
                 let body = res.text().unwrap();
@@ -183,15 +181,6 @@ impl Setup {
         io::stdin().read_line(&mut input).unwrap();
         let input = input.trim();
         input.to_string()
-    }
-
-    fn authheader_builder(&self, token: String) -> HeaderMap {
-        let mut headers = HeaderMap::new();
-        let token = format!("Bearer {}", token);
-        let mut auth_value = HeaderValue::from_str(&token).unwrap();
-        auth_value.set_sensitive(true);
-        headers.insert(header::AUTHORIZATION, auth_value);
-        headers
     }
 }
 
