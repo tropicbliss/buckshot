@@ -1,13 +1,12 @@
+use crate::cli::get_giftcode;
 use crate::config::Config;
 use crate::constants;
-use crate::cli::get_giftcode;
 use reqwest::blocking::Client;
 use reqwest::header;
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::Value;
 use std::io;
 use std::{thread, time};
-use webbrowser;
 
 pub struct Setup {
     config: Config,
@@ -67,7 +66,7 @@ impl Setup {
         match get_giftcode() {
             Some(x) => {
                 self.redeem_giftcode(&access_token);
-            },
+            }
             None => (),
         }
     }
@@ -166,25 +165,8 @@ impl Setup {
     }
 
     fn authenticate_msa(&self) -> String {
-        println!("Opening browser...");
-        // Gives the user an illusion that something is happening.
-        thread::sleep(time::Duration::from_secs(3));
-        match webbrowser::open("https://login.live.com/oauth20_authorize.srf?client_id=9abe16f4-930f-4033-b593-6e934115122f&response_type=code&redirect_uri=https%3A%2F%2Fapi.gosnipe.tech%2Fapi%2Fauthenticate&scope=XboxLive.signin%20XboxLive.offline_access") {
-            Ok(_) => (),
-            Err(_) => {
-                println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
-                println!("https://login.live.com/oauth20_authorize.srf?client_id=9abe16f4-930f-4033-b593-6e934115122f&response_type=code&redirect_uri=https%3A%2F%2Fapi.gosnipe.tech%2Fapi%2Fauthenticate&scope=XboxLive.signin%20XboxLive.offline_access");
-            },
-        }
-        println!("Please make sure that your snipe will not last more than a day or the snipe will fail.");
-        let mut input = String::new();
-        print!(
-            r#"Sign in with your Microsoft account and copy the ID from the "access_token" field right here: "#
-        );
-        io::Write::flush(&mut io::stdout()).unwrap();
-        io::stdin().read_line(&mut input).unwrap();
-        let input = input.trim();
-        input.to_string()
+        // TODO: MS auth flow.
+        String::from("Bonjour")
     }
 
     fn redeem_giftcode(&self, token: &str) {
@@ -194,7 +176,7 @@ impl Setup {
             200 => {
                 println!("Gift code redeemed successfully.");
             }
-            er => panic!("[GiftCodeRedemption] HTTP status code: {}", er);
+            er => panic!("[GiftCodeRedemption] HTTP status code: {}", er),
         }
     }
 }
