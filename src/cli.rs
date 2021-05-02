@@ -58,6 +58,19 @@ pub fn get_offset() -> i32 {
     res
 }
 
+pub fn get_giftcode() -> Option<String> {
+    let mut input = String::new();
+    print!("Enter your gift code (press ENTER if you have already redeemed your gift code): ");
+    io::Write::flush(&mut io::stdout()).unwrap();
+    io::stdin().read_line(&mut input).unwrap();
+    let input = input.trim();
+    if input.is_empty() {
+        None
+    } else {
+        Some(input.to_string())
+    }
+}
+
 // Used for closure for validating individual chars to determine if char in username is valid in iterable
 fn is_valid_username_char(c: char) -> bool {
     if char::is_alphanumeric(c) {

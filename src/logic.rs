@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::constants;
+use crate::cli::get_giftcode;
 use reqwest::blocking::Client;
 use reqwest::header;
 use reqwest::header::{HeaderMap, HeaderValue};
@@ -62,7 +63,13 @@ impl Setup {
 
     // Code runner for setup of Microsoft GC Sniper
     fn gc(&self) {
-        // code
+        let access_token = self.authenticate_msa();
+        match get_giftcode() {
+            Some(x) => {
+                self.redeem_giftcode(&access_token);
+            },
+            None => (),
+        }
     }
 
     // The functions below are functions for handling reqwest requests and other miscellaneous tasks. Requests are blocking atm for easy maintenance.
@@ -178,6 +185,17 @@ impl Setup {
         io::stdin().read_line(&mut input).unwrap();
         let input = input.trim();
         input.to_string()
+    }
+
+    fn redeem_giftcode(&self, token: &str) {
+        let url = format!("{}/productvoucher", constants::MINECRAFTSERVICES_API_SERVER);
+        let res = self.client.put(url).bearer_auth(token).send().unwrap();
+        match res.status().as_u16() {
+            200 => {
+                println!("Gift code redeemed successfully.");
+            }
+            er => panic!("[GiftCodeRedemption] HTTP status code: {}", er);
+        }
     }
 }
 
