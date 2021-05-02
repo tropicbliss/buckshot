@@ -16,7 +16,7 @@ pub struct Setup {
 impl Setup {
     // Making a new Setup instance
     pub fn new(config: Config) -> Self {
-        Setup {
+        Self {
             config: config,
             client: Client::new(),
         }
@@ -189,7 +189,7 @@ pub struct Sniper {
 
 impl Sniper {
     pub fn new(setup: Setup, username_to_snipe: String, offset: i32) -> Self {
-        Sniper {
+        Self {
             setup: setup,
             username_to_snipe: username_to_snipe,
             offset: offset,
