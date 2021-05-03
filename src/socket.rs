@@ -7,13 +7,14 @@ use futures::io::{AsyncReadExt, AsyncWriteExt};
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::time::Duration;
 
-struct ConnectionManager {
+// Use this if HTTP (port is 80)
+pub struct ConnectionManager {
     address: SocketAddr,
     streams: Vec<TcpStream>,
 }
 
 impl ConnectionManager {
-    fn new(host: String, port: u32) -> Self {
+    pub fn new(host: String, port: u32) -> Self {
         let addr_string = format!("{}:{}", host, port);
         ConnectionManager {
             address: addr_string.to_socket_addrs().unwrap().next().unwrap(),
@@ -21,7 +22,8 @@ impl ConnectionManager {
         }
     }
 
-    fn connect(&mut self, connections: u32) {
+    // Connections => number of attempts to send request
+    pub fn connect(&mut self, connections: u32) {
         async fn create_stream(address: SocketAddr) -> Option<TcpStream> {
             let stream = TcpStream::connect(address).await;
             stream.ok()
@@ -37,7 +39,8 @@ impl ConnectionManager {
         });
     }
 
-    fn send(&mut self, payloads: Vec<&[u8]>) {
+    // Payload are to be encoded in UTF-8 bytes as a byte array
+    pub fn send(&mut self, payloads: Vec<&[u8]>) {
         let mut payloads = payloads.iter().cycle();
         task::block_on(future::join_all(
             self.streams
@@ -46,7 +49,7 @@ impl ConnectionManager {
         ));
     }
 
-    fn recieve(&mut self, timeout: u64) -> Vec<Vec<u8>> {
+    pub fn recieve(&mut self, timeout: u64) -> Vec<Vec<u8>> {
         let mut bufs: Vec<Vec<u8>> = self.streams.iter().map(|_| Vec::new()).collect();
         task::block_on(future::join_all(
             self.streams
@@ -58,14 +61,15 @@ impl ConnectionManager {
     }
 }
 
-struct TLSConnectionManager {
+// Use this if HTTPS (port is 443)
+pub struct TLSConnectionManager {
     address: SocketAddr,
     domain: String,
     streams: Vec<TlsStream<TcpStream>>,
 }
 
 impl TLSConnectionManager {
-    fn new(host: String, port: u32, domain: String) -> Self {
+    pub fn new(host: String, port: u32, domain: String) -> Self {
         let addr_string = format!("{}:{}", host, port);
         TLSConnectionManager {
             address: addr_string.to_socket_addrs().unwrap().next().unwrap(),
@@ -74,7 +78,8 @@ impl TLSConnectionManager {
         }
     }
 
-    fn connect(&mut self, connections: u32) {
+    // Connections => number of attempts to send request
+    pub fn connect(&mut self, connections: u32) {
         let connector = TlsConnector::default();
         async fn create_stream(
             connector: &TlsConnector,
@@ -98,7 +103,8 @@ impl TLSConnectionManager {
         });
     }
 
-    fn send(&mut self, payloads: Vec<&[u8]>) {
+    // Payload are to be encoded in UTF-8 bytes as a byte array
+    pub fn send(&mut self, payloads: Vec<&[u8]>) {
         let mut payloads = payloads.iter().cycle();
         task::block_on(future::join_all(
             self.streams
@@ -107,7 +113,7 @@ impl TLSConnectionManager {
         ));
     }
 
-    fn recieve(&mut self, timeout: u64) -> Vec<Vec<u8>> {
+    pub fn recieve(&mut self, timeout: u64) -> Vec<Vec<u8>> {
         let mut bufs: Vec<Vec<u8>> = self.streams.iter().map(|_| Vec::new()).collect();
         task::block_on(future::join_all(
             self.streams
