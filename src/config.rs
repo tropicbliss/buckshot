@@ -3,13 +3,13 @@ use serde_derive::Deserialize;
 use std::fs::File;
 use std::io::Read;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Config {
     pub account: Account,
     pub config: SubConfig,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Account {
     pub username: String,
     pub password: String,
@@ -18,7 +18,7 @@ pub struct Account {
     pub sq3: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct SubConfig {
     pub auto_offset: bool,
     pub spread: u32,
@@ -36,7 +36,7 @@ impl Config {
             Ok(mut f) => {
                 let mut s = String::new();
                 f.read_to_string(&mut s).unwrap();
-                let config: Config = toml::from_str(&s).unwrap();
+                let config: Self = toml::from_str(&s).unwrap();
                 if !(config.config.skin_model.to_lowercase() == "slim"
                     || config.config.skin_model.to_lowercase() == "classic")
                 {

@@ -57,16 +57,14 @@ impl Setup {
 
     // Code runner for setup of Microsoft Non-GC Sniper
     fn msa(&self) {
-        let access_token = self.authenticate_msa();
-        self.name_change_eligibility_checker(&access_token);
+        self.name_change_eligibility_checker(&self.authenticate_msa());
     }
 
     // Code runner for setup of Microsoft GC Sniper
     fn gc(&self) {
-        let access_token = self.authenticate_msa();
         match get_giftcode() {
             Some(x) => {
-                self.redeem_giftcode(&access_token);
+                self.redeem_giftcode(&self.authenticate_msa());
             }
             None => (),
         }
@@ -205,35 +203,8 @@ impl Sniper {
 
     // Public facing function which doubles as a sniping implementation chooser for the sniping process
     pub fn snipe(&self) {
-        if !self.setup.config.config.microsoft_auth {
-            if self.setup.config.config.gc_snipe {
-                println!(
-                    r#""microsoft_auth" is set to false yet "gc_snipe" is set to true. Defaulting to gift code sniping instead."#
-                );
-                self.gc();
-            } else {
-                self.mojang();
-            }
-        } else {
-            if self.setup.config.config.gc_snipe {
-                self.gc();
-            } else {
-                self.msa();
-            }
-        }
-    }
-
-    // Code runner for sniping routine of Mojang Sniper
-    fn mojang(&self) {
-        // code
-    }
-    // Code runner for sniping routine of Microsoft Non-GC Sniper
-    fn msa(&self) {
-        // code
-    }
-    // Code runner for sniping routine of Microsoft GC Sniper
-    fn gc(&self) {
-        // code
+        self.is_name_available();
+        self.execute(self.check_name_availability_time());
     }
 
     fn is_name_available(&self) {
@@ -263,7 +234,12 @@ impl Sniper {
         }
     }
 
-    fn auto_offset_calculation(&self) -> i32 {
-        23
+    fn execute(&self, timestamp: NaiveDateTime) {
+        // do shit lol
     }
+}
+
+pub fn auto_offset_calculation() -> i32 {
+    // Use sockets
+    23
 }
