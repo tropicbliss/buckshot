@@ -1,13 +1,9 @@
 use crate::cli::get_giftcode;
 use crate::config::Config;
 use crate::constants;
-use chrono::{NaiveDate, NaiveDateTime};
+use chrono::{offset::Utc, Local, NaiveDateTime, TimeZone};
 use reqwest::blocking::Client;
-use reqwest::header;
-use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::Value;
-use std::io;
-use std::{thread, time};
 
 pub struct Setup {
     config: Config,
@@ -220,22 +216,32 @@ impl Sniper {
         }
     }
 
-    fn check_name_availability_time(&self) -> NaiveDateTime {
+    fn check_name_availability_time(&self) -> i64 {
         let url = format!("{}/api/namemc/droptime", constants::KQZZ_NAMEMC_API);
         let res = self.setup.client.get(url).send().unwrap();
         match res.status().as_u16() {
             200 => {
                 let body = res.text().unwrap();
                 let json: Value = serde_json::from_str(&body).unwrap();
-                let epoch = json["droptime"].as_i64().unwrap();
-                NaiveDateTime::from_timestamp(epoch, 0)
+                json["droptime"].as_i64().unwrap()
             }
             er => panic!("[CheckNameAvailabilityTime] HTTP status code: {}", er),
         }
     }
 
-    fn execute(&self, timestamp: NaiveDateTime) {
-        // do shit lol
+    fn execute_mojang(&self, droptime_epoch: i64) {
+        let droptime = NaiveDateTime::from_timestamp(droptime_epoch, 0);
+        let local_droptime = Local.from_local_datetime(&droptime).unwrap();
+        let epoch_now = Utc::now().naive_utc().timestamp();
+        let duration_in_sec = droptime_epoch - epoch_now;
+        if duration_in_sec < 60 {
+            println!(
+                "Sniping {} in ~{} seconds | sniping at {}",
+                self.username_to_snipe,
+                duration_in_sec,
+                local_droptime.format("%F %T")
+            );
+        }
     }
 }
 
