@@ -36,11 +36,13 @@ impl Config {
             Ok(mut f) => {
                 let mut s = String::new();
                 f.read_to_string(&mut s).unwrap();
-                let config: Result<Config, toml::de::Error> = toml::from_str(&s);
-                match config {
-                    Ok(x) => x,
-                    Err(_) => panic!("Cannot parse {}.", CONFIG_PATH),
+                let config: Config = toml::from_str(&s).unwrap();
+                if !(config.config.skin_model.to_lowercase() == "slim"
+                    || config.config.skin_model.to_lowercase() == "classic")
+                {
+                    panic!("[ConfigParser] Invalid skin type.");
                 }
+                config
             }
             Err(_) => panic!("File {} not found.", CONFIG_PATH),
         }

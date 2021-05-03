@@ -1,6 +1,7 @@
 use crate::cli::get_giftcode;
 use crate::config::Config;
 use crate::constants;
+use chrono::{NaiveDate, NaiveDateTime};
 use reqwest::blocking::Client;
 use reqwest::header;
 use reqwest::header::{HeaderMap, HeaderValue};
@@ -74,6 +75,12 @@ impl Setup {
     // The functions below are functions for handling reqwest requests and other miscellaneous tasks. Requests are blocking atm for easy maintenance.
     // Authenticator for Yggdrasil (Mojang)
     fn authenticate_mojang(&self) -> String {
+        if self.config.account.username.is_empty() || self.config.account.password.is_empty() {
+            panic!(
+                "[ParseAccountFile] The username or password field in {} is empty.",
+                constants::CONFIG_PATH
+            );
+        }
         let post_body = format!(
             r#"{{"agent":{{"name":"Minecraft","version":1}},"username":"{}","password":"{}","clientToken":"Mojang-API-Client","requestUser":"true"}}"#,
             self.config.account.username, self.config.account.password
@@ -227,5 +234,36 @@ impl Sniper {
     // Code runner for sniping routine of Microsoft GC Sniper
     fn gc(&self) {
         // code
+    }
+
+    fn is_name_available(&self) {
+        let url = format!(
+            "{}/user/profile/agent/minecraft/name",
+            constants::MOJANG_API_SERVER
+        );
+        let res = self.setup.client.get(url).send().unwrap();
+        match res.status().as_u16() {
+            204 => (),
+            200 => panic!("[NameAvailabilityChecker] Name has been taken."),
+            er => panic!("[NameAvailabilityChecker] HTTP status code: {}", er),
+        }
+    }
+
+    fn check_name_availability_time(&self) -> NaiveDateTime {
+        let url = format!("{}/api/namemc/droptime", constants::KQZZ_NAMEMC_API);
+        let res = self.setup.client.get(url).send().unwrap();
+        match res.status().as_u16() {
+            200 => {
+                let body = res.text().unwrap();
+                let json: Value = serde_json::from_str(&body).unwrap();
+                let epoch = json["droptime"].as_i64().unwrap();
+                NaiveDateTime::from_timestamp(epoch, 0)
+            }
+            er => panic!("[CheckNameAvailabilityTime] HTTP status code: {}", er),
+        }
+    }
+
+    fn auto_offset_calculation(&self) -> i32 {
+        23
     }
 }
