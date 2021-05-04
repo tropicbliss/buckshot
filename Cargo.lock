@@ -182,6 +182,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "spin_sleep",
  "toml",
 ]
 
@@ -1111,6 +1112,16 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "spin_sleep"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a98101bdc3833e192713c2af0b0dd2614f50d1cf1f7a97c5221b7aac052acc7"
+dependencies = [
+ "once_cell",
+ "winapi",
+]
 
 [[package]]
 name = "syn"

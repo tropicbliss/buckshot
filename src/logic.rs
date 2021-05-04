@@ -4,6 +4,8 @@ use crate::constants;
 use chrono::{offset::Utc, Local, NaiveDateTime, TimeZone};
 use reqwest::blocking::Client;
 use serde_json::Value;
+use spin_sleep;
+use std::{thread, time};
 
 pub struct Setup {
     config: Config,
@@ -241,8 +243,30 @@ impl Sniper {
                 duration_in_sec,
                 local_droptime.format("%F %T")
             );
+        } else {
+            println!(
+                "Sniping {} in ~{} seconds | sniping at {}",
+                self.username_to_snipe,
+                duration_in_sec / 60,
+                local_droptime.format("%F %T")
+            );
         }
+        // Setup up snipe request via socket api
+        let setup_epoch = droptime_epoch - 20;
+        if Utc::now().timestamp() < setup_epoch {
+            thread::sleep(time::Duration::from_secs(
+                (setup_epoch - Utc::now().timestamp()) as u64,
+            ))
+            // Do stuff
+        }
+        println!("Signed in to {}.", self.setup.config.account.username);
+        println!("Setup complete!");
+        spin_sleep::sleep(time::Duration::from_secs(
+            (droptime_epoch - Utc::now().timestamp()) as u64,
+        ));
     }
+    // Snipe
+    // Change skin if successful
 }
 
 pub fn auto_offset_calculation() -> i32 {
