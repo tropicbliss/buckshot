@@ -60,7 +60,12 @@ impl Sniper {
             offset = cli::get_offset();
         }
         self.is_name_available();
-        self.execute_mojang(self.check_name_availability_time(), &username, offset);
+        self.execute_mojang(
+            self.check_name_availability_time(),
+            &username,
+            offset,
+            access_token,
+        );
     }
 
     // Code runner for setup of Microsoft Non-GC Sniper
@@ -266,7 +271,13 @@ impl Sniper {
         }
     }
 
-    fn execute_mojang(&self, droptime_epoch: i64, username_to_snipe: &str, offset: i32) {
+    fn execute_mojang(
+        &self,
+        droptime_epoch: i64,
+        username_to_snipe: &str,
+        offset: i32,
+        mut access_token: String,
+    ) {
         let droptime = NaiveDateTime::from_timestamp(droptime_epoch, 0);
         let local_droptime = Local.from_local_datetime(&droptime).unwrap();
         let epoch_now = Utc::now().naive_utc().timestamp();
@@ -286,13 +297,12 @@ impl Sniper {
                 local_droptime.format("%F %T")
             );
         }
-        // Setup up snipe request via socket api
         let setup_epoch = droptime_epoch - 20;
         if Utc::now().timestamp() < setup_epoch {
             thread::sleep(time::Duration::from_secs(
                 (setup_epoch - Utc::now().timestamp() - offset as i64) as u64,
             ));
-            let access_token = self.authenticate_mojang();
+            access_token = self.authenticate_mojang();
             if self.is_security_questions_needed(&access_token) {
                 match self.get_security_questions_id(&access_token) {
                     Some(x) => self.send_security_questions(x, &access_token),
@@ -301,6 +311,17 @@ impl Sniper {
             }
             self.name_change_eligibility_checker(&access_token);
             self.is_name_available();
+        }
+        let payload = vec![format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token).as_bytes()];
+        let mut conn_vec: Vec<socket::TLSConnectionManager> = Vec::new();
+        for _ in 0..2 {
+            let mut conn = socket::TLSConnectionManager::new(
+                "api.minecraftservices.com".to_string(),
+                443,
+                "api.minecraftservices.com".to_string(),
+            );
+            conn.connect(1);
+            conn_vec.push(conn);
         }
         println!("Signed in to {}.", self.config.account.username);
         println!("Setup complete!");
