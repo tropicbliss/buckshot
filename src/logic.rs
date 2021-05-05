@@ -1,7 +1,6 @@
 use crate::cli;
 use crate::config::Config;
 use crate::constants;
-use crate::socket;
 use chrono::{offset::Utc, Local, NaiveDateTime, TimeZone};
 use reqwest::blocking::Client;
 use serde_json::Value;
@@ -233,14 +232,10 @@ impl Sniper {
 
     fn auto_offset_calculation(&self, username: &str) -> i32 {
         let payload = vec![format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", username).as_bytes()];
-        let mut conn = socket::TLSConnectionManager::new(
-            "api.minecraftservices.com".to_string(),
-            443,
-            "api.minecraftservices.com".to_string(),
-        );
-        conn.connect(1);
+        // Set up conn
+        // Connect
         let before = Utc::now();
-        conn.send(payload);
+        // Send
         Utc::now().signed_duration_since(before).num_milliseconds() as i32
             - constants::SERVER_RESPONSE_DURATION
     }
@@ -313,16 +308,7 @@ impl Sniper {
             self.is_name_available();
         }
         let payload = vec![format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token).as_bytes()];
-        let mut conn_vec: Vec<socket::TLSConnectionManager> = Vec::new();
-        for _ in 0..2 {
-            let mut conn = socket::TLSConnectionManager::new(
-                "api.minecraftservices.com".to_string(),
-                443,
-                "api.minecraftservices.com".to_string(),
-            );
-            conn.connect(1);
-            conn_vec.push(conn);
-        }
+        // Set up conn
         println!("Signed in to {}.", self.config.account.username);
         println!("Setup complete!");
         spin_sleep::sleep(time::Duration::from_secs(

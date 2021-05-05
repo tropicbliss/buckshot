@@ -2,8 +2,6 @@ mod cli;
 mod config;
 mod constants;
 mod logic;
-#[allow(dead_code)]
-mod socket;
 
 fn main() {
     cli::print_splash_screen();
