@@ -10,14 +10,16 @@ use std::{thread, time};
 pub struct Sniper {
     config: Config,
     client: Client,
+    username_to_snipe: Option<String>,
 }
 
 impl Sniper {
     // Making a new Setup instance
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: Config, username: Option<String>) -> Self {
         Self {
             config: config,
             client: Client::new(),
+            username_to_snipe: username,
         }
     }
 
@@ -51,13 +53,15 @@ impl Sniper {
             }
         }
         self.name_change_eligibility_checker(&access_token);
-        let username = cli::get_username_choice();
-        let offset;
-        if self.config.config.auto_offset {
-            offset = self.auto_offset_calculation(&username);
+        let username = match self.username_to_snipe.clone() {
+            Some(x) => x,
+            None => cli::get_username_choice(),
+        };
+        let offset = if self.config.config.auto_offset {
+            self.auto_offset_calculation(&username)
         } else {
-            offset = cli::get_offset();
-        }
+            cli::get_offset()
+        };
         self.is_name_available();
         self.execute_mojang(
             self.check_name_availability_time(),
@@ -71,13 +75,15 @@ impl Sniper {
     fn msa(&self) {
         let token = self.authenticate_msa();
         self.name_change_eligibility_checker(&token[0]);
-        let username = cli::get_username_choice();
-        let offset;
-        if self.config.config.auto_offset {
-            offset = self.auto_offset_calculation(&username);
+        let username = match self.username_to_snipe.clone() {
+            Some(x) => x,
+            None => cli::get_username_choice(),
+        };
+        let offset = if self.config.config.auto_offset {
+            self.auto_offset_calculation(&username)
         } else {
-            offset = cli::get_offset();
-        }
+            cli::get_offset()
+        };
         self.is_name_available();
     }
 
@@ -90,13 +96,15 @@ impl Sniper {
             }
             None => (),
         }
-        let username = cli::get_username_choice();
-        let offset;
-        if self.config.config.auto_offset {
-            offset = self.auto_offset_calculation(&username);
+        let username = match self.username_to_snipe.clone() {
+            Some(x) => x,
+            None => cli::get_username_choice(),
+        };
+        let offset = if self.config.config.auto_offset {
+            self.auto_offset_calculation(&username)
         } else {
-            offset = cli::get_offset();
-        }
+            cli::get_offset()
+        };
         self.is_name_available();
     }
 
