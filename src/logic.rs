@@ -85,6 +85,13 @@ impl Sniper {
             cli::get_offset()
         };
         self.is_name_available();
+        self.execute_msa(
+            self.check_name_availability_time(),
+            &username,
+            offset,
+            token[0].clone(),
+            token[1].clone(),
+        );
     }
 
     // Code runner for setup of Microsoft GC Sniper
@@ -106,6 +113,13 @@ impl Sniper {
             cli::get_offset()
         };
         self.is_name_available();
+        self.execute_gc(
+            self.check_name_availability_time(),
+            &username,
+            offset,
+            token[0].clone(),
+            token[1].clone(),
+        );
     }
 
     // The functions below are functions for handling reqwest requests and other miscellaneous tasks. Requests are blocking atm for easy maintenance.
@@ -324,5 +338,27 @@ impl Sniper {
         ));
         // Snipe
         // Change skin if successful
+    }
+
+    fn execute_msa(
+        &self,
+        droptime_epoch: i64,
+        username_to_snipe: &str,
+        offset: i32,
+        mut access_token: String,
+        refresh_token: String,
+    ) {
+        // code
+    }
+
+    fn execute_gc(
+        &self,
+        droptime_epoch: i64,
+        username_to_snipe: &str,
+        offset: i32,
+        mut access_token: String,
+        refresh_token: String,
+    ) {
+        //code
     }
 }
