@@ -236,6 +236,8 @@ impl Sniper {
         conn.connect(1);
         let before = Utc::now();
         conn.send(payload);
+        Utc::now().signed_duration_since(before).num_milliseconds() as i32
+            - constants::SERVER_RESPONSE_DURATION
     }
 
     fn is_name_available(&self) {
