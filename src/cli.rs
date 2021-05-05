@@ -71,6 +71,24 @@ pub fn get_giftcode() -> Option<String> {
     }
 }
 
+pub fn get_access_token() -> String {
+    let mut input = String::new();
+    print!(
+        r#"Sign in with your Microsoft account and copy the ID from the "access_token" field right here: "#
+    );
+    io::Write::flush(&mut io::stdout()).unwrap();
+    io::stdin().read_line(&mut input).unwrap();
+    input.trim().to_string()
+}
+
+pub fn get_refresh_token() -> String {
+    let mut input = String::new();
+    print!(r#"Copy the ID from the "refresh_token" field right here: "#);
+    io::Write::flush(&mut io::stdout()).unwrap();
+    io::stdin().read_line(&mut input).unwrap();
+    input.trim().to_string()
+}
+
 // Used for closure for validating individual chars to determine if char in username is valid in iterable
 fn is_valid_username_char(c: char) -> bool {
     if char::is_alphanumeric(c) {
