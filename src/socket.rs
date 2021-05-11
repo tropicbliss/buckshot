@@ -15,7 +15,7 @@ pub async fn snipe_regular(
 ) -> bool {
     let mut handle_vec: Vec<task::JoinHandle<u16>> = Vec::new();
     let mut status_vec: Vec<u16> = Vec::new();
-    for _ in 0..3 {
+    for _ in 0..2 {
         let handle = task::spawn(async {
             snipe_task_regular(snipe_time, username_to_snipe, access_token).await
         });
