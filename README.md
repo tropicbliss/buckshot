@@ -5,7 +5,7 @@ A Minecraft username sniper made in Rust. Performant and capable.
 // WIP
 ```
 
-To-do:
+## To-do:
 
 - Colour text
 - Better error messages
