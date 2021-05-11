@@ -178,13 +178,7 @@ impl Sniper {
             requestor.get_namemc_viewcount(&username_to_snipe).await
         };
         if Utc::now() < handshake_time {
-            time::sleep(
-                handshake_time
-                    .signed_duration_since(Utc::now())
-                    .to_std()
-                    .unwrap(),
-            )
-            .await;
+            time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
         let is_success = socket::snipe_regular(snipe_time, &username_to_snipe, access_token).await;
         if is_success {
@@ -247,13 +241,7 @@ impl Sniper {
             requestor.get_namemc_viewcount(&username_to_snipe).await
         };
         if Utc::now() < handshake_time {
-            time::sleep(
-                handshake_time
-                    .signed_duration_since(Utc::now())
-                    .to_std()
-                    .unwrap(),
-            )
-            .await;
+            time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
         let is_success = socket::snipe_regular(snipe_time, &username_to_snipe, access_token).await;
         if is_success {
@@ -316,13 +304,7 @@ impl Sniper {
             requestor.get_namemc_viewcount(&username_to_snipe).await
         };
         if Utc::now() < handshake_time {
-            time::sleep(
-                handshake_time
-                    .signed_duration_since(Utc::now())
-                    .to_std()
-                    .unwrap(),
-            )
-            .await;
+            time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
         let is_success = socket::snipe_gc(snipe_time, &username_to_snipe, access_token).await;
         if is_success {

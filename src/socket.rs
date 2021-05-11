@@ -45,13 +45,7 @@ async fn snipe_task_regular(
         .unwrap();
     let mut res = Vec::new();
     stream.write_all(data).await.unwrap();
-    time::sleep(
-        snipe_time
-            .signed_duration_since(Utc::now())
-            .to_std()
-            .unwrap(),
-    )
-    .await;
+    time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
     stream.write_all(data2).await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
     let formatted_resp_time = Utc::now().format("%F %T%.6f");
@@ -99,13 +93,7 @@ async fn snipe_task_gc(
         .unwrap();
     let mut res = Vec::new();
     stream.write_all(data).await.unwrap();
-    time::sleep(
-        snipe_time
-            .signed_duration_since(Utc::now())
-            .to_std()
-            .unwrap(),
-    )
-    .await;
+    time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
     stream.write_all(data2).await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
     let formatted_resp_time = Utc::now().format("%F %T%.6f");
