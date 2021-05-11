@@ -142,8 +142,8 @@ impl Requests {
         auth_time: Option<DateTime<Utc>>,
     ) -> DateTime<Utc> {
         let url = format!(
-            "{}/api/namemc/droptime/{}",
-            constants::KQZZ_NAMEMC_API,
+            "{}/droptime/{}",
+            constants::TEUN_NAMEMC_API,
             username_to_snipe
         );
         let res = self.client.get(url).send().await.unwrap();
@@ -152,7 +152,7 @@ impl Requests {
         }
         let body = res.text().await.unwrap();
         let v: Value = serde_json::from_str(&body).unwrap();
-        let epoch = match v.get("droptime") {
+        let epoch = match v.get("UNIX") {
             Some(droptime) => droptime,
             None => {
                 panic!("Error checking droptime. Check if username is freely available.")
