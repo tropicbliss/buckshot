@@ -1,6 +1,6 @@
 use crate::{cli, config, constants};
 use chrono::{DateTime, Duration, TimeZone, Utc};
-use reqwest;
+use reqwest::Client;
 use serde_json::{json, Value};
 use std::fs::File;
 use std::io::BufReader;
@@ -9,13 +9,13 @@ use std::{thread, time};
 use webbrowser;
 
 pub struct Requests {
-    client: reqwest::Client,
+    client: Client,
 }
 
 impl Requests {
     pub fn new() -> Self {
         Self {
-            client: reqwest::Client::new(),
+            client: Client::new(),
         }
     }
 
