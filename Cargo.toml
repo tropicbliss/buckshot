@@ -16,7 +16,3 @@ chrono = "0.4.19"
 webbrowser = "0.5.5"
 tokio-native-tls = "0.3.0"
 native-tls = "0.2.7"
-
-[dependencies.async-tls]
-version = "0.10"
-features = ["early-data"]
