@@ -1,4 +1,4 @@
-use crate::constants::SERVER_RESPONSE_DURATION;
+use crate::constants;
 use chrono::{DateTime, Local, Utc};
 use native_tls;
 use native_tls::TlsConnector;
@@ -32,7 +32,7 @@ async fn snipe_task_regular(
     username_to_snipe: &str,
     access_token: &str,
 ) -> u16 {
-    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", username_to_snipe).as_bytes();
+    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: keep-alive\r\nContent-Length: 0\r\nAccept: */*\r\nAuthorization: Bearer {}\r\nUser-Agent: {}\r\n", username_to_snipe, access_token, constants::USER_AGENT).as_bytes();
     let data2 = format!("\r\n").as_bytes();
     let stream = TcpStream::connect("api.minecraftservices.com:443")
         .await
@@ -86,8 +86,8 @@ async fn snipe_task_gc(
     access_token: &str,
 ) -> u16 {
     let payload = json!({ "profileName": username_to_snipe }).to_string();
-    let data = format!("POST /minecraft/profile/ HTTP/1.1\r\nContent-Type: application/json\r\nHost: api.minecraftservices.com\r\nContent-Length: {}\r\nAuthorization: Bearer {}\r\n", payload.len(), access_token).as_bytes();
-    let data2 = format!("\r\n{}", payload).as_bytes();
+    let data = format!("POST /minecraft/profile/ HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: keep-alive\r\nContent-Type: application/json\r\nAccept: */*\r\nAuthorization: Bearer {}\r\nUser-Agent: {}\r\n", access_token, constants::USER_AGENT).as_bytes();
+    let data2 = format!("\r\n{}\r\n", payload).as_bytes();
     let stream = TcpStream::connect("api.minecraftservices.com:443")
         .await
         .unwrap();
@@ -117,7 +117,7 @@ async fn snipe_task_gc(
 }
 
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
-    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", username_to_snipe).as_bytes();
+    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: keep-alive\r\nContent-Length: 0\r\nAccept: */*\r\nAuthorization: Bearer token\r\nUser-Agent: {}\r\n", username_to_snipe, constants::USER_AGENT).as_bytes();
     let data2 = format!("\r\n").as_bytes();
     let stream = TcpStream::connect("api.minecraftservices.com:443")
         .await
@@ -134,13 +134,14 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     stream.write_all(data2).await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
     let after = Instant::now();
-    after.checked_duration_since(before).unwrap().as_millis() as i32 - SERVER_RESPONSE_DURATION
+    after.checked_duration_since(before).unwrap().as_millis() as i32
+        - constants::SERVER_RESPONSE_DURATION
 }
 
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     let payload = json!({ "profileName": username_to_snipe }).to_string();
-    let data = format!("POST /minecraft/profile/ HTTP/1.1\r\nContent-Type: application/json\r\nHost: api.minecraftservices.com\r\nContent-Length: {}\r\nAuthorization: Bearer token\r\n", payload.len()).as_bytes();
-    let data2 = format!("\r\n{}", payload).as_bytes();
+    let data = format!("POST /minecraft/profile/ HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: keep-alive\r\nContent-Type: application/json\r\nAccept: */*\r\nAuthorization: Bearer token\r\nUser-Agent: {}\r\n", constants::USER_AGENT).as_bytes();
+    let data2 = format!("\r\n{}\r\n", payload).as_bytes();
     let stream = TcpStream::connect("api.minecraftservices.com:443")
         .await
         .unwrap();
@@ -156,5 +157,6 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     stream.write_all(data2).await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
     let after = Instant::now();
-    after.checked_duration_since(before).unwrap().as_millis() as i32 - SERVER_RESPONSE_DURATION
+    after.checked_duration_since(before).unwrap().as_millis() as i32
+        - constants::SERVER_RESPONSE_DURATION
 }
