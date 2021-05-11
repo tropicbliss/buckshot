@@ -226,25 +226,25 @@ impl Requests {
     }
 
     pub async fn get_namemc_viewcount(&self, username_to_snipe: &str) -> u32 {
-        let url = format!(
-            "{}/api/mojang/user/{}",
-            constants::KQZZ_NAMEMC_API,
-            username_to_snipe
-        );
-        let res = self
-            .client
-            .get(url)
-            .query(&[("namemc", "true")])
-            .send()
-            .await
-            .unwrap();
-        if !res.status().is_success() {
-            println!("API currently down. This is a perfectly normal error message.");
-            println!("HTTP status code: {}", res.status().as_u16())
-        }
-        let body = res.text().await.unwrap();
-        let v: Value = serde_json::from_str(&body).unwrap();
-        v["namemc"]["views"].as_u64().unwrap() as u32
+        // let url = format!(
+        //     "{}/api/mojang/user/{}",
+        //     constants::KQZZ_NAMEMC_API,
+        //     username_to_snipe
+        // );
+        // let res = self
+        //     .client
+        //     .get(url)
+        //     .query(&[("namemc", "true")])
+        //     .send()
+        //     .await
+        //     .unwrap();
+        // if !res.status().is_success() {
+        //     panic!("HTTP status code: {}", res.status().as_u16())
+        // }
+        // let body = res.text().await.unwrap();
+        // let v: Value = serde_json::from_str(&body).unwrap();
+        // v["namemc"]["views"].as_u64().unwrap() as u32
+        27
     }
 
     pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) {
