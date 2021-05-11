@@ -155,15 +155,9 @@ impl Sniper {
                 formatted_droptime
             )
         }
-        let snipe_time = droptime
-            .checked_sub_signed(Duration::milliseconds(offset as i64))
-            .unwrap();
-        let setup_time = snipe_time
-            .checked_sub_signed(Duration::minutes(12))
-            .unwrap();
-        let handshake_time = snipe_time
-            .checked_sub_signed(Duration::seconds(20))
-            .unwrap();
+        let snipe_time = droptime - Duration::milliseconds(offset as i64);
+        let setup_time = snipe_time - Duration::minutes(12);
+        let handshake_time = snipe_time - Duration::seconds(20);
         let namemc_searches = if Utc::now() < setup_time {
             let ((access_token, auth_time), _) = join!(
                 self.setup_mojang(&requestor),
@@ -230,15 +224,9 @@ impl Sniper {
                 formatted_droptime
             )
         }
-        let snipe_time = droptime
-            .checked_sub_signed(Duration::milliseconds(offset as i64))
-            .unwrap();
-        let setup_time = snipe_time
-            .checked_sub_signed(Duration::minutes(12))
-            .unwrap();
-        let handshake_time = snipe_time
-            .checked_sub_signed(Duration::seconds(20))
-            .unwrap();
+        let snipe_time = droptime - Duration::milliseconds(offset as i64);
+        let setup_time = snipe_time - Duration::minutes(12);
+        let handshake_time = snipe_time - Duration::seconds(20);
         let namemc_searches = if Utc::now() < setup_time {
             let ((access_token, auth_time), _) = join!(
                 self.setup_msa(&requestor),
@@ -305,15 +293,9 @@ impl Sniper {
                 formatted_droptime
             )
         }
-        let snipe_time = droptime
-            .checked_sub_signed(Duration::milliseconds(offset as i64))
-            .unwrap();
-        let setup_time = snipe_time
-            .checked_sub_signed(Duration::minutes(12))
-            .unwrap();
-        let handshake_time = snipe_time
-            .checked_sub_signed(Duration::seconds(20))
-            .unwrap();
+        let snipe_time = droptime - Duration::milliseconds(offset as i64);
+        let setup_time = snipe_time - Duration::minutes(12);
+        let handshake_time = snipe_time - Duration::seconds(20);
         let namemc_searches = if Utc::now() < setup_time {
             let ((access_token, auth_time), _) = join!(
                 self.setup_msa(&requestor),
