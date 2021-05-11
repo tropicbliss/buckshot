@@ -15,7 +15,10 @@ pub struct Requests {
 impl Requests {
     pub fn new() -> Self {
         Self {
-            client: Client::new(),
+            client: Client::builder()
+                .user_agent(constants::USER_AGENT)
+                .build()
+                .unwrap(),
         }
     }
 
