@@ -38,7 +38,8 @@ impl Config {
                 let mut s = String::new();
                 let mut br = BufReader::new(f);
                 br.read_to_string(&mut s).unwrap();
-                let config: Self = toml::from_str(&s).unwrap();
+                let config: Self = toml::from_str(&s)
+                    .expect("Error parsing config file, please check the formatting of the file.");
                 if !(config.config.skin_model.to_lowercase() == "slim"
                     || config.config.skin_model.to_lowercase() == "classic")
                 {
