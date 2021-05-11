@@ -1,0 +1,17 @@
+# Leave the account section empty if you are using a Microsoft account
+[account]
+username = ""
+password = ""
+# Leave the rest empty if you do not have security questions
+sq1 = ""
+sq2 = ""
+sq3 = ""
+
+[config]
+auto_offset = false
+spread = 0
+microsoft_auth = false
+gc_snipe = false
+change_skin = false
+skin_model = "slim"
+skin_filename = "example.png"
