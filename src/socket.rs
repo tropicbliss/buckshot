@@ -1,5 +1,5 @@
 use crate::constants;
-use chrono::{DateTime, Local, Utc};
+use chrono::{DateTime, Utc};
 use native_tls;
 use native_tls::TlsConnector;
 use serde_json::json;
@@ -54,7 +54,7 @@ async fn snipe_task_regular(
     .await;
     stream.write_all(data2).await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
-    let formatted_resp_time = Local::now().format("%F %T%.6f");
+    let formatted_resp_time = Utc::now().format("%F %T%.6f");
     let response = String::from_utf8_lossy(&res);
     let status = response[9..12].parse::<u16>().unwrap();
     let result = if status == 200 { "success" } else { "fail" };
@@ -108,7 +108,7 @@ async fn snipe_task_gc(
     .await;
     stream.write_all(data2).await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
-    let formatted_resp_time = Local::now().format("%F %T%.6f");
+    let formatted_resp_time = Utc::now().format("%F %T%.6f");
     let response = String::from_utf8_lossy(&res);
     let status = response[9..12].parse::<u16>().unwrap();
     let result = if status == 200 { "success" } else { "fail" };
