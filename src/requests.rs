@@ -239,7 +239,8 @@ impl Requests {
             .await
             .unwrap();
         if !res.status().is_success() {
-            panic!("HTTP status code: {}", res.status().as_u16())
+            println!("API currently down. This is a perfectly normal error message.");
+            println!("HTTP status code: {}", res.status().as_u16())
         }
         let body = res.text().await.unwrap();
         let v: Value = serde_json::from_str(&body).unwrap();
