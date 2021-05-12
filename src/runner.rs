@@ -50,7 +50,7 @@ impl Sniper {
                 (snipe_time, username_to_snipe)
             };
         let offset = if self.config.config.auto_offset {
-            requests::auto_offset_calculation_gc(&username_to_snipe).await
+            requests::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
             cli::get_offset()
         };
@@ -83,7 +83,7 @@ impl Sniper {
                 (snipe_time, username_to_snipe)
             };
         let offset = if self.config.config.auto_offset {
-            requests::auto_offset_calculation_gc(&username_to_snipe).await
+            requests::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
             cli::get_offset()
         };
