@@ -48,7 +48,7 @@ impl Requests {
                 (access_token, None)
             },
             403 => pretty_panic("Authentication error. Check if you have entered your username and password correctly."),
-            code => pretty_panic(format!("HTTP status code: {}", code)),
+            code => pretty_panic(&format!("HTTP status code: {}", code)),
         }
     }
 
@@ -77,7 +77,7 @@ impl Requests {
         match res.status().as_u16() {
             204 => false,
             403 => true,
-            code => pretty_panic(format!("HTTP status code: {}", code)),
+            code => pretty_panic(&format!("HTTP status code: {}", code)),
         }
     }
 
@@ -91,7 +91,7 @@ impl Requests {
             .await
             .unwrap();
         if !res.status().is_success() {
-            pretty_panic(format!("HTTP status code: {}", res.status().as_u16()));
+            pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
         if body == "[]" {
@@ -133,7 +133,7 @@ impl Requests {
         match res.status().as_u16() {
             204 => (),
             403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
-            code => pretty_panic(format!("HTTP status code: {}", code)),
+            code => pretty_panic(&format!("HTTP status code: {}", code)),
         }
     }
 
@@ -260,7 +260,7 @@ impl Requests {
             .await
             .unwrap();
         if !res.status().is_success() {
-            pretty_panic(format!("HTTP status code: {}", res.status().as_u16()));
+            pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
     }
 }

@@ -47,7 +47,7 @@ impl Config {
                 }
                 config
             }
-            Err(_) => pretty_panic(format!("File {} not found.", CONFIG_PATH)),
+            Err(_) => pretty_panic(&format!("File {} not found.", CONFIG_PATH)),
         }
     }
 }

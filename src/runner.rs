@@ -35,9 +35,9 @@ impl Sniper {
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_mojang(&requestor).await;
         let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = &self.username_to_snipe {
+            if let Some(username_to_snipe) = self.username_to_snipe.clone() {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(username_to_snipe, auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe.clone())
@@ -68,9 +68,9 @@ impl Sniper {
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
         let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = &self.username_to_snipe {
+            if let Some(username_to_snipe) = self.username_to_snipe.clone() {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(username_to_snipe, auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe.clone())
@@ -100,20 +100,40 @@ impl Sniper {
     async fn run_gc(&self) {
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
+        let giftcode = cli::get_giftcode();
         let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = &self.username_to_snipe {
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(username_to_snipe, auth_time),
-                    requestor.check_name_change_eligibility(&access_token)
-                );
-                (snipe_time, username_to_snipe.clone())
+            if let Some(username_to_snipe) = self.username_to_snipe.clone() {
+                if let Some(gc) = giftcode {
+                    let (snipe_time, _) = join!(
+                        requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                        requestor.redeem_giftcode(&gc, &access_token)
+                    );
+                    (snipe_time, username_to_snipe)
+                } else {
+                    (
+                        requestor
+                            .check_name_availability_time(&username_to_snipe, auth_time)
+                            .await,
+                        username_to_snipe,
+                    )
+                }
             } else {
-                let username_to_snipe = cli::get_username_choice();
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
-                    requestor.check_name_change_eligibility(&access_token)
-                );
-                (snipe_time, username_to_snipe)
+                if let Some(gc) = giftcode {
+                    let username_to_snipe = cli::get_username_choice();
+                    let (snipe_time, _) = join!(
+                        requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                        requestor.redeem_giftcode(&gc, &access_token)
+                    );
+                    (snipe_time, username_to_snipe)
+                } else {
+                    let username_to_snipe = cli::get_username_choice();
+                    (
+                        requestor
+                            .check_name_availability_time(&username_to_snipe, auth_time)
+                            .await,
+                        username_to_snipe,
+                    )
+                }
             };
         let offset = if self.config.config.auto_offset {
             socket::auto_offset_calculation_gc(&username_to_snipe).await
@@ -180,7 +200,12 @@ impl Sniper {
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
-        let is_success = socket::snipe_regular(snipe_time, &username_to_snipe, access_token).await;
+        let is_success = socket::snipe_regular(
+            snipe_time,
+            username_to_snipe.clone(),
+            access_token.to_string(),
+        )
+        .await;
         if is_success {
             println!("Successfully sniped {}!", username_to_snipe);
             if self.config.config.change_skin {
@@ -240,7 +265,12 @@ impl Sniper {
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
-        let is_success = socket::snipe_regular(snipe_time, &username_to_snipe, access_token).await;
+        let is_success = socket::snipe_regular(
+            snipe_time,
+            username_to_snipe.clone(),
+            access_token.to_string(),
+        )
+        .await;
         if is_success {
             println!("Successfully sniped {}!", username_to_snipe);
             if self.config.config.change_skin {
@@ -300,7 +330,12 @@ impl Sniper {
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
-        let is_success = socket::snipe_gc(snipe_time, &username_to_snipe, access_token).await;
+        let is_success = socket::snipe_gc(
+            snipe_time,
+            username_to_snipe.clone(),
+            access_token.to_string(),
+        )
+        .await;
         if is_success {
             println!("Successfully sniped {}!", username_to_snipe);
             if self.config.config.change_skin {
