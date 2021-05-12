@@ -1,17 +1,17 @@
 use std::{io, process};
 
 pub fn print_splash_screen() {
-    println!(r"______ _   _ _____  _   __ _____ _   _ _____ _____ ");
-    println!(r"| ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|");
-    println!(r"| |_/ / | | | /  \/| |/ / \ `--.| |_| | | | | | |  ");
-    println!(r"| ___ \ | | | |    |    \  `--. \  _  | | | | | |  ");
-    println!(r"| |_/ / |_| | \__/\| |\  \/\__/ / | | \ \_/ / | |  ");
-    println!(r"\____/ \___/ \____/\_| \_/\____/\_| |_/\___/  \_/  ");
-    println!("                                                   ");
-    println!("                                                   ");
-    println!("");
-    println!("Developed by @chronicallyunfunny#1113 on Discord.");
-    println!("");
+    bunt::println!(r"{$red}______ _   _ _____  _   __ _____ _   _ _____ _____ {/$}");
+    bunt::println!(r"{$red}| ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|{/$}");
+    bunt::println!(r"{$red}| |_/ / | | | /  \/| |/ / \ `--.| |_| | | | | | |  {/$}");
+    bunt::println!(r"{$red}| ___ \ | | | |    |    \  `--. \  _  | | | | | |  {/$}");
+    bunt::println!(r"{$red}| |_/ / |_| | \__/\| |\  \/\__/ / | | \ \_/ / | |  {/$}");
+    bunt::println!(r"{$red}\____/ \___/ \____/\_| \_/\____/\_| |_/\___/  \_/  {/$}");
+    bunt::println!("{$red}                                                   {/$}");
+    bunt::println!("{$red}                                                   {/$}");
+    bunt::println!("{$red}{/$}");
+    bunt::println!("{$green}Developed by @chronicallyunfunny#1113 on Discord.{/$}");
+    bunt::println!("{$red}{/$}");
 }
 
 pub fn get_username_choice() -> String {
@@ -76,7 +76,7 @@ pub fn exit_program() {
 }
 
 pub fn pretty_panic(err: &str) -> ! {
-    println!("Error: {}", err);
+    bunt::eprintln!("{$red}Error{/$}: {}", err);
     exit_program();
     process::exit(1);
 }

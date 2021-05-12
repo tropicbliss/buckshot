@@ -188,15 +188,12 @@ impl Sniper {
                         .unwrap(),
                 )
             );
-            let (_, _) = join!(
+            join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
-                requestor.check_name_change_eligibility(&access_token),
-                // requestor.get_namemc_viewcount(&username_to_snipe)
+                requestor.check_name_change_eligibility(&access_token)
             );
-            // namemc_viewcount
-        } else {
-            // requestor.get_namemc_viewcount(&username_to_snipe).await
-        };
+            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
+        }
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
@@ -253,15 +250,12 @@ impl Sniper {
                         .unwrap(),
                 )
             );
-            let (_, _) = join!(
+            join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
-                requestor.check_name_change_eligibility(&access_token),
-                // requestor.get_namemc_viewcount(&username_to_snipe)
+                requestor.check_name_change_eligibility(&access_token)
             );
-            // namemc_viewcount
-        } else {
-            // requestor.get_namemc_viewcount(&username_to_snipe).await
-        };
+            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
+        }
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
@@ -318,15 +312,12 @@ impl Sniper {
                         .unwrap(),
                 )
             );
-            let (_, _) = join!(
+            join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
-                requestor.check_name_change_eligibility(&access_token),
-                // requestor.get_namemc_viewcount(&username_to_snipe)
+                requestor.check_name_change_eligibility(&access_token)
             );
-            // namemc_viewcount
-        } else {
-            // requestor.get_namemc_viewcount(&username_to_snipe).await
-        };
+            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
+        }
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }

@@ -110,8 +110,19 @@ async fn snipe_task_gc(
     let formatted_resp_time = Utc::now().format("%F %T%.6f");
     let response = String::from_utf8_lossy(&res);
     let status = response[9..12].parse::<u16>().unwrap();
-    let result = if status == 200 { "success" } else { "fail" };
-    println!("[{}] {} @ {}", result, status, formatted_resp_time);
+    if status == 200 {
+        bunt::println!(
+            "[{$green}success{/$}] {[green]} @ {[cyan]}",
+            status,
+            formatted_resp_time
+        )
+    } else {
+        bunt::println!(
+            "[{$red}fail{/$}] {[red]} @ {[cyan]}",
+            status,
+            formatted_resp_time
+        )
+    }
     status
 }
 
