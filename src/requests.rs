@@ -219,9 +219,9 @@ impl Requests {
             .await
             .unwrap();
         if res.status().is_success() {
-            println!("Successfully changed skin!")
+            bunt::println!("{$green}Successfully changed skin!{/$}")
         } else {
-            println!("Failed to upload skin.")
+            bunt::eprintln!("{$red}Error{/$}: Failed to upload skin.")
         }
     }
 
