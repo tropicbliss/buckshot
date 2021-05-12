@@ -62,7 +62,9 @@ pub fn get_giftcode() -> Option<String> {
 
 pub fn get_access_token() -> String {
     let mut input = String::new();
-    print!("Enter your gift code (press ENTER if you have already redeemed your gift code): ");
+    print!(
+        r#"Sign in with your Microsoft account and copy the ID from the "access_token" field right here: "#
+    );
     io::Write::flush(&mut io::stdout()).unwrap();
     io::stdin().read_line(&mut input).unwrap();
     input.trim().to_string()
