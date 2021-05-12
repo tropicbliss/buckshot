@@ -209,7 +209,7 @@ impl Sniper {
             )
             .await;
         if is_success {
-            println!("Successfully sniped {}!", username_to_snipe);
+            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
@@ -266,7 +266,7 @@ impl Sniper {
             )
             .await;
         if is_success {
-            println!("Successfully sniped {}!", username_to_snipe);
+            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
@@ -323,7 +323,7 @@ impl Sniper {
             )
             .await;
         if is_success {
-            println!("Successfully sniped {}!", username_to_snipe);
+            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
