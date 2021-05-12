@@ -77,6 +77,7 @@ pub fn exit_program() {
 
 pub fn pretty_panic(err: &str) -> ! {
     println!("Error: {}", err);
+    exit_program();
     process::exit(1);
 }
 
