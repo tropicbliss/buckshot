@@ -281,7 +281,9 @@ pub async fn snipe_task_regular(
     snipe_time: DateTime<Utc>,
     username_to_snipe: String,
     access_token: String,
+    spread_offset: i32,
 ) -> u16 {
+    let snipe_time = snipe_time + Duration::milliseconds(spread_offset as i64);
     let client = Client::builder()
         .user_agent(constants::USER_AGENT)
         .build()
@@ -315,7 +317,9 @@ pub async fn snipe_task_gc(
     snipe_time: DateTime<Utc>,
     username_to_snipe: String,
     access_token: String,
+    spread_offset: i32,
 ) -> u16 {
+    let snipe_time = snipe_time + Duration::milliseconds(spread_offset as i64);
     let client = Client::builder()
         .user_agent(constants::USER_AGENT)
         .build()

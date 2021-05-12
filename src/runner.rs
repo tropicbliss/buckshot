@@ -374,13 +374,21 @@ impl Sniper {
     ) -> bool {
         let mut handle_vec: Vec<task::JoinHandle<u16>> = Vec::new();
         let mut status_vec: Vec<u16> = Vec::new();
+        let mut initial_spread = 0;
         for _ in 0..2 {
             let username_to_snipe = username_to_snipe.clone();
             let access_token = access_token.clone();
             let handle = task::spawn(async move {
-                requests::snipe_task_regular(snipe_time, username_to_snipe, access_token).await
+                requests::snipe_task_regular(
+                    snipe_time,
+                    username_to_snipe,
+                    access_token,
+                    initial_spread,
+                )
+                .await
             });
             handle_vec.push(handle);
+            initial_spread += self.config.config.spread as i32;
         }
         for handle in handle_vec {
             status_vec.push(handle.await.unwrap());
@@ -396,13 +404,16 @@ impl Sniper {
     ) -> bool {
         let mut handle_vec: Vec<task::JoinHandle<u16>> = Vec::new();
         let mut status_vec: Vec<u16> = Vec::new();
+        let mut initial_spread = 0;
         for _ in 0..6 {
             let username_to_snipe = username_to_snipe.clone();
             let access_token = access_token.clone();
             let handle = task::spawn(async move {
-                requests::snipe_task_gc(snipe_time, username_to_snipe, access_token).await
+                requests::snipe_task_gc(snipe_time, username_to_snipe, access_token, initial_spread)
+                    .await
             });
             handle_vec.push(handle);
+            initial_spread += self.config.config.spread as i32;
         }
         for handle in handle_vec {
             status_vec.push(handle.await.unwrap());
