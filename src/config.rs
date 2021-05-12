@@ -1,3 +1,4 @@
+use crate::cli::pretty_panic;
 use crate::constants::CONFIG_PATH;
 use serde::Deserialize;
 use std::fs::File;
@@ -31,7 +32,6 @@ pub struct SubConfig {
 }
 
 impl Config {
-    // Opens and deserialises config.toml and maps the options to Config struct
     pub fn new() -> Self {
         match File::open(CONFIG_PATH) {
             Ok(f) => {
@@ -43,11 +43,11 @@ impl Config {
                 if !(config.config.skin_model.to_lowercase() == "slim"
                     || config.config.skin_model.to_lowercase() == "classic")
                 {
-                    panic!("[ConfigParser] Invalid skin type.");
+                    pretty_panic("Invalid skin type.");
                 }
                 config
             }
-            Err(_) => panic!("File {} not found.", CONFIG_PATH),
+            Err(_) => pretty_panic(format!("File {} not found.", CONFIG_PATH)),
         }
     }
 }

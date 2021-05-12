@@ -1,6 +1,5 @@
-use std::io;
+use std::{io, process};
 
-// Nice ASCII art inspired by Doom
 pub fn print_splash_screen() {
     println!(r"______ _   _ _____  _   __ _____ _   _ _____ _____ ");
     println!(r"| ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|");
@@ -15,7 +14,6 @@ pub fn print_splash_screen() {
     println!("");
 }
 
-// Get username choice for sniping, with low-level code for scanning user input
 pub fn get_username_choice() -> String {
     loop {
         let mut input = String::new();
@@ -33,7 +31,6 @@ pub fn get_username_choice() -> String {
     }
 }
 
-// Get offset similar to get_username_choice() except with string parsing to i32
 pub fn get_offset() -> i32 {
     loop {
         let mut input = String::new();
@@ -78,7 +75,11 @@ pub fn exit_program() {
     io::stdin().read_line(&mut input).unwrap();
 }
 
-// Used for closure for validating individual chars to determine if char in username is valid in iterable
+pub fn pretty_panic(err: &str) -> ! {
+    println!("Error: {}", err);
+    process::exit(1);
+}
+
 fn is_valid_username_char(c: char) -> bool {
     if char::is_alphanumeric(c) {
         true

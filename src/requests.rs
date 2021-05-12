@@ -1,3 +1,4 @@
+use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use reqwest::Client;
@@ -46,8 +47,8 @@ impl Requests {
                 let access_token = v["accessToken"].as_str().unwrap().to_string();
                 (access_token, None)
             },
-            403 => panic!("Authentication error. Check if you have entered your username and password correctly."),
-            code => panic!("HTTP status code: {}", code),
+            403 => pretty_panic("Authentication error. Check if you have entered your username and password correctly."),
+            code => pretty_panic(format!("HTTP status code: {}", code)),
         }
     }
 
@@ -76,7 +77,7 @@ impl Requests {
         match res.status().as_u16() {
             204 => false,
             403 => true,
-            code => panic!("HTTP status code: {}", code),
+            code => pretty_panic(format!("HTTP status code: {}", code)),
         }
     }
 
@@ -90,7 +91,7 @@ impl Requests {
             .await
             .unwrap();
         if !res.status().is_success() {
-            panic!("HTTP status code: {}", res.status().as_u16())
+            pretty_panic(format!("HTTP status code: {}", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
         if body == "[]" {
@@ -131,8 +132,8 @@ impl Requests {
             .unwrap();
         match res.status().as_u16() {
             204 => (),
-            403 => panic!("Authentication error. Check if you have entered your security questions correctly."),
-            code => panic!("HTTP status code: {}", code),
+            403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
+            code => pretty_panic(format!("HTTP status code: {}", code)),
         }
     }
 
@@ -154,16 +155,14 @@ impl Requests {
         let v: Value = serde_json::from_str(&body).unwrap();
         let epoch = match v.get("UNIX") {
             Some(droptime) => droptime,
-            None => {
-                panic!("Error checking droptime. Check if username is freely available.")
-            }
+            None => pretty_panic("Error checking droptime. Check if username is freely available."),
         }
         .as_i64()
         .unwrap();
         let droptime = Utc.timestamp(epoch, 0);
         if let Some(auth) = auth_time {
             if droptime.signed_duration_since(auth) > Duration::days(1) {
-                panic!("You cannot snipe a name available more than one day later if you are using a Microsoft account.");
+                pretty_panic("You cannot snipe a name available more than one day later if you are using a Microsoft account.");
             }
         }
         droptime
@@ -188,7 +187,7 @@ impl Requests {
         let v: Value = serde_json::from_str(&body).unwrap();
         let is_allowed = v["nameChangeAllowed"].as_bool().unwrap();
         if !is_allowed {
-            panic!("You cannot name change within the cooldown period.")
+            pretty_panic("You cannot name change within the cooldown period.")
         }
     }
 
@@ -225,27 +224,26 @@ impl Requests {
         }
     }
 
-    pub async fn get_namemc_viewcount(&self, username_to_snipe: &str) -> u32 {
-        // let url = format!(
-        //     "{}/api/mojang/user/{}",
-        //     constants::KQZZ_NAMEMC_API,
-        //     username_to_snipe
-        // );
-        // let res = self
-        //     .client
-        //     .get(url)
-        //     .query(&[("namemc", "true")])
-        //     .send()
-        //     .await
-        //     .unwrap();
-        // if !res.status().is_success() {
-        //     panic!("HTTP status code: {}", res.status().as_u16())
-        // }
-        // let body = res.text().await.unwrap();
-        // let v: Value = serde_json::from_str(&body).unwrap();
-        // v["namemc"]["views"].as_u64().unwrap() as u32
-        27
-    }
+    // pub async fn get_namemc_viewcount(&self, username_to_snipe: &str) -> u32 {
+    //     let url = format!(
+    //         "{}/api/mojang/user/{}",
+    //         constants::KQZZ_NAMEMC_API,
+    //         username_to_snipe
+    //     );
+    //     let res = self
+    //         .client
+    //         .get(url)
+    //         .query(&[("namemc", "true")])
+    //         .send()
+    //         .await
+    //         .unwrap();
+    //     if !res.status().is_success() {
+    //         pretty_panic(format!("HTTP status code: {}", res.status().as_u16()));
+    //     }
+    //     let body = res.text().await.unwrap();
+    //     let v: Value = serde_json::from_str(&body).unwrap();
+    //     v["namemc"]["views"].as_u64().unwrap() as u32
+    // }
 
     pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) {
         let url = format!(
@@ -262,7 +260,7 @@ impl Requests {
             .await
             .unwrap();
         if !res.status().is_success() {
-            panic!("HTTP status code: {}", res.status().as_u16())
+            pretty_panic(format!("HTTP status code: {}", res.status().as_u16()));
         }
     }
 }

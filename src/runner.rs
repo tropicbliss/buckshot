@@ -158,7 +158,7 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         let handshake_time = snipe_time - Duration::seconds(20);
-        let namemc_searches = if Utc::now() < setup_time {
+        if Utc::now() < setup_time {
             let ((access_token, auth_time), _) = join!(
                 self.setup_mojang(&requestor),
                 time::sleep(
@@ -168,24 +168,21 @@ impl Sniper {
                         .unwrap(),
                 )
             );
-            let (_, _, namemc_viewcount) = join!(
+            let (_, _) = join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
                 requestor.check_name_change_eligibility(&access_token),
-                requestor.get_namemc_viewcount(&username_to_snipe)
+                // requestor.get_namemc_viewcount(&username_to_snipe)
             );
-            namemc_viewcount
+            // namemc_viewcount
         } else {
-            requestor.get_namemc_viewcount(&username_to_snipe).await
+            // requestor.get_namemc_viewcount(&username_to_snipe).await
         };
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
         let is_success = socket::snipe_regular(snipe_time, &username_to_snipe, access_token).await;
         if is_success {
-            println!(
-                "Successfully sniped {} with {} searches!",
-                username_to_snipe, namemc_searches
-            );
+            println!("Successfully sniped {}!", username_to_snipe);
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, access_token).await;
             }
@@ -221,7 +218,7 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         let handshake_time = snipe_time - Duration::seconds(20);
-        let namemc_searches = if Utc::now() < setup_time {
+        if Utc::now() < setup_time {
             let ((access_token, auth_time), _) = join!(
                 self.setup_msa(&requestor),
                 time::sleep(
@@ -231,24 +228,21 @@ impl Sniper {
                         .unwrap(),
                 )
             );
-            let (_, _, namemc_viewcount) = join!(
+            let (_, _) = join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
                 requestor.check_name_change_eligibility(&access_token),
-                requestor.get_namemc_viewcount(&username_to_snipe)
+                // requestor.get_namemc_viewcount(&username_to_snipe)
             );
-            namemc_viewcount
+            // namemc_viewcount
         } else {
-            requestor.get_namemc_viewcount(&username_to_snipe).await
+            // requestor.get_namemc_viewcount(&username_to_snipe).await
         };
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
         let is_success = socket::snipe_regular(snipe_time, &username_to_snipe, access_token).await;
         if is_success {
-            println!(
-                "Successfully sniped {} with {} searches!",
-                username_to_snipe, namemc_searches
-            );
+            println!("Successfully sniped {}!", username_to_snipe);
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, access_token).await;
             }
@@ -284,7 +278,7 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         let handshake_time = snipe_time - Duration::seconds(20);
-        let namemc_searches = if Utc::now() < setup_time {
+        if Utc::now() < setup_time {
             let ((access_token, auth_time), _) = join!(
                 self.setup_msa(&requestor),
                 time::sleep(
@@ -294,24 +288,21 @@ impl Sniper {
                         .unwrap(),
                 )
             );
-            let (_, _, namemc_viewcount) = join!(
+            let (_, _) = join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
                 requestor.check_name_change_eligibility(&access_token),
-                requestor.get_namemc_viewcount(&username_to_snipe)
+                // requestor.get_namemc_viewcount(&username_to_snipe)
             );
-            namemc_viewcount
+            // namemc_viewcount
         } else {
-            requestor.get_namemc_viewcount(&username_to_snipe).await
+            // requestor.get_namemc_viewcount(&username_to_snipe).await
         };
         if Utc::now() < handshake_time {
             time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
         }
         let is_success = socket::snipe_gc(snipe_time, &username_to_snipe, access_token).await;
         if is_success {
-            println!(
-                "Successfully sniped {} with {} searches!",
-                username_to_snipe, namemc_searches
-            );
+            println!("Successfully sniped {}!", username_to_snipe);
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, access_token).await;
             }
