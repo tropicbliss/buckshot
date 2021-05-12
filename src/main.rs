@@ -38,7 +38,7 @@ fn impl_chooser(config: &config::Config) -> runner::SnipeTask {
 fn get_username_arg() -> Option<String> {
     use std::env;
     let args: Vec<String> = env::args().collect();
-    if args.len() == 0 {
+    if args.len() == 1 {
         None
     } else {
         Some(args[1].clone())
