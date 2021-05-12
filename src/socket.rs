@@ -15,7 +15,6 @@ pub async fn snipe_regular(
 ) -> bool {
     let mut handle_vec: Vec<task::JoinHandle<u16>> = Vec::new();
     let mut status_vec: Vec<u16> = Vec::new();
-    let username_to_snipe = username_to_snipe.clone();
     for _ in 0..2 {
         let username_to_snipe = username_to_snipe.clone();
         let access_token = access_token.clone();
