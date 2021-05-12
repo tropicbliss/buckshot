@@ -14,6 +14,4 @@ reqwest = { version = "0.11.3", features = ["json", "multipart"] }
 tokio = { version = "1.5.0", features = ["full"] }
 chrono = "0.4.19"
 webbrowser = "0.5.5"
-tokio-native-tls = "0.3.0"
-native-tls = "0.2.7"
 bunt = "0.2.4"
