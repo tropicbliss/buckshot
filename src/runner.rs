@@ -184,15 +184,14 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         let access_token = if Utc::now() < setup_time {
-            let ((access_token, auth_time), _) = join!(
-                self.setup_mojang(&requestor),
-                time::sleep(
-                    setup_time
-                        .signed_duration_since(Utc::now())
-                        .to_std()
-                        .unwrap(),
-                )
-            );
+            time::sleep(
+                setup_time
+                    .signed_duration_since(Utc::now())
+                    .to_std()
+                    .unwrap(),
+            )
+            .await;
+            let (access_token, auth_time) = self.setup_mojang(&requestor).await;
             join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
                 requestor.check_name_change_eligibility(&access_token)
@@ -245,25 +244,20 @@ impl Sniper {
         }
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
-        let access_token = if Utc::now() < setup_time {
-            let ((access_token, auth_time), _) = join!(
-                self.setup_msa(&requestor),
-                time::sleep(
-                    setup_time
-                        .signed_duration_since(Utc::now())
-                        .to_std()
-                        .unwrap(),
-                )
-            );
+        if Utc::now() < setup_time {
+            time::sleep(
+                setup_time
+                    .signed_duration_since(Utc::now())
+                    .to_std()
+                    .unwrap(),
+            )
+            .await;
             join!(
-                requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                requestor.check_name_availability_time(&username_to_snipe, None),
                 requestor.check_name_change_eligibility(&access_token)
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
-            access_token
-        } else {
-            access_token.to_string()
-        };
+        }
         let is_success = self
             .snipe_regular(
                 snipe_time,
@@ -307,25 +301,20 @@ impl Sniper {
         }
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
-        let access_token = if Utc::now() < setup_time {
-            let ((access_token, auth_time), _) = join!(
-                self.setup_msa(&requestor),
-                time::sleep(
-                    setup_time
-                        .signed_duration_since(Utc::now())
-                        .to_std()
-                        .unwrap(),
-                )
-            );
+        if Utc::now() < setup_time {
+            time::sleep(
+                setup_time
+                    .signed_duration_since(Utc::now())
+                    .to_std()
+                    .unwrap(),
+            )
+            .await;
             join!(
-                requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                requestor.check_name_availability_time(&username_to_snipe, None),
                 requestor.check_name_change_eligibility(&access_token)
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
-            access_token
-        } else {
-            access_token.to_string()
-        };
+        }
         let is_success = self
             .snipe_giftcode(
                 snipe_time,
