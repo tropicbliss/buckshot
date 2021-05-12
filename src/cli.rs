@@ -7,11 +7,11 @@ pub fn print_splash_screen() {
     bunt::println!(r"{$red}| ___ \ | | | |    |    \  `--. \  _  | | | | | |  {/$}");
     bunt::println!(r"{$red}| |_/ / |_| | \__/\| |\  \/\__/ / | | \ \_/ / | |  {/$}");
     bunt::println!(r"{$red}\____/ \___/ \____/\_| \_/\____/\_| |_/\___/  \_/  {/$}");
-    bunt::println!("{$red}                                                   {/$}");
-    bunt::println!("{$red}                                                   {/$}");
-    bunt::println!("{$red}{/$}");
+    bunt::println!("                                                   ");
+    bunt::println!("                                                   ");
+    bunt::println!("");
     bunt::println!("{$green}Developed by @chronicallyunfunny#1113 on Discord.{/$}");
-    bunt::println!("{$red}{/$}");
+    bunt::println!("");
 }
 
 pub fn get_username_choice() -> String {
