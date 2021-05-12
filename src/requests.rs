@@ -243,38 +243,46 @@ impl Requests {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
     }
+}
 
-    pub async fn auto_offset_calculation_regular(&self, username_to_snipe: &str) -> i32 {
-        println!("Measuring offset...");
-        let url = format!(
-            "{}/minecraft/profile/name/{}",
-            constants::MINECRAFTSERVICES_API_SERVER,
-            username_to_snipe
-        );
-        let req = self.client.put(url).bearer_auth("token");
-        let before = time::Instant::now();
-        req.send().await.unwrap();
-        let after = time::Instant::now();
-        let offset = (after - before).as_millis() as i32 - constants::SERVER_RESPONSE_DURATION;
-        println!("Your offset is: {} ms.", offset);
-        offset
-    }
+pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
+    println!("Measuring offset...");
+    let client = Client::builder()
+        .user_agent(constants::USER_AGENT)
+        .build()
+        .unwrap();
+    let url = format!(
+        "{}/minecraft/profile/name/{}",
+        constants::MINECRAFTSERVICES_API_SERVER,
+        username_to_snipe
+    );
+    let req = client.put(url).bearer_auth("token");
+    let before = time::Instant::now();
+    req.send().await.unwrap();
+    let after = time::Instant::now();
+    let offset = (after - before).as_millis() as i32 - constants::SERVER_RESPONSE_DURATION;
+    println!("Your offset is: {} ms.", offset);
+    offset
+}
 
-    pub async fn auto_offset_calculation_gc(&self, username_to_snipe: &str) -> i32 {
-        println!("Measuring offset...");
-        let post_body = json!({ "profileName": username_to_snipe });
-        let url = format!(
-            "{}/minecraft/profile",
-            constants::MINECRAFTSERVICES_API_SERVER
-        );
-        let req = self.client.post(url).json(&post_body).bearer_auth("token");
-        let before = time::Instant::now();
-        req.send().await.unwrap();
-        let after = time::Instant::now();
-        let offset = (after - before).as_millis() as i32 - constants::SERVER_RESPONSE_DURATION;
-        println!("Your offset is: {} ms.", offset);
-        offset
-    }
+pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
+    println!("Measuring offset...");
+    let client = Client::builder()
+        .user_agent(constants::USER_AGENT)
+        .build()
+        .unwrap();
+    let post_body = json!({ "profileName": username_to_snipe });
+    let url = format!(
+        "{}/minecraft/profile",
+        constants::MINECRAFTSERVICES_API_SERVER
+    );
+    let req = client.post(url).json(&post_body).bearer_auth("token");
+    let before = time::Instant::now();
+    req.send().await.unwrap();
+    let after = time::Instant::now();
+    let offset = (after - before).as_millis() as i32 - constants::SERVER_RESPONSE_DURATION;
+    println!("Your offset is: {} ms.", offset);
+    offset
 }
 
 pub async fn snipe_task_regular(
