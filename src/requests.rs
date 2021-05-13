@@ -309,7 +309,7 @@ pub async fn snipe_gc(
         let username_to_snipe = username_to_snipe.clone();
         let handle = tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
-            let handshake_time = snipe_time - Duration::seconds(20);
+            let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
             let addr = constants::MINECRAFTSERVICES_API_SERVER
                 .to_socket_addrs()
@@ -369,7 +369,7 @@ pub async fn snipe_regular(
         let username_to_snipe = username_to_snipe.clone();
         let handle = tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
-            let handshake_time = snipe_time - Duration::seconds(20);
+            let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
             let addr = constants::MINECRAFTSERVICES_API_SERVER
                 .to_socket_addrs()
