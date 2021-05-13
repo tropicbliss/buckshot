@@ -1,13 +1,18 @@
 use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
 use chrono::{DateTime, Duration, TimeZone, Utc};
+use native_tls::TlsConnector;
 use reqwest::Client;
 use serde_json::{json, Value};
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
+use std::net::ToSocketAddrs;
 use std::{thread, time};
 use tokio;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
+use tokio::task::JoinHandle;
 use webbrowser;
 
 #[derive(Clone)]
@@ -246,20 +251,21 @@ impl Requests {
 
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
-    let client = Client::new();
-    let url = format!(
-        "{}/minecraft/profile/name/{}",
-        constants::MINECRAFTSERVICES_API_SERVER,
-        username_to_snipe
-    );
-    let req = client.put(url).bearer_auth("token");
-    client
-        .get(constants::MINECRAFTSERVICES_API_SERVER)
-        .send()
+    let addr = constants::MINECRAFTSERVICES_API_SERVER
+        .to_socket_addrs()
+        .unwrap()
+        .next()
+        .unwrap();
+    let stream = TcpStream::connect(&addr).await.unwrap();
+    let connector = TlsConnector::builder().build().unwrap();
+    let connector = tokio_native_tls::TlsConnector::from(connector);
+    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n", username_to_snipe).as_bytes();
+    let mut stream = connector
+        .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
         .await
         .unwrap();
     let before = time::Instant::now();
-    req.send().await.unwrap();
+    stream.write_all(data).await.unwrap();
     let after = time::Instant::now();
     let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
@@ -268,20 +274,22 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
 
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
-    let client = Client::new();
-    let post_body = json!({ "profileName": username_to_snipe });
-    let url = format!(
-        "{}/minecraft/profile",
-        constants::MINECRAFTSERVICES_API_SERVER
-    );
-    let req = client.post(url).json(&post_body).bearer_auth("token");
-    client
-        .get(constants::MINECRAFTSERVICES_API_SERVER)
-        .send()
+    let addr = constants::MINECRAFTSERVICES_API_SERVER
+        .to_socket_addrs()
+        .unwrap()
+        .next()
+        .unwrap();
+    let stream = TcpStream::connect(&addr).await.unwrap();
+    let connector = TlsConnector::builder().build().unwrap();
+    let connector = tokio_native_tls::TlsConnector::from(connector);
+    let post_body = json!({ "profileName": username_to_snipe }).to_string();
+    let data = format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}\r\n", post_body).as_bytes();
+    let mut stream = connector
+        .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
         .await
         .unwrap();
     let before = time::Instant::now();
-    req.send().await.unwrap();
+    stream.write_all(data).await.unwrap();
     let after = time::Instant::now();
     let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
