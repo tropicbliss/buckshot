@@ -312,19 +312,18 @@ pub async fn snipe_gc(
         constants::MINECRAFTSERVICES_API_SERVER
     );
     let handshake_time = snipe_time - Duration::seconds(5);
+    let mut spread: i64 = 0;
     tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
     client
         .get(constants::MINECRAFTSERVICES_API_SERVER)
         .send()
         .await
         .unwrap();
-    tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
     for _ in 0..constants::GC_SNIPE_REQS {
         let client = client.clone();
         let url = url.clone();
         let post_body = post_body.clone();
         let access_token = access_token.clone();
-        let mut spread: i64 = 0;
         let handle = tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
@@ -377,13 +376,13 @@ pub async fn snipe_regular(
         username_to_snipe
     );
     let handshake_time = snipe_time - Duration::seconds(5);
+    let mut spread: i64 = 0;
     tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
     client
         .get(constants::MINECRAFTSERVICES_API_SERVER)
         .send()
         .await
         .unwrap();
-    let mut spread: i64 = 0;
     for _ in 0..constants::REGULAR_SNIPE_REQS {
         let client = client.clone();
         let url = url.clone();
