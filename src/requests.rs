@@ -304,36 +304,35 @@ pub async fn snipe_gc(
 ) -> bool {
     let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
     let mut status_vec: Vec<u16> = Vec::new();
-    let client = Client::new();
-    let post_body = json!({ "profileName": username_to_snipe });
-    let url = format!(
-        "{}/minecraft/profile",
-        constants::MINECRAFTSERVICES_API_SERVER
-    );
-    let handshake_time = snipe_time - Duration::seconds(5);
-    let mut spread: i64 = 0;
-    tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
-    client
-        .get(constants::MINECRAFTSERVICES_API_SERVER)
-        .send()
-        .await
-        .unwrap();
+    let mut spread = 0;
     for _ in 0..constants::GC_SNIPE_REQS {
-        let client = client.clone();
-        let url = url.clone();
-        let post_body = post_body.clone();
         let access_token = access_token.clone();
+        let username_to_snipe = username_to_snipe.clone();
         let handle = tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
+            let handshake_time = snipe_time - Duration::seconds(20);
+            let mut res = Vec::new();
+            let addr = constants::MINECRAFTSERVICES_API_SERVER
+                .to_socket_addrs()
+                .unwrap()
+                .next()
+                .unwrap();
+            let connector = TlsConnector::builder().build().unwrap();
+            let connector = tokio_native_tls::TlsConnector::from(connector);
+            let post_body = json!({ "profileName": username_to_snipe }).to_string();
+            let data = format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}\r\n", post_body, access_token).as_bytes();
+            tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
+            let stream = TcpStream::connect(&addr).await.unwrap();
+            let mut stream = connector
+                .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
+                .await
+                .unwrap();
             tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
-            let res = client
-                .post(url)
-                .json(&post_body)
-                .bearer_auth(access_token)
-                .send()
-                .await;
+            stream.write_all(data).await.unwrap();
+            stream.read_to_end(&mut res).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
-            let status = res.unwrap().status().as_u16();
+            let response = String::from_utf8_lossy(&res);
+            let status = response[9..12].parse::<u16>().unwrap();
             if status == 200 {
                 bunt::println!(
                     "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
@@ -365,30 +364,34 @@ pub async fn snipe_regular(
 ) -> bool {
     let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
     let mut status_vec: Vec<u16> = Vec::new();
-    let client = Client::new();
-    let url = format!(
-        "{}/minecraft/profile/name/{}",
-        constants::MINECRAFTSERVICES_API_SERVER,
-        username_to_snipe
-    );
-    let handshake_time = snipe_time - Duration::seconds(5);
-    let mut spread: i64 = 0;
-    tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
-    client
-        .get(constants::MINECRAFTSERVICES_API_SERVER)
-        .send()
-        .await
-        .unwrap();
+    let mut spread = 0;
     for _ in 0..constants::REGULAR_SNIPE_REQS {
-        let client = client.clone();
-        let url = url.clone();
         let access_token = access_token.clone();
+        let username_to_snipe = username_to_snipe.clone();
         let handle = tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
+            let handshake_time = snipe_time - Duration::seconds(20);
+            let mut res = Vec::new();
+            let addr = constants::MINECRAFTSERVICES_API_SERVER
+                .to_socket_addrs()
+                .unwrap()
+                .next()
+                .unwrap();
+            let connector = TlsConnector::builder().build().unwrap();
+            let connector = tokio_native_tls::TlsConnector::from(connector);
+            let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n", username_to_snipe, access_token).as_bytes();
+            tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
+            let stream = TcpStream::connect(&addr).await.unwrap();
+            let mut stream = connector
+                .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
+                .await
+                .unwrap();
             tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
-            let res = client.put(url).bearer_auth(access_token).send().await;
+            stream.write_all(data).await.unwrap();
+            stream.read_to_end(&mut res).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
-            let status = res.unwrap().status().as_u16();
+            let response = String::from_utf8_lossy(&res);
+            let status = response[9..12].parse::<u16>().unwrap();
             if status == 200 {
                 bunt::println!(
                     "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
