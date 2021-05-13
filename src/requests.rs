@@ -246,10 +246,7 @@ impl Requests {
 
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
-    let client = Client::builder()
-        .user_agent(constants::USER_AGENT)
-        .build()
-        .unwrap();
+    let client = Client::new();
     let url = format!(
         "{}/minecraft/profile/name/{}",
         constants::MINECRAFTSERVICES_API_SERVER,
@@ -271,10 +268,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
 
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
-    let client = Client::builder()
-        .user_agent(constants::USER_AGENT)
-        .build()
-        .unwrap();
+    let client = Client::new();
     let post_body = json!({ "profileName": username_to_snipe });
     let url = format!(
         "{}/minecraft/profile",
@@ -302,10 +296,7 @@ pub async fn snipe_gc(
 ) -> bool {
     let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
     let mut status_vec: Vec<u16> = Vec::new();
-    let client = Client::builder()
-        .user_agent(constants::USER_AGENT)
-        .build()
-        .unwrap();
+    let client = Client::new();
     let post_body = json!({ "profileName": username_to_snipe });
     let url = format!(
         "{}/minecraft/profile",
@@ -366,10 +357,7 @@ pub async fn snipe_regular(
 ) -> bool {
     let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
     let mut status_vec: Vec<u16> = Vec::new();
-    let client = Client::builder()
-        .user_agent(constants::USER_AGENT)
-        .build()
-        .unwrap();
+    let client = Client::new();
     let url = format!(
         "{}/minecraft/profile/name/{}",
         constants::MINECRAFTSERVICES_API_SERVER,
