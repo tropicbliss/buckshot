@@ -149,8 +149,10 @@ impl Requests {
             username_to_snipe
         );
         let res = self.client.get(url).send().await.unwrap();
-        if !res.status().is_success() {
-            pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
+        match res.status().as_u16() {
+            200 => (),
+            400 => pretty_panic("This name has not been cached yet."),
+            code => pretty_panic(&format!("HTTP status code: {}", code)),
         }
         let body = res.text().await.unwrap();
         let v: Value = serde_json::from_str(&body).unwrap();
