@@ -1,6 +1,6 @@
 use crate::{cli, config, requests};
 use chrono::{DateTime, Duration, Utc};
-use tokio::{join, task, time};
+use tokio::{join, time};
 
 pub enum SnipeTask {
     Mojang,
@@ -195,13 +195,13 @@ impl Sniper {
         } else {
             access_token.to_string()
         };
-        let is_success = self
-            .snipe_regular(
-                snipe_time,
-                username_to_snipe.clone(),
-                access_token.to_string(),
-            )
-            .await;
+        let is_success = requests::snipe_regular(
+            snipe_time,
+            username_to_snipe.clone(),
+            access_token.to_string(),
+            self.config.config.spread as i32,
+        )
+        .await;
         if is_success {
             bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
             if self.config.config.change_skin {
@@ -252,13 +252,13 @@ impl Sniper {
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
-        let is_success = self
-            .snipe_regular(
-                snipe_time,
-                username_to_snipe.clone(),
-                access_token.to_string(),
-            )
-            .await;
+        let is_success = requests::snipe_regular(
+            snipe_time,
+            username_to_snipe.clone(),
+            access_token.to_string(),
+            self.config.config.spread as i32,
+        )
+        .await;
         if is_success {
             bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
             if self.config.config.change_skin {
@@ -309,13 +309,13 @@ impl Sniper {
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
-        let is_success = self
-            .snipe_giftcode(
-                snipe_time,
-                username_to_snipe.clone(),
-                access_token.to_string(),
-            )
-            .await;
+        let is_success = requests::snipe_gc(
+            snipe_time,
+            username_to_snipe.clone(),
+            access_token.to_string(),
+            self.config.config.spread as i32,
+        )
+        .await;
         if is_success {
             bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
             if self.config.config.change_skin {
@@ -347,60 +347,5 @@ impl Sniper {
 
     async fn setup_msa(&self, requestor: &requests::Requests) -> (String, Option<DateTime<Utc>>) {
         requestor.authenticate_microsoft()
-    }
-
-    async fn snipe_regular(
-        &self,
-        snipe_time: DateTime<Utc>,
-        username_to_snipe: String,
-        access_token: String,
-    ) -> bool {
-        let mut handle_vec: Vec<task::JoinHandle<u16>> = Vec::new();
-        let mut status_vec: Vec<u16> = Vec::new();
-        let mut initial_spread = 0;
-        for _ in 0..2 {
-            let username_to_snipe = username_to_snipe.clone();
-            let access_token = access_token.clone();
-            let handle = task::spawn(async move {
-                requests::snipe_task_regular(
-                    snipe_time,
-                    username_to_snipe,
-                    access_token,
-                    initial_spread,
-                )
-                .await
-            });
-            handle_vec.push(handle);
-            initial_spread += self.config.config.spread as i32;
-        }
-        for handle in handle_vec {
-            status_vec.push(handle.await.unwrap());
-        }
-        status_vec.contains(&200)
-    }
-
-    async fn snipe_giftcode(
-        &self,
-        snipe_time: DateTime<Utc>,
-        username_to_snipe: String,
-        access_token: String,
-    ) -> bool {
-        let mut handle_vec: Vec<task::JoinHandle<u16>> = Vec::new();
-        let mut status_vec: Vec<u16> = Vec::new();
-        let mut initial_spread = 0;
-        for _ in 0..6 {
-            let username_to_snipe = username_to_snipe.clone();
-            let access_token = access_token.clone();
-            let handle = task::spawn(async move {
-                requests::snipe_task_gc(snipe_time, username_to_snipe, access_token, initial_spread)
-                    .await
-            });
-            handle_vec.push(handle);
-            initial_spread += self.config.config.spread as i32;
-        }
-        for handle in handle_vec {
-            status_vec.push(handle.await.unwrap());
-        }
-        status_vec.contains(&200)
     }
 }

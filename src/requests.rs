@@ -295,49 +295,14 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     offset
 }
 
-pub async fn snipe_task_regular(
+pub async fn snipe_gc(
     snipe_time: DateTime<Utc>,
     username_to_snipe: String,
     access_token: String,
     spread_offset: i32,
-) -> u16 {
-    let snipe_time = snipe_time + Duration::milliseconds(spread_offset as i64);
-    let client = Client::builder()
-        .user_agent(constants::USER_AGENT)
-        .build()
-        .unwrap();
-    let url = format!(
-        "{}/minecraft/profile/name/{}",
-        constants::MINECRAFTSERVICES_API_SERVER,
-        username_to_snipe
-    );
-    let req = client.put(url).bearer_auth(access_token);
-    tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
-    let res = req.send().await;
-    let formatted_resp_time = Utc::now().format("%F %T%.6f");
-    let status = res.unwrap().status().as_u16();
-    if status == 200 {
-        bunt::println!(
-            "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
-            formatted_resp_time
-        )
-    } else {
-        bunt::println!(
-            "[{$red}fail{/$}] {[red]} @ {[cyan]}",
-            status,
-            formatted_resp_time
-        )
-    }
-    status
-}
-
-pub async fn snipe_task_gc(
-    snipe_time: DateTime<Utc>,
-    username_to_snipe: String,
-    access_token: String,
-    spread_offset: i32,
-) -> u16 {
-    let snipe_time = snipe_time + Duration::milliseconds(spread_offset as i64);
+) -> bool {
+    let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
+    let mut status_vec: Vec<u16> = Vec::new();
     let client = Client::builder()
         .user_agent(constants::USER_AGENT)
         .build()
@@ -347,22 +312,107 @@ pub async fn snipe_task_gc(
         "{}/minecraft/profile",
         constants::MINECRAFTSERVICES_API_SERVER
     );
-    let req = client.post(url).json(&post_body).bearer_auth(access_token);
+    let handshake_time = snipe_time - Duration::seconds(5);
+    tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
+    client
+        .get(constants::MINECRAFTSERVICES_API_SERVER)
+        .send()
+        .await
+        .unwrap();
     tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
-    let res = req.send().await;
-    let formatted_resp_time = Utc::now().format("%F %T%.6f");
-    let status = res.unwrap().status().as_u16();
-    if status == 200 {
-        bunt::println!(
-            "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
-            formatted_resp_time
-        )
-    } else {
-        bunt::println!(
-            "[{$red}fail{/$}] {[red]} @ {[cyan]}",
-            status,
-            formatted_resp_time
-        )
+    for _ in 0..6 {
+        let client = client.clone();
+        let url = url.clone();
+        let post_body = post_body.clone();
+        let access_token = access_token.clone();
+        let handle = tokio::task::spawn(async move {
+            let res = client
+                .post(url)
+                .json(&post_body)
+                .bearer_auth(access_token)
+                .send()
+                .await;
+            let formatted_resp_time = Utc::now().format("%F %T%.6f");
+            let status = res.unwrap().status().as_u16();
+            if status == 200 {
+                bunt::println!(
+                    "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
+                    formatted_resp_time
+                )
+            } else {
+                bunt::println!(
+                    "[{$red}fail{/$}] {[red]} @ {[cyan]}",
+                    status,
+                    formatted_resp_time
+                )
+            }
+            status
+        });
+        handle_vec.push(handle);
+        if spread_offset != 0 {
+            tokio::time::sleep(std::time::Duration::from_millis(spread_offset as u64)).await;
+        }
     }
-    status
+    for handle in handle_vec {
+        status_vec.push(handle.await.unwrap());
+    }
+    status_vec.contains(&200)
+}
+
+pub async fn snipe_regular(
+    snipe_time: DateTime<Utc>,
+    username_to_snipe: String,
+    access_token: String,
+    spread_offset: i32,
+) -> bool {
+    let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
+    let mut status_vec: Vec<u16> = Vec::new();
+    let client = Client::builder()
+        .user_agent(constants::USER_AGENT)
+        .build()
+        .unwrap();
+    let url = format!(
+        "{}/minecraft/profile/name/{}",
+        constants::MINECRAFTSERVICES_API_SERVER,
+        username_to_snipe
+    );
+    let handshake_time = snipe_time - Duration::seconds(5);
+    tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
+    client
+        .get(constants::MINECRAFTSERVICES_API_SERVER)
+        .send()
+        .await
+        .unwrap();
+    tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
+    for _ in 0..2 {
+        let client = client.clone();
+        let url = url.clone();
+        let access_token = access_token.clone();
+        let handle = tokio::task::spawn(async move {
+            let res = client.put(url).bearer_auth(access_token).send().await;
+            let formatted_resp_time = Utc::now().format("%F %T%.6f");
+            let status = res.unwrap().status().as_u16();
+            if status == 200 {
+                bunt::println!(
+                    "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
+                    formatted_resp_time
+                )
+            } else {
+                bunt::println!(
+                    "[{$red}fail{/$}] {[red]} @ {[cyan]}",
+                    status,
+                    formatted_resp_time
+                )
+            }
+            status
+        });
+        handle_vec.push(handle);
+        if spread_offset != 0 {
+            tokio::time::sleep(std::time::Duration::from_millis(spread_offset as u64)).await;
+        }
+    }
+    for handle in handle_vec {
+        status_vec.push(handle.await.unwrap());
+    }
+    status_vec.contains(&200)
 }
