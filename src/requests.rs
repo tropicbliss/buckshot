@@ -327,7 +327,10 @@ pub async fn snipe_gc(
         let url = url.clone();
         let post_body = post_body.clone();
         let access_token = access_token.clone();
+        let mut spread: i64 = 0;
         let handle = tokio::task::spawn(async move {
+            let snipe_time = snipe_time + Duration::milliseconds(spread);
+            tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             let res = client
                 .post(url)
                 .json(&post_body)
@@ -351,9 +354,7 @@ pub async fn snipe_gc(
             status
         });
         handle_vec.push(handle);
-        if spread_offset != 0 {
-            tokio::time::sleep(std::time::Duration::from_millis(spread_offset as u64)).await;
-        }
+        spread += spread_offset as i64;
     }
     for handle in handle_vec {
         status_vec.push(handle.await.unwrap());
@@ -385,12 +386,14 @@ pub async fn snipe_regular(
         .send()
         .await
         .unwrap();
-    tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
+    let mut spread: i64 = 0;
     for _ in 0..constants::REGULAR_SNIPE_REQS {
         let client = client.clone();
         let url = url.clone();
         let access_token = access_token.clone();
         let handle = tokio::task::spawn(async move {
+            let snipe_time = snipe_time + Duration::milliseconds(spread);
+            tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             let res = client.put(url).bearer_auth(access_token).send().await;
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
             let status = res.unwrap().status().as_u16();
@@ -409,9 +412,7 @@ pub async fn snipe_regular(
             status
         });
         handle_vec.push(handle);
-        if spread_offset != 0 {
-            tokio::time::sleep(std::time::Duration::from_millis(spread_offset as u64)).await;
-        }
+        spread += spread_offset as i64;
     }
     for handle in handle_vec {
         status_vec.push(handle.await.unwrap());
