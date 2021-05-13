@@ -261,7 +261,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     let before = time::Instant::now();
     req.send().await.unwrap();
     let after = time::Instant::now();
-    let offset = (after - before).as_millis() as i32 - constants::SERVER_RESPONSE_DURATION;
+    let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
     offset
 }
@@ -283,7 +283,7 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     let before = time::Instant::now();
     req.send().await.unwrap();
     let after = time::Instant::now();
-    let offset = (after - before).as_millis() as i32 - constants::SERVER_RESPONSE_DURATION;
+    let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
     offset
 }
