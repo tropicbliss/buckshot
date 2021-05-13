@@ -193,6 +193,7 @@ impl Sniper {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
             access_token
         } else {
+            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
             access_token.to_string()
         };
         let is_success = requests::snipe_regular(
@@ -251,6 +252,8 @@ impl Sniper {
                 requestor.check_name_change_eligibility(&access_token)
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
+        } else {
+            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
         let is_success = requests::snipe_regular(
             snipe_time,
@@ -307,6 +310,8 @@ impl Sniper {
                 requestor.check_name_availability_time(&username_to_snipe, None),
                 requestor.check_name_change_eligibility(&access_token)
             );
+            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
+        } else {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
         let is_success = requests::snipe_gc(
