@@ -197,7 +197,7 @@ impl Sniper {
         };
         let is_success = requests::snipe_regular(
             snipe_time,
-            username_to_snipe,
+            username_to_snipe.clone(),
             access_token.to_string(),
             self.config.config.spread as i32,
         )
@@ -254,7 +254,7 @@ impl Sniper {
         }
         let is_success = requests::snipe_regular(
             snipe_time,
-            username_to_snipe,
+            username_to_snipe.clone(),
             access_token.to_string(),
             self.config.config.spread as i32,
         )
@@ -311,7 +311,7 @@ impl Sniper {
         }
         let is_success = requests::snipe_gc(
             snipe_time,
-            username_to_snipe,
+            username_to_snipe.clone(),
             access_token.to_string(),
             self.config.config.spread as i32,
         )
