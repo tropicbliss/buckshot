@@ -257,6 +257,11 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
         username_to_snipe
     );
     let req = client.put(url).bearer_auth("token");
+    client
+        .get(constants::MINECRAFTSERVICES_API_SERVER)
+        .send()
+        .await
+        .unwrap();
     let before = time::Instant::now();
     req.send().await.unwrap();
     let after = time::Instant::now();
@@ -277,6 +282,11 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
         constants::MINECRAFTSERVICES_API_SERVER
     );
     let req = client.post(url).json(&post_body).bearer_auth("token");
+    client
+        .get(constants::MINECRAFTSERVICES_API_SERVER)
+        .send()
+        .await
+        .unwrap();
     let before = time::Instant::now();
     req.send().await.unwrap();
     let after = time::Instant::now();
