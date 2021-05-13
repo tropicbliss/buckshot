@@ -12,7 +12,6 @@ use std::{thread, time};
 use tokio;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-use tokio::task::JoinHandle;
 use webbrowser;
 
 #[derive(Clone)]
@@ -302,8 +301,8 @@ pub async fn snipe_gc(
     access_token: String,
     spread_offset: i32,
 ) -> bool {
-    let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
-    let mut status_vec: Vec<u16> = Vec::new();
+    let mut handle_vec = Vec::new();
+    let mut status_vec = Vec::new();
     let mut spread = 0;
     for _ in 0..constants::GC_SNIPE_REQS {
         let access_token = access_token.clone();
@@ -362,8 +361,8 @@ pub async fn snipe_regular(
     access_token: String,
     spread_offset: i32,
 ) -> bool {
-    let mut handle_vec: Vec<tokio::task::JoinHandle<u16>> = Vec::new();
-    let mut status_vec: Vec<u16> = Vec::new();
+    let mut handle_vec = Vec::new();
+    let mut status_vec = Vec::new();
     let mut spread = 0;
     for _ in 0..constants::REGULAR_SNIPE_REQS {
         let access_token = access_token.clone();
