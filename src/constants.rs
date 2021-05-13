@@ -6,3 +6,5 @@ pub const MS_AUTH_SERVER: &str = "https://login.live.com/oauth20_authorize.srf?c
 pub const SERVER_RESPONSE_DURATION: i32 = 100;
 pub const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
 pub const TEUN_NAMEMC_API: &str = "https://mojang-api.teun.lol";
+pub const REGULAR_SNIPE_REQS: u8 = 2;
+pub const GC_SNIPE_REQS: u8 = 6;

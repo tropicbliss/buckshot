@@ -320,7 +320,7 @@ pub async fn snipe_gc(
         .await
         .unwrap();
     tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
-    for _ in 0..6 {
+    for _ in 0..constants::GC_SNIPE_REQS {
         let client = client.clone();
         let url = url.clone();
         let post_body = post_body.clone();
@@ -384,7 +384,7 @@ pub async fn snipe_regular(
         .await
         .unwrap();
     tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
-    for _ in 0..2 {
+    for _ in 0..constants::REGULAR_SNIPE_REQS {
         let client = client.clone();
         let url = url.clone();
         let access_token = access_token.clone();
