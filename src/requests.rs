@@ -7,6 +7,7 @@ use serde_json::{json, Value};
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
+use std::net::ToSocketAddrs;
 use std::{thread, time};
 use tokio;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -251,6 +252,15 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
     let mut res = Vec::new();
     let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
+    let addr = addr
+        .to_socket_addrs()
+        .unwrap()
+        .next()
+        .ok_or(format!(
+            "failed to resolve {}",
+            constants::MINECRAFTSERVICES_API_SERVER
+        ))
+        .unwrap();
     let stream = TcpStream::connect(&addr).await.unwrap();
     let connector = TlsConnector::builder().build().unwrap();
     let connector = tokio_native_tls::TlsConnector::from(connector);
@@ -274,6 +284,15 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
     let mut res = Vec::new();
     let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
+    let addr = addr
+        .to_socket_addrs()
+        .unwrap()
+        .next()
+        .ok_or(format!(
+            "failed to resolve {}",
+            constants::MINECRAFTSERVICES_API_SERVER
+        ))
+        .unwrap();
     let stream = TcpStream::connect(&addr).await.unwrap();
     let connector = TlsConnector::builder().build().unwrap();
     let connector = tokio_native_tls::TlsConnector::from(connector);
@@ -311,6 +330,15 @@ pub async fn snipe_gc(
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
             let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
+            let addr = addr
+                .to_socket_addrs()
+                .unwrap()
+                .next()
+                .ok_or(format!(
+                    "failed to resolve {}",
+                    constants::MINECRAFTSERVICES_API_SERVER
+                ))
+                .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
             let post_body = json!({ "profileName": username_to_snipe }).to_string();
@@ -369,6 +397,15 @@ pub async fn snipe_regular(
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
             let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
+            let addr = addr
+                .to_socket_addrs()
+                .unwrap()
+                .next()
+                .ok_or(format!(
+                    "failed to resolve {}",
+                    constants::MINECRAFTSERVICES_API_SERVER
+                ))
+                .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
             let data = format!("PUT /minecraft/profile/name/{} HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token);
