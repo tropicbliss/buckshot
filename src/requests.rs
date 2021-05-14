@@ -251,15 +251,11 @@ impl Requests {
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
     let mut res = Vec::new();
-    let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
-    let addr = addr
+    let addr = "api.minecraftservices.com:443"
         .to_socket_addrs()
         .unwrap()
         .next()
-        .ok_or(format!(
-            "failed to resolve {}",
-            constants::MINECRAFTSERVICES_API_SERVER
-        ))
+        .ok_or("failed to resolve api.minecraftservices.com")
         .unwrap();
     let stream = TcpStream::connect(&addr).await.unwrap();
     let connector = TlsConnector::builder().build().unwrap();
@@ -283,15 +279,11 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
     let mut res = Vec::new();
-    let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
-    let addr = addr
+    let addr = "api.minecraftservices.com:443"
         .to_socket_addrs()
         .unwrap()
         .next()
-        .ok_or(format!(
-            "failed to resolve {}",
-            constants::MINECRAFTSERVICES_API_SERVER
-        ))
+        .ok_or("failed to resolve api.minecraftservices.com")
         .unwrap();
     let stream = TcpStream::connect(&addr).await.unwrap();
     let connector = TlsConnector::builder().build().unwrap();
@@ -329,15 +321,11 @@ pub async fn snipe_gc(
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
-            let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
-            let addr = addr
+            let addr = "api.minecraftservices.com:443"
                 .to_socket_addrs()
                 .unwrap()
                 .next()
-                .ok_or(format!(
-                    "failed to resolve {}",
-                    constants::MINECRAFTSERVICES_API_SERVER
-                ))
+                .ok_or("failed to resolve api.minecraftservices.com")
                 .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
@@ -396,15 +384,11 @@ pub async fn snipe_regular(
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
-            let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
-            let addr = addr
+            let addr = "api.minecraftservices.com:443"
                 .to_socket_addrs()
                 .unwrap()
                 .next()
-                .ok_or(format!(
-                    "failed to resolve {}",
-                    constants::MINECRAFTSERVICES_API_SERVER
-                ))
+                .ok_or("failed to resolve api.minecraftservices.com")
                 .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
