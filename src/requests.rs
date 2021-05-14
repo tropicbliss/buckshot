@@ -332,7 +332,7 @@ pub async fn snipe_gc(
                 .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
-            let post_body = json!({ "profileName": username_to_snipe }).to_string();
+            let post_body = json!({ "profileName": *username_to_snipe }).to_string();
             let data = format!("POST /minecraft/profile HTTP/1.1\r\nConnection: close\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token);
             let data = data.as_bytes();
             tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
