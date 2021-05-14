@@ -263,7 +263,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     let data = format!("PUT /minecraft/profile/name/{} HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", username_to_snipe);
     let data = data.as_bytes();
     let mut stream = connector
-        .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
+        .connect("api.minecraftservices.com", stream)
         .await
         .unwrap();
     stream.write_all(data).await.unwrap();
@@ -292,7 +292,7 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     let data = format!("POST /minecraft/profile HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}", post_body);
     let data = data.as_bytes();
     let mut stream = connector
-        .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
+        .connect("api.minecraftservices.com", stream)
         .await
         .unwrap();
     stream.write_all(data).await.unwrap();
@@ -335,7 +335,7 @@ pub async fn snipe_gc(
             tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector
-                .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
+                .connect("api.minecraftservices.com", stream)
                 .await
                 .unwrap();
             stream.write_all(data).await.unwrap();
@@ -397,7 +397,7 @@ pub async fn snipe_regular(
             tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector
-                .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
+                .connect("api.minecraftservices.com", stream)
                 .await
                 .unwrap();
             stream.write_all(data).await.unwrap();
