@@ -319,11 +319,7 @@ pub async fn snipe_gc(
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
-            let addr = constants::MINECRAFTSERVICES_API_SERVER
-                .to_socket_addrs()
-                .unwrap()
-                .next()
-                .unwrap();
+            let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
             let post_body = json!({ "profileName": username_to_snipe }).to_string();
@@ -381,11 +377,7 @@ pub async fn snipe_regular(
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
-            let addr = constants::MINECRAFTSERVICES_API_SERVER
-                .to_socket_addrs()
-                .unwrap()
-                .next()
-                .unwrap();
+            let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
             let data = format!("PUT /minecraft/profile/name/{} HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token);
