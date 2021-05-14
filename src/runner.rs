@@ -11,14 +11,21 @@ pub enum SnipeTask {
 pub struct Sniper {
     task: SnipeTask,
     username_to_snipe: Option<String>,
+    offset: Option<i32>,
     config: config::Config,
 }
 
 impl Sniper {
-    pub fn new(task: SnipeTask, username_to_snipe: Option<String>, config: config::Config) -> Self {
+    pub fn new(
+        task: SnipeTask,
+        username_to_snipe: Option<String>,
+        offset: Option<i32>,
+        config: config::Config,
+    ) -> Self {
         Self {
             task,
             username_to_snipe,
+            offset,
             config,
         }
     }
@@ -49,7 +56,9 @@ impl Sniper {
                 );
                 (snipe_time, username_to_snipe)
             };
-        let offset = if self.config.config.auto_offset {
+        let offset = if let Some(offset) = self.offset {
+            offset
+        } else if self.config.config.auto_offset {
             requests::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
             cli::get_offset()
@@ -82,7 +91,9 @@ impl Sniper {
                 );
                 (snipe_time, username_to_snipe)
             };
-        let offset = if self.config.config.auto_offset {
+        let offset = if let Some(offset) = self.offset {
+            offset
+        } else if self.config.config.auto_offset {
             requests::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
             cli::get_offset()
@@ -135,7 +146,9 @@ impl Sniper {
                     )
                 }
             };
-        let offset = if self.config.config.auto_offset {
+        let offset = if let Some(offset) = self.offset {
+            offset
+        } else if self.config.config.auto_offset {
             requests::auto_offset_calculation_gc(&username_to_snipe).await
         } else {
             cli::get_offset()
