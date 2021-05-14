@@ -7,7 +7,6 @@ use serde_json::{json, Value};
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
-use std::net::ToSocketAddrs;
 use std::{thread, time};
 use tokio;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -251,11 +250,7 @@ impl Requests {
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
     let mut res = Vec::new();
-    let addr = constants::MINECRAFTSERVICES_API_SERVER
-        .to_socket_addrs()
-        .unwrap()
-        .next()
-        .unwrap();
+    let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
     let stream = TcpStream::connect(&addr).await.unwrap();
     let connector = TlsConnector::builder().build().unwrap();
     let connector = tokio_native_tls::TlsConnector::from(connector);
@@ -278,11 +273,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
     let mut res = Vec::new();
-    let addr = constants::MINECRAFTSERVICES_API_SERVER
-        .to_socket_addrs()
-        .unwrap()
-        .next()
-        .unwrap();
+    let addr = format!("{}:443", constants::MINECRAFTSERVICES_API_SERVER);
     let stream = TcpStream::connect(&addr).await.unwrap();
     let connector = TlsConnector::builder().build().unwrap();
     let connector = tokio_native_tls::TlsConnector::from(connector);
