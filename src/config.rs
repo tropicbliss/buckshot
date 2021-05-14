@@ -41,7 +41,7 @@ impl Config {
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,
-                    Err(_) => pretty_panic(format!(
+                    Err(_) => pretty_panic(&format!(
                         "Error parsing {}, please check the formatting of the file.",
                         CONFIG_PATH
                     )),
