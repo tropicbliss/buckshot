@@ -6,3 +6,4 @@ pub const MS_AUTH_SERVER: &str = "https://login.live.com/oauth20_authorize.srf?c
 pub const TEUN_NAMEMC_API: &str = "https://mojang-api.teun.lol";
 pub const REGULAR_SNIPE_REQS: u8 = 2;
 pub const GC_SNIPE_REQS: u8 = 6;
+pub const SERVER_RESPONSE_TIME: u8 = 100;
