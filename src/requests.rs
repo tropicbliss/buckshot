@@ -250,6 +250,7 @@ impl Requests {
 
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
+    let mut res = Vec::new();
     let addr = constants::MINECRAFTSERVICES_API_SERVER
         .to_socket_addrs()
         .unwrap()
@@ -258,13 +259,15 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     let stream = TcpStream::connect(&addr).await.unwrap();
     let connector = TlsConnector::builder().build().unwrap();
     let connector = tokio_native_tls::TlsConnector::from(connector);
-    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n", username_to_snipe).as_bytes();
+    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n", username_to_snipe);
+    let data = data.as_bytes();
     let mut stream = connector
         .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
         .await
         .unwrap();
     let before = time::Instant::now();
     stream.write_all(data).await.unwrap();
+    stream.read_to_end(&mut res).await.unwrap();
     let after = time::Instant::now();
     let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
@@ -273,6 +276,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
 
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
+    let mut res = Vec::new();
     let addr = constants::MINECRAFTSERVICES_API_SERVER
         .to_socket_addrs()
         .unwrap()
@@ -282,13 +286,15 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     let connector = TlsConnector::builder().build().unwrap();
     let connector = tokio_native_tls::TlsConnector::from(connector);
     let post_body = json!({ "profileName": username_to_snipe }).to_string();
-    let data = format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}\r\n", post_body).as_bytes();
+    let data = format!("POST /minecraft/profile HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}\r\n", post_body);
+    let data = data.as_bytes();
     let mut stream = connector
         .connect(constants::MINECRAFTSERVICES_API_SERVER, stream)
         .await
         .unwrap();
     let before = time::Instant::now();
     stream.write_all(data).await.unwrap();
+    stream.read_to_end(&mut res).await.unwrap();
     let after = time::Instant::now();
     let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
@@ -319,7 +325,8 @@ pub async fn snipe_gc(
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
             let post_body = json!({ "profileName": username_to_snipe }).to_string();
-            let data = format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}\r\n", post_body, access_token).as_bytes();
+            let data = format!("POST /minecraft/profile HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}\r\n", post_body, access_token);
+            let data = data.as_bytes();
             tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector
@@ -378,7 +385,8 @@ pub async fn snipe_regular(
                 .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
-            let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n", username_to_snipe, access_token).as_bytes();
+            let data = format!("PUT /minecraft/profile/name/{} HTTP/1.0\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n", username_to_snipe, access_token);
+            let data = data.as_bytes();
             tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector
