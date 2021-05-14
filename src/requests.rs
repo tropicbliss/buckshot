@@ -161,8 +161,8 @@ impl Requests {
             Some(droptime) => droptime,
             None => pretty_panic("Error checking droptime. Check if username is freely available."),
         }
-        .as_i64()
-        .unwrap();
+        .as_f64()
+        .unwrap() as i64;
         let droptime = Utc.timestamp(epoch, 0);
         if let Some(auth) = auth_time {
             if droptime.signed_duration_since(auth) > Duration::days(1) {
