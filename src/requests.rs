@@ -8,11 +8,11 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
 use std::net::ToSocketAddrs;
-use std::sync::Arc;
 use std::{thread, time};
 use tokio;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tokio::sync::mpsc;
 use webbrowser;
 
 #[derive(Clone)]
@@ -272,8 +272,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     stream.write_all(b"\r\n").await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
     let after = time::Instant::now();
-    let offset =
-        ((after - before).as_millis() / 2) as i32 - (constants::SERVER_RESPONSE_TIME / 2) as i32;
+    let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
     offset
 }
@@ -302,8 +301,7 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     stream.write_all(b"\r\n").await.unwrap();
     stream.read_to_end(&mut res).await.unwrap();
     let after = time::Instant::now();
-    let offset =
-        ((after - before).as_millis() / 2) as i32 - (constants::SERVER_RESPONSE_TIME / 2) as i32;
+    let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
     offset
 }
@@ -314,15 +312,14 @@ pub async fn snipe_gc(
     access_token: String,
     spread_offset: i32,
 ) -> bool {
-    let mut handle_vec = Vec::new();
     let mut status_vec = Vec::new();
     let mut spread = 0;
-    let username_to_snipe = Arc::new(username_to_snipe);
-    let access_token = Arc::new(access_token);
+    let (tx, mut rx) = mpsc::channel(constants::GC_SNIPE_REQS as usize);
     for _ in 0..constants::GC_SNIPE_REQS {
-        let access_token = Arc::clone(&access_token);
-        let username_to_snipe = Arc::clone(&username_to_snipe);
-        let handle = tokio::task::spawn(async move {
+        let access_token = access_token.clone();
+        let username_to_snipe = username_to_snipe.clone();
+        let tx_cloned = tx.clone();
+        tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
@@ -334,7 +331,7 @@ pub async fn snipe_gc(
                 .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
-            let post_body = json!({ "profileName": *username_to_snipe }).to_string();
+            let post_body = json!({ "profileName": username_to_snipe }).to_string();
             let data = format!("POST /minecraft/profile HTTP/1.1\r\nConnection: close\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token);
             let data = data.as_bytes();
             tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
@@ -362,13 +359,12 @@ pub async fn snipe_gc(
                     formatted_resp_time
                 )
             }
-            status
+            tx_cloned.send(status).await.unwrap();
         });
-        handle_vec.push(handle);
         spread += spread_offset as i64;
     }
-    for handle in handle_vec {
-        status_vec.push(handle.await.unwrap());
+    while let Some(status_code) = rx.recv().await {
+        status_vec.push(status_code);
     }
     status_vec.contains(&200)
 }
@@ -379,15 +375,14 @@ pub async fn snipe_regular(
     access_token: String,
     spread_offset: i32,
 ) -> bool {
-    let mut handle_vec = Vec::new();
     let mut status_vec = Vec::new();
     let mut spread = 0;
-    let username_to_snipe = Arc::new(username_to_snipe);
-    let access_token = Arc::new(access_token);
+    let (tx, mut rx) = mpsc::channel(constants::REGULAR_SNIPE_REQS as usize);
     for _ in 0..constants::REGULAR_SNIPE_REQS {
-        let access_token = Arc::clone(&access_token);
-        let username_to_snipe = Arc::clone(&username_to_snipe);
-        let handle = tokio::task::spawn(async move {
+        let access_token = access_token.clone();
+        let username_to_snipe = username_to_snipe.clone();
+        let tx_cloned = tx.clone();
+        tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
             let mut res = Vec::new();
@@ -426,13 +421,12 @@ pub async fn snipe_regular(
                     formatted_resp_time
                 )
             }
-            status
+            tx_cloned.send(status).await.unwrap();
         });
-        handle_vec.push(handle);
         spread += spread_offset as i64;
     }
-    for handle in handle_vec {
-        status_vec.push(handle.await.unwrap());
+    while let Some(status_code) = rx.recv().await {
+        status_vec.push(status_code);
     }
     status_vec.contains(&200)
 }
