@@ -8,6 +8,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
 use std::net::ToSocketAddrs;
+use std::sync::Arc;
 use std::{thread, time};
 use tokio;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -316,10 +317,12 @@ pub async fn snipe_gc(
 ) -> bool {
     let mut status_vec = Vec::new();
     let mut spread = 0;
+    let access_token = Arc::new(access_token);
+    let username_to_snipe = Arc::new(username_to_snipe);
     let (tx, mut rx) = mpsc::channel(constants::GC_SNIPE_REQS as usize);
     for _ in 0..constants::GC_SNIPE_REQS {
-        let access_token = access_token.clone();
-        let username_to_snipe = username_to_snipe.clone();
+        let access_token = Arc::clone(&access_token);
+        let username_to_snipe = Arc::clone(&username_to_snipe);
         let tx_cloned = tx.clone();
         tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
@@ -333,7 +336,7 @@ pub async fn snipe_gc(
                 .unwrap();
             let connector = TlsConnector::builder().build().unwrap();
             let connector = tokio_native_tls::TlsConnector::from(connector);
-            let post_body = json!({ "profileName": username_to_snipe }).to_string();
+            let post_body = json!({ "profileName": *username_to_snipe }).to_string();
             let data = format!("POST /minecraft/profile HTTP/1.1\r\nConnection: close\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token);
             let data = data.as_bytes();
             tokio::time::sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
@@ -379,10 +382,12 @@ pub async fn snipe_regular(
 ) -> bool {
     let mut status_vec = Vec::new();
     let mut spread = 0;
+    let access_token = Arc::new(access_token);
+    let username_to_snipe = Arc::new(username_to_snipe);
     let (tx, mut rx) = mpsc::channel(constants::REGULAR_SNIPE_REQS as usize);
     for _ in 0..constants::REGULAR_SNIPE_REQS {
-        let access_token = access_token.clone();
-        let username_to_snipe = username_to_snipe.clone();
+        let access_token = Arc::clone(&access_token);
+        let username_to_snipe = Arc::clone(&username_to_snipe);
         let tx_cloned = tx.clone();
         tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
