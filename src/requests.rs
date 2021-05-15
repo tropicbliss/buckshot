@@ -5,7 +5,6 @@ use native_tls::TlsConnector;
 use reqwest::Client;
 use serde_json::{json, Value};
 use std::fs::File;
-use std::io::BufReader;
 use std::io::Read;
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
@@ -199,10 +198,9 @@ impl Requests {
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
         let img_byte = match File::open(&config.config.skin_filename) {
-            Ok(f) => {
+            Ok(mut f) => {
                 let mut v: Vec<u8> = Vec::new();
-                let mut br = BufReader::new(f);
-                br.read_to_end(&mut v).unwrap();
+                f.read_to_end(&mut v).unwrap();
                 v
             }
             Err(_) => pretty_panic(&format!("File {} not found.", config.config.skin_filename)),

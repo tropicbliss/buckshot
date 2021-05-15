@@ -2,7 +2,6 @@ use crate::cli::pretty_panic;
 use crate::constants::CONFIG_PATH;
 use serde::Deserialize;
 use std::fs::File;
-use std::io::BufReader;
 use std::io::Read;
 
 #[derive(Deserialize)]
@@ -34,10 +33,9 @@ pub struct SubConfig {
 impl Config {
     pub fn new() -> Self {
         match File::open(CONFIG_PATH) {
-            Ok(f) => {
+            Ok(mut f) => {
                 let mut s = String::new();
-                let mut br = BufReader::new(f);
-                br.read_to_string(&mut s).unwrap();
+                f.read_to_string(&mut s).unwrap();
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,
