@@ -251,7 +251,7 @@ impl Requests {
 
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
-    let mut res = Vec::new();
+    let mut buf = [0; 12];
     let addr = "api.minecraftservices.com:443"
         .to_socket_addrs()
         .unwrap()
@@ -270,7 +270,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     stream.write_all(data).await.unwrap();
     let before = time::Instant::now();
     stream.write_all(b"\r\n").await.unwrap();
-    stream.read_to_end(&mut res).await.unwrap();
+    stream.read(&mut buf).await.unwrap();
     let after = time::Instant::now();
     let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
@@ -279,7 +279,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
 
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
-    let mut res = Vec::new();
+    let mut buf = [0; 12];
     let addr = "api.minecraftservices.com:443"
         .to_socket_addrs()
         .unwrap()
@@ -299,7 +299,7 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     stream.write_all(data).await.unwrap();
     let before = time::Instant::now();
     stream.write_all(b"\r\n").await.unwrap();
-    stream.read_to_end(&mut res).await.unwrap();
+    stream.read(&mut buf).await.unwrap();
     let after = time::Instant::now();
     let offset = (after - before).as_millis() as i32;
     println!("Your offset is: {} ms.", offset);
@@ -322,7 +322,7 @@ pub async fn snipe_gc(
         tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
-            let mut res = Vec::new();
+            let mut buf = [0; 12];
             let addr = "api.minecraftservices.com:443"
                 .to_socket_addrs()
                 .unwrap()
@@ -343,10 +343,10 @@ pub async fn snipe_gc(
             stream.write_all(data).await.unwrap();
             tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
-            stream.read_to_end(&mut res).await.unwrap();
+            stream.read(&mut buf).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
-            let response = String::from_utf8_lossy(&res);
-            let status = response[9..12].parse::<u16>().unwrap();
+            let res = String::from_utf8_lossy(&mut buf);
+            let status = res[9..].parse::<u16>().unwrap();
             if status == 200 {
                 bunt::println!(
                     "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
@@ -385,7 +385,7 @@ pub async fn snipe_regular(
         tokio::task::spawn(async move {
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
-            let mut res = Vec::new();
+            let mut buf = [0; 12];
             let addr = "api.minecraftservices.com:443"
                 .to_socket_addrs()
                 .unwrap()
@@ -405,10 +405,10 @@ pub async fn snipe_regular(
             stream.write_all(data).await.unwrap();
             tokio::time::sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
-            stream.read_to_end(&mut res).await.unwrap();
+            stream.read(&mut buf).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
-            let response = String::from_utf8_lossy(&res);
-            let status = response[9..12].parse::<u16>().unwrap();
+            let res = String::from_utf8_lossy(&mut buf);
+            let status = res[9..].parse::<u16>().unwrap();
             if status == 200 {
                 bunt::println!(
                     "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
