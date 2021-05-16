@@ -38,7 +38,7 @@ Run `buckshot --help` or `./buckshot --help`.
 
 1. Download the Rustup toolchain [here](https://rustup.rs/). Follow the instructions for your platform.
 2. Run `git clone https://github.com/chronicallyunfunny/buckshot.git` in an appropriate directory to clone the repo.
-3. In the folder named `buckshot`, run `cargo build --release`. The resulting executable file after compilation should be in the `target/release/` directory relative from the `buckshot` folder.
+3. In the folder named `buckshot`, run `cargo build --release`. The resulting executable file after compilation should be in the `target/release/` directory relative from the `buckshot` folder. If you encounter any errors throughout the compilation process, read through the errors as they generally tell you exactly what to do. Typically, when compiling for Linux, you'll need dev packages for OpenSSL and a package to trace the OpenSSL directory.
 
 ## Bug reporting
 
