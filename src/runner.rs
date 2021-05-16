@@ -172,7 +172,7 @@ impl Sniper {
         requestor: requests::Requests,
     ) {
         let formatted_droptime = droptime.format("%F %T");
-        let duration_in_sec = droptime.signed_duration_since(Utc::now());
+        let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
             println!(
                 "Sniping {} in ~{} seconds | sniping at {} (utc).",
@@ -191,13 +191,7 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         let access_token = if Utc::now() < setup_time {
-            time::sleep(
-                setup_time
-                    .signed_duration_since(Utc::now())
-                    .to_std()
-                    .unwrap(),
-            )
-            .await;
+            time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             let (access_token, auth_time) = self.setup_mojang(&requestor).await;
             join!(
                 requestor.check_name_availability_time(&username_to_snipe, auth_time),
@@ -234,7 +228,7 @@ impl Sniper {
         requestor: requests::Requests,
     ) {
         let formatted_droptime = droptime.format("%F %T");
-        let duration_in_sec = droptime.signed_duration_since(Utc::now());
+        let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
             println!(
                 "Sniping {} in ~{} seconds | sniping at {} (utc).",
@@ -253,13 +247,7 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         if Utc::now() < setup_time {
-            time::sleep(
-                setup_time
-                    .signed_duration_since(Utc::now())
-                    .to_std()
-                    .unwrap(),
-            )
-            .await;
+            time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             join!(
                 requestor.check_name_availability_time(&username_to_snipe, None),
                 requestor.check_name_change_eligibility(&access_token)
@@ -293,7 +281,7 @@ impl Sniper {
         requestor: requests::Requests,
     ) {
         let formatted_droptime = droptime.format("%F %T");
-        let duration_in_sec = droptime.signed_duration_since(Utc::now());
+        let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
             println!(
                 "Sniping {} in ~{} seconds | sniping at {} (utc).",
@@ -312,13 +300,7 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         if Utc::now() < setup_time {
-            time::sleep(
-                setup_time
-                    .signed_duration_since(Utc::now())
-                    .to_std()
-                    .unwrap(),
-            )
-            .await;
+            time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             join!(
                 requestor.check_name_availability_time(&username_to_snipe, None),
                 requestor.check_name_change_eligibility(&access_token)
