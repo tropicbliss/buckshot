@@ -85,7 +85,7 @@ impl Requests {
             .send()
             .await
             .unwrap();
-        if !res.status().is_success() {
+        if res.status().as_u16() != 200 {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
@@ -190,7 +190,7 @@ impl Requests {
             .send()
             .await
             .unwrap();
-        if !res.status().is_success() {
+        if res.status().as_u16() != 200 {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
@@ -226,7 +226,7 @@ impl Requests {
             .send()
             .await
             .unwrap();
-        if res.status().is_success() {
+        if res.status().as_u16() != 200 {
             bunt::println!("{$green}Successfully changed skin!{/$}")
         } else {
             bunt::eprintln!("{$red}Error{/$}: Failed to upload skin.")
@@ -247,7 +247,7 @@ impl Requests {
             .send()
             .await
             .unwrap();
-        if !res.status().is_success() {
+        if res.status().as_u16() != 200 {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
     }
