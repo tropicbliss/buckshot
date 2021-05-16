@@ -30,13 +30,18 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
 5. Read the errors. I've spent a large amount of time making the errors easy to read. If you encounter HTTP errors, something might be wrong with the internet or the servers on the other end.
 
+## Moar tips for sniping
+
+- Snipe with a VPS close to `api.minecraftservices.com` origin server (in N. Virginia) as it will minimise ping fluctuations.
+- Even though this sniper is asynchronous and it is possible to snipe a name with one thread, using 2 threads will be the most ideal for non-GC snipes (and 6 threads for GC snipes).
+
 ## Command line arguments
 
 Run `buckshot --help` or `./buckshot --help`.
 
 ## Compiling from source
 
-1. Download the Rustup toolchain [here](https://rustup.rs/). Follow the instructions for your platform.
+1. Download the `rustup` toolchain right [here](https://rustup.rs/). Follow the instructions for your platform.
 2. Run `git clone https://github.com/chronicallyunfunny/buckshot.git` in an appropriate directory to clone the repo.
 3. In the folder named `buckshot`, run `cargo build --release`. The resulting executable file after compilation should be in the `target/release/` directory relative from the `buckshot` folder. If you encounter any errors throughout the compilation process, read through the errors as they generally tell you exactly what to do. Typically, when compiling for Linux, you'll need dev packages for OpenSSL and a package to trace the OpenSSL directory.
 
