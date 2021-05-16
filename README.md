@@ -22,7 +22,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 - Teun for the drop-time caching API
 
-## Setup (I am still working on compiling the executables for different platforms, this will act as a placeholder for now)
+## Setup
 
 1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.2.0).
 2. Use Dimension 4 on Windows for time synchronisation.
