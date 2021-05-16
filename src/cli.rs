@@ -70,6 +70,14 @@ pub fn get_access_token() -> String {
     input.trim().to_string()
 }
 
+pub fn get_previous_owner() -> String {
+    let mut input = String::new();
+    print!("What's the name of the previous owner: ");
+    io::Write::flush(&mut io::stdout()).unwrap();
+    io::stdin().read_line(&mut input).unwrap();
+    input.trim().to_string()
+}
+
 pub fn exit_program() {
     let mut input = String::new();
     print!("Press ENTER to quit: ");

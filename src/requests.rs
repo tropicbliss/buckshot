@@ -143,19 +143,32 @@ impl Requests {
             username_to_snipe
         );
         let res = self.client.get(url).send().await.unwrap();
-        match res.status().as_u16() {
-            200 => (),
-            400 => pretty_panic("This name has not been cached yet."),
-            code => pretty_panic(&format!("HTTP status code: {}", code)),
-        }
-        let body = res.text().await.unwrap();
-        let v: Value = serde_json::from_str(&body).unwrap();
-        let epoch = match v.get("UNIX") {
-            Some(droptime) => droptime,
-            None => pretty_panic("Error checking droptime. Check if username is freely available."),
-        }
-        .as_f64()
-        .unwrap() as i64;
+        let epoch = match res.status().as_u16() {
+            200 => {
+                let body = res.text().await.unwrap();
+                let v: Value = serde_json::from_str(&body).unwrap();
+                match v.get("UNIX") {
+                    Some(droptime) => droptime,
+                    None => pretty_panic(
+                        "Error checking droptime. Check if username is freely available.",
+                    ),
+                }
+                .as_f64()
+                .unwrap() as i64
+            }
+            _ => {
+                let url = format!("{}/upload-droptime", constants::TEUN_NAMEMC_API);
+                let previous_owner = cli::get_previous_owner();
+                let post_body = json!({
+                    "name": username_to_snipe,
+                    "prevOwner": previous_owner,
+                });
+                let res = self.client.post(url).json(&post_body).send().await.unwrap();
+                let body = res.text().await.unwrap();
+                let v: Value = serde_json::from_str(&body).unwrap();
+                v["UNIX"].as_f64().unwrap() as i64
+            }
+        };
         let droptime = Utc.timestamp(epoch, 0);
         if let Some(auth) = auth_time {
             if droptime.signed_duration_since(auth) > Duration::days(1) {
