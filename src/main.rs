@@ -3,6 +3,7 @@ mod config;
 mod constants;
 mod requests;
 mod runner;
+mod sockets;
 use argh::FromArgs;
 
 #[derive(FromArgs)]

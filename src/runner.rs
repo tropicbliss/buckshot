@@ -1,4 +1,4 @@
-use crate::{cli, config, requests};
+use crate::{cli, config, requests, sockets};
 use chrono::{DateTime, Duration, Utc};
 use tokio::{join, time};
 
@@ -59,7 +59,7 @@ impl Sniper {
         let offset = if let Some(offset) = self.offset {
             offset
         } else if self.config.config.auto_offset {
-            requests::auto_offset_calculation_regular(&username_to_snipe).await
+            sockets::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
             cli::get_offset()
         };
@@ -94,7 +94,7 @@ impl Sniper {
         let offset = if let Some(offset) = self.offset {
             offset
         } else if self.config.config.auto_offset {
-            requests::auto_offset_calculation_regular(&username_to_snipe).await
+            sockets::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
             cli::get_offset()
         };
@@ -149,7 +149,7 @@ impl Sniper {
         let offset = if let Some(offset) = self.offset {
             offset
         } else if self.config.config.auto_offset {
-            requests::auto_offset_calculation_gc(&username_to_snipe).await
+            sockets::auto_offset_calculation_gc(&username_to_snipe).await
         } else {
             cli::get_offset()
         };
@@ -209,7 +209,7 @@ impl Sniper {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
             access_token.to_string()
         };
-        let is_success = requests::snipe_regular(
+        let is_success = sockets::snipe_regular(
             snipe_time,
             username_to_snipe.clone(),
             access_token.to_string(),
@@ -268,7 +268,7 @@ impl Sniper {
         } else {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
-        let is_success = requests::snipe_regular(
+        let is_success = sockets::snipe_regular(
             snipe_time,
             username_to_snipe.clone(),
             access_token.to_string(),
@@ -327,7 +327,7 @@ impl Sniper {
         } else {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
-        let is_success = requests::snipe_gc(
+        let is_success = sockets::snipe_gc(
             snipe_time,
             username_to_snipe.clone(),
             access_token.to_string(),
