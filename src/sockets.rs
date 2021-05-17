@@ -156,7 +156,7 @@ pub async fn snipe_gc(
     let mut spread = 0;
     let access_token = Arc::new(access_token);
     let username_to_snipe = Arc::new(username_to_snipe);
-    for _ in 0..constants::REGULAR_SNIPE_REQS {
+    for _ in 0..constants::GC_SNIPE_REQS {
         let access_token = Arc::clone(&access_token);
         let username_to_snipe = Arc::clone(&username_to_snipe);
         let handle = tokio::task::spawn(async move {
