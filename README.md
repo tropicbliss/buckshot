@@ -30,6 +30,10 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
 5. Read the errors. I've spent a large amount of time making the errors easy to read. If you encounter HTTP errors, something might be wrong with the internet or the servers on the other end.
 
+## Idiosyncracies
+
+I've coded this sniper in such a way that it prioritises sending requests rather than spend time reading the request (cause that's not strictly important information). Timestamps collected might feel a bit slow as compared to other snipers. If you use `spread`, it will wait for all requests to finish before reading them, so the timestamps seem identical. The timestamps heavily depend on the request that finishes last, so if you get any word times, take now of this particular fact, and adjust your `offset` accordingly.
+
 ## Moar tips for sniping
 
 - Snipe with a VPS close to `api.minecraftservices.com` origin server (in N. Virginia) as it will minimise ping fluctuations.
