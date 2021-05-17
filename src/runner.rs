@@ -39,6 +39,7 @@ impl Sniper {
     }
 
     async fn run_mojang(&self) {
+        println!("Initialising...");
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_mojang(&requestor).await;
         let (snipe_time, username_to_snipe) =
@@ -74,6 +75,7 @@ impl Sniper {
     }
 
     async fn run_msa(&self) {
+        println!("Initialising...");
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
         let (snipe_time, username_to_snipe) =
@@ -109,6 +111,7 @@ impl Sniper {
     }
 
     async fn run_gc(&self) {
+        println!("Initialising...");
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
         let giftcode = cli::get_giftcode();

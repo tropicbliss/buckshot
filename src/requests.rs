@@ -56,7 +56,12 @@ impl Requests {
             println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
             println!("{}", constants::MS_AUTH_SERVER);
         }
-        let access_token = cli::get_access_token();
+        let snipe_info = cli::get_snipe_info_json();
+        let v: Value = serde_json::from_str(&snipe_info).unwrap();
+        let access_token = match v.get("AccessToken") {
+            Some(access_token) => access_token,
+            None => pretty_panic("Error parsing snipe info. Please make sure snipe info is copied correctly from the authentication page.")
+        }.as_str().unwrap().to_string();
         (access_token, Some(auth_time))
     }
 
