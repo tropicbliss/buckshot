@@ -32,6 +32,8 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Idiosyncracies
 
+tldr: If you have no idea what `spread` is, don't read too much into this.
+
 I've coded this sniper in such a way that it prioritises sending requests rather than spending time reading the request (cause that's not strictly important information). Timestamps collected might feel a bit sluggish as compared to other snipers (because it logs the time the response is successfully read), which can be exxagerated by slower computers. If you use `spread`, it will wait for all requests to finish before reading them, so the timestamps may seem identical. The timestamps heavily depend on the request that finishes last, so if you get any weird times, take now of this particular fact, and adjust your `offset` accordingly.
 
 ## Moar tips for sniping
