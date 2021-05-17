@@ -3,9 +3,9 @@ use crate::{cli, config, constants};
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use reqwest::Client;
 use serde_json::{json, Value};
-use std::fs::File;
-use std::io::Read;
 use std::{thread, time};
+use tokio::fs::File;
+use tokio::io::{AsyncReadExt, BufReader};
 use webbrowser;
 
 pub struct Requests {
@@ -207,10 +207,11 @@ impl Requests {
     }
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
-        let img_byte = match File::open(&config.config.skin_filename) {
-            Ok(mut f) => {
+        let img_byte = match File::open(&config.config.skin_filename).await {
+            Ok(f) => {
+                let mut f = BufReader::new(f);
                 let mut v: Vec<u8> = Vec::new();
-                f.read_to_end(&mut v).unwrap();
+                f.read_to_end(&mut v).await.unwrap();
                 v
             }
             Err(_) => pretty_panic(&format!("File {} not found.", config.config.skin_filename)),

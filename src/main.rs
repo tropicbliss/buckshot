@@ -22,7 +22,7 @@ struct Options {
 async fn main() {
     let (username_to_snipe, offset) = get_username_arg();
     cli::print_splash_screen();
-    let config = config::Config::new();
+    let config = config::Config::new().await;
     let snipe_task = impl_chooser(&config);
     let sniper = runner::Sniper::new(snipe_task, username_to_snipe, offset, config);
     sniper.run().await;

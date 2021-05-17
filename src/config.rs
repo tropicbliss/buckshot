@@ -1,8 +1,8 @@
 use crate::cli::pretty_panic;
 use crate::constants::CONFIG_PATH;
 use serde::Deserialize;
-use std::fs::File;
-use std::io::Read;
+use tokio::fs::File;
+use tokio::io::{AsyncReadExt, BufReader};
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -31,11 +31,12 @@ pub struct SubConfig {
 }
 
 impl Config {
-    pub fn new() -> Self {
-        match File::open(CONFIG_PATH) {
-            Ok(mut f) => {
+    pub async fn new() -> Self {
+        match File::open(CONFIG_PATH).await {
+            Ok(f) => {
+                let mut f = BufReader::new(f);
                 let mut s = String::new();
-                f.read_to_string(&mut s).unwrap();
+                f.read_to_string(&mut s).await.unwrap();
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,
