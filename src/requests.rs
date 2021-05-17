@@ -5,7 +5,7 @@ use reqwest::Client;
 use serde_json::{json, Value};
 use std::{thread, time};
 use tokio::fs::File;
-use tokio::io::{AsyncReadExt, BufReader};
+use tokio::io::AsyncReadExt;
 use webbrowser;
 
 pub struct Requests {
@@ -208,8 +208,7 @@ impl Requests {
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
         let img_byte = match File::open(&config.config.skin_filename).await {
-            Ok(f) => {
-                let mut f = BufReader::new(f);
+            Ok(mut f) => {
                 let mut v: Vec<u8> = Vec::new();
                 f.read_to_end(&mut v).await.unwrap();
                 v
