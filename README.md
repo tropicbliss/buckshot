@@ -24,17 +24,11 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.4.0).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.5.0).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. Open up `config.toml` on your favourite editor and configure it if need be.
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
 5. Read the errors. I've spent a large amount of time making the errors easy to read. If you encounter HTTP errors, something might be wrong with the internet or the servers on the other end.
-
-## Idiosyncracies
-
-tldr: If you have no idea what `spread` is, don't read too much into this.
-
-I've coded this sniper in such a way that it prioritises sending requests rather than spending time reading the request (cause that's not strictly important information). Timestamps collected might feel a bit sluggish as compared to other snipers (because it logs the time the response is successfully read), which can be exxagerated by slower computers. If you use `spread`, it will wait for all requests to finish before reading them, so the timestamps may seem identical. The timestamps heavily depend on the request that finishes last, so if you get any weird times, take now of this particular fact, and adjust your `offset` accordingly.
 
 ## Moar tips for sniping
 
