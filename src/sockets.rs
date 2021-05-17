@@ -30,7 +30,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     stream.write_all(data).await.unwrap();
     let before = Instant::now();
     stream.write_all(b"\r\n").await.unwrap();
-    stream.read(&mut buf).await.unwrap();
+    stream.read_exact(&mut buf).await.unwrap();
     let after = Instant::now();
     let offset = ((after - before).as_millis() as i32 - constants::SERVER_RESPONSE_TIME as i32) / 2;
     println!("Your offset is: {} ms.", offset);
@@ -59,7 +59,7 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     stream.write_all(data).await.unwrap();
     let before = Instant::now();
     stream.write_all(b"\r\n").await.unwrap();
-    stream.read(&mut buf).await.unwrap();
+    stream.read_exact(&mut buf).await.unwrap();
     let after = Instant::now();
     let offset = ((after - before).as_millis() as i32 - constants::SERVER_RESPONSE_TIME as i32) / 2;
     println!("Your offset is: {} ms.", offset);
@@ -116,7 +116,7 @@ pub async fn snipe_regular(
     for mut stream in stream_vec {
         let handle = tokio::task::spawn(async move {
             let mut buf = [0; 12];
-            stream.read(&mut buf).await.unwrap();
+            stream.read_exact(&mut buf).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
             let res = String::from_utf8_lossy(&mut buf);
             let status = res[9..].parse::<u16>().unwrap();
@@ -194,7 +194,7 @@ pub async fn snipe_gc(
     for mut stream in stream_vec {
         let handle = tokio::task::spawn(async move {
             let mut buf = [0; 12];
-            stream.read(&mut buf).await.unwrap();
+            stream.read_exact(&mut buf).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
             let res = String::from_utf8_lossy(&mut buf);
             let status = res[9..].parse::<u16>().unwrap();
