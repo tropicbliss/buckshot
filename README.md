@@ -5,7 +5,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 ## New update (v0.6.0)
 
-This will be the last major update for a long time (I swear I'll stop making new versions so frequently). It changes copying a json string containing access and refresh token to a simple access token. Due to security concerns I will not be exposing the client secret for Microsoft authentication. I will also not redirect the user to Minecraft's official MS authentication page to collect the access and refresh token because people tend to use snipers in a headless environment (Virtual Private Servers) and I do not want to maintain both authentication methods.
+This will be the last major update for a long time (I swear I'll stop making new versions so frequently). It changes copying a json string containing access and refresh token to a simple access token. Due to security concerns I will not be exposing the client secret for Microsoft authentication. I will also not redirect the user to Minecraft's official MS authentication page to collect the access and refresh token because people tend to use snipers in a headless environment (Virtual Private Servers) and I do not want to maintain both authentication methods (in which both my authentication service and the application itself does the same thing).
 
 ## For sniper developers
 
