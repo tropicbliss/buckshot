@@ -171,7 +171,7 @@ impl Requests {
         };
         let droptime = Utc.timestamp(epoch, 0);
         if let Some(auth) = auth_time {
-            if droptime.signed_duration_since(auth) > Duration::days(1) {
+            if droptime - auth > Duration::days(1) {
                 pretty_panic("You cannot snipe a name available more than one day later if you are using a Microsoft account.");
             }
         }
