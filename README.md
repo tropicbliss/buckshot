@@ -21,6 +21,8 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 - Spread (delay between asynchronous sniping requests)
 - Auto offset (never rely on this feature for reliable sniping, it should only be used to gauge the delay for first time snipers, adjust upon that delay for subsequent snipes)
 - Change skin on snipe
+- Low latency by opening the TCP connections before sending requests
+- High requests/second by bypassing HTTP overhead (thanks arceus-sniper for yoinking your feature list phrasing)
 
 ## Credits ❤️
 
