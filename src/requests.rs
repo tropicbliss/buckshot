@@ -206,7 +206,7 @@ impl Requests {
         let img_file = match File::open(&config.config.skin_filename).await {
             Ok(f) => f,
             Err(_) => {
-                bunt::println!(
+                bunt::eprintln!(
                     "{$red}Error{/$}: File {} not found.",
                     config.config.skin_filename
                 );
