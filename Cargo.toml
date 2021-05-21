@@ -19,4 +19,3 @@ native-tls = "0.2.7"
 tokio-native-tls = "0.3.0"
 argh = "0.1.4"
 tokio-util = { version = "0.6", features = ["codec"] }
-futures = "0.3"
