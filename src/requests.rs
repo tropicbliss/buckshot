@@ -203,7 +203,16 @@ impl Requests {
     }
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
-        let img_file = File::open(&config.config.skin_filename).await.unwrap();
+        let img_file = match File::open(&config.config.skin_filename).await {
+            Ok(f) => f,
+            Err(_) => {
+                bunt::println!(
+                    "{$red}Error{/$}: File {} not found.",
+                    config.config.skin_filename
+                );
+                return;
+            }
+        };
         let stream = FramedRead::new(img_file, BytesCodec::new());
         let stream = Body::wrap_stream(stream);
         let image_part = reqwest::multipart::Part::stream(stream);
