@@ -226,7 +226,7 @@ impl Requests {
             .send()
             .await
             .unwrap();
-        if res.status().as_u16() != 200 {
+        if res.status().as_u16() == 200 {
             bunt::println!("{$green}Successfully changed skin!{/$}")
         } else {
             bunt::eprintln!("{$red}Error{/$}: Failed to upload skin.")
