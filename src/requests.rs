@@ -1,11 +1,12 @@
 use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
 use chrono::{DateTime, Duration, TimeZone, Utc};
-use reqwest::Client;
+use reqwest::{Body, Client};
 use serde_json::{json, Value};
 use std::{thread, time};
 use tokio::fs::File;
-use tokio::io::AsyncReadExt;
+use tokio_util::codec::{BytesCodec, FramedRead};
+
 use webbrowser;
 
 pub struct Requests {
@@ -202,15 +203,10 @@ impl Requests {
     }
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
-        let img_byte = match File::open(&config.config.skin_filename).await {
-            Ok(mut f) => {
-                let mut v: Vec<u8> = Vec::new();
-                f.read_to_end(&mut v).await.unwrap();
-                v
-            }
-            Err(_) => pretty_panic(&format!("File {} not found.", config.config.skin_filename)),
-        };
-        let image_part = reqwest::multipart::Part::bytes(img_byte);
+        let img_file = File::open(&config.config.skin_filename).await.unwrap();
+        let stream = FramedRead::new(img_file, BytesCodec::new());
+        let stream = Body::wrap_stream(stream);
+        let image_part = reqwest::multipart::Part::stream(stream);
         let form = reqwest::multipart::Form::new()
             .text("variant", config.config.skin_model.clone())
             .part("file", image_part);
