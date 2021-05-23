@@ -11,7 +11,7 @@ This update fixes skin upload and makes it faster.
 
 Microsoft authentication server link this sniper uses:
 
-https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://buckshotrs.com/auth:1338&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
+https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
 
 ## Features
 
