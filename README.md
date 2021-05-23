@@ -3,15 +3,15 @@ A Minecraft username sniper made in Rust. Performant and capable.
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-## New update (v0.6.0)
+## New update (v0.7.0)
 
-This will be the last major update for a long time (I swear I'll stop making new versions so frequently). It changes copying a json string containing access and refresh token to a simple access token. Due to security concerns I will not be exposing the client secret for Microsoft authentication. I will also not redirect the user to Minecraft's official MS authentication page to collect the access and refresh token because people tend to use snipers in a headless environment (Virtual Private Servers) and I do not want to maintain both authentication methods (in which both my authentication service and the application itself does the same thing).
+This update fixes skin upload and makes it faster.
 
 ## For sniper developers
 
 Microsoft authentication server link this sniper uses:
 
-https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://buckshotrs.com/auth:1338&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
+https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
 
 ## Features
 
@@ -30,7 +30,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.6.0).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.7.0).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. Open up `config.toml` on your favourite editor and configure it if need be.
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
