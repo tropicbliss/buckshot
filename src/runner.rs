@@ -349,6 +349,8 @@ impl Sniper {
     }
 
     async fn setup_msa(&self, requestor: &requests::Requests) -> (String, Option<DateTime<Utc>>) {
-        requestor.authenticate_microsoft()
+        requestor
+            .authenticate_microsoft(&self.config.account.username, &self.config.account.password)
+            .await
     }
 }

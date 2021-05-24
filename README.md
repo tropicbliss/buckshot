@@ -1,17 +1,18 @@
 # buckshot
+
 A Minecraft username sniper made in Rust. Performant and capable.
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-## New update (v0.7.1)
+## New update (v0.8.0)
 
-Fixes authentication server link.
+Fixed authentication server link. Started using Buckshot SimpleAuth api for Microsoft authentication.
 
 ## For sniper developers
 
 Microsoft authentication server link this sniper uses:
 
-https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
+https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://api.buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
 
 ## Features
 

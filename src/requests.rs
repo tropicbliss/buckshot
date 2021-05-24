@@ -48,17 +48,69 @@ impl Requests {
         }
     }
 
-    pub fn authenticate_microsoft(&self) -> (String, Option<DateTime<Utc>>) {
-        let url = constants::MS_AUTH_SERVER;
-        println!("Opening browser...");
-        thread::sleep(time::Duration::from_secs(3));
-        let auth_time = Utc::now();
-        if webbrowser::open(url).is_err() {
-            println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
-            println!("{}", constants::MS_AUTH_SERVER);
+    pub async fn authenticate_microsoft(
+        &self,
+        username: &str,
+        password: &str,
+    ) -> (String, Option<DateTime<Utc>>) {
+        if !(username.is_empty() || password.is_empty()) {
+            let post_json = json!({
+                "username": username,
+                "password": password
+            });
+            let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
+            let auth_time = Utc::now();
+            let res = self.client.post(url).json(&post_json).send().await.unwrap();
+            match res.status().as_u16() {
+                200 => {
+                    let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
+                    let access_token = v["access_token"].as_str().unwrap().to_string();
+                    (access_token, Some(auth_time))
+                }
+                400 => {
+                    let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
+                    let error_msg = v["error"].as_str().unwrap().to_string();
+                    bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
+                    eprintln!("Reason: {}", error_msg);
+                    eprintln!("Reverting to OAuth2 authentication...");
+                    let url = constants::MS_AUTH_SERVER;
+                    println!("Opening browser...");
+                    thread::sleep(time::Duration::from_secs(3));
+                    let auth_time = Utc::now();
+                    if webbrowser::open(url).is_err() {
+                        println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
+                        println!("{}", constants::MS_AUTH_SERVER);
+                    }
+                    let access_token = cli::get_access_token();
+                    (access_token, Some(auth_time))
+                }
+                _ => {
+                    bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
+                    eprintln!("Reason: Unknown server error.");
+                    let url = constants::MS_AUTH_SERVER;
+                    println!("Opening browser...");
+                    thread::sleep(time::Duration::from_secs(3));
+                    let auth_time = Utc::now();
+                    if webbrowser::open(url).is_err() {
+                        println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
+                        println!("{}", constants::MS_AUTH_SERVER);
+                    }
+                    let access_token = cli::get_access_token();
+                    (access_token, Some(auth_time))
+                }
+            }
+        } else {
+            let url = constants::MS_AUTH_SERVER;
+            println!("Opening browser...");
+            thread::sleep(time::Duration::from_secs(3));
+            let auth_time = Utc::now();
+            if webbrowser::open(url).is_err() {
+                println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
+                println!("{}", constants::MS_AUTH_SERVER);
+            }
+            let access_token = cli::get_access_token();
+            (access_token, Some(auth_time))
         }
-        let access_token = cli::get_access_token();
-        (access_token, Some(auth_time))
     }
 
     pub async fn check_sq(&self, access_token: &str) -> bool {
