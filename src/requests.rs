@@ -51,6 +51,18 @@ impl Requests {
         username: &str,
         password: &str,
     ) -> (String, Option<DateTime<Utc>>) {
+        pub fn authentication() -> (String, Option<DateTime<Utc>>) {
+            let url = constants::MS_AUTH_SERVER;
+            println!("Opening browser...");
+            thread::sleep(time::Duration::from_secs(3));
+            let auth_time = Utc::now();
+            if webbrowser::open(url).is_err() {
+                println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
+                println!("{}", constants::MS_AUTH_SERVER);
+            }
+            let access_token = cli::get_access_token();
+            (access_token, Some(auth_time))
+        }
         if !(username.is_empty() || password.is_empty()) {
             let post_json = json!({
                 "username": username,
@@ -74,29 +86,12 @@ impl Requests {
                 } else {
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: Unknown server error.");
+                    eprintln!("Reverting to OAuth2 authentication...");
                 }
-                let url = constants::MS_AUTH_SERVER;
-                println!("Opening browser...");
-                thread::sleep(time::Duration::from_secs(3));
-                let auth_time = Utc::now();
-                if webbrowser::open(url).is_err() {
-                    println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
-                    println!("{}", constants::MS_AUTH_SERVER);
-                }
-                let access_token = cli::get_access_token();
-                (access_token, Some(auth_time))
+                authentication()
             }
         } else {
-            let url = constants::MS_AUTH_SERVER;
-            println!("Opening browser...");
-            thread::sleep(time::Duration::from_secs(3));
-            let auth_time = Utc::now();
-            if webbrowser::open(url).is_err() {
-                println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
-                println!("{}", constants::MS_AUTH_SERVER);
-            }
-            let access_token = cli::get_access_token();
-            (access_token, Some(auth_time))
+            authentication()
         }
     }
 
