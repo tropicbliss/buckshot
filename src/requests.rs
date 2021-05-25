@@ -51,7 +51,7 @@ impl Requests {
         username: &str,
         password: &str,
     ) -> (String, Option<DateTime<Utc>>) {
-        fn authentication() -> (String, Option<DateTime<Utc>>) {
+        fn oauth2_authentication() -> (String, Option<DateTime<Utc>>) {
             let url = constants::MS_AUTH_SERVER;
             println!("Opening browser...");
             thread::sleep(time::Duration::from_secs(3));
@@ -88,10 +88,10 @@ impl Requests {
                     eprintln!("Reason: Unknown server error.");
                     eprintln!("Reverting to OAuth2 authentication...");
                 }
-                authentication()
+                oauth2_authentication()
             }
         } else {
-            authentication()
+            oauth2_authentication()
         }
     }
 
