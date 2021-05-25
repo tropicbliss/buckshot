@@ -131,23 +131,21 @@ impl Sniper {
                         username_to_snipe,
                     )
                 }
+            } else if let Some(gc) = giftcode {
+                let username_to_snipe = cli::get_username_choice();
+                let (snipe_time, _) = join!(
+                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                    requestor.redeem_giftcode(&gc, &access_token)
+                );
+                (snipe_time, username_to_snipe)
             } else {
-                if let Some(gc) = giftcode {
-                    let username_to_snipe = cli::get_username_choice();
-                    let (snipe_time, _) = join!(
-                        requestor.check_name_availability_time(&username_to_snipe, auth_time),
-                        requestor.redeem_giftcode(&gc, &access_token)
-                    );
-                    (snipe_time, username_to_snipe)
-                } else {
-                    let username_to_snipe = cli::get_username_choice();
-                    (
-                        requestor
-                            .check_name_availability_time(&username_to_snipe, auth_time)
-                            .await,
-                        username_to_snipe,
-                    )
-                }
+                let username_to_snipe = cli::get_username_choice();
+                (
+                    requestor
+                        .check_name_availability_time(&username_to_snipe, auth_time)
+                        .await,
+                    username_to_snipe,
+                )
             };
         let offset = if let Some(offset) = self.offset {
             offset

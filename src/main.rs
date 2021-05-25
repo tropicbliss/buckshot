@@ -39,12 +39,10 @@ fn impl_chooser(config: &config::Config) -> runner::SnipeTask {
         } else {
             Task::Mojang
         }
+    } else if config.config.gc_snipe {
+        Task::Giftcode
     } else {
-        if config.config.gc_snipe {
-            Task::Giftcode
-        } else {
-            Task::Microsoft
-        }
+        Task::Microsoft
     }
 }
 

@@ -21,7 +21,9 @@ pub fn get_username_choice() -> String {
         io::Write::flush(&mut io::stdout()).unwrap();
         io::stdin().read_line(&mut input).unwrap();
         let input = input.trim();
-        if input.len() < 3 || input.len() > 16 || !input.chars().all(|x| is_valid_username_char(x))
+        if input.len() < 3
+            || input.len() > 16
+            || !input.chars().all(|x| char::is_alphanumeric(x) || x == '_')
         {
             println!("Invalid username entered, please try again.");
             continue;
@@ -89,16 +91,4 @@ pub fn pretty_panic(err: &str) -> ! {
     bunt::eprintln!("{$red}Error{/$}: {}", err);
     exit_program();
     process::exit(1);
-}
-
-fn is_valid_username_char(c: char) -> bool {
-    if char::is_alphanumeric(c) {
-        true
-    } else {
-        if c == '_' {
-            true
-        } else {
-            false
-        }
-    }
 }

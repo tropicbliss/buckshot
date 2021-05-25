@@ -7,8 +7,6 @@ use std::{thread, time};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
-use webbrowser;
-
 pub struct Requests {
     client: Client,
 }

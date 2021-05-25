@@ -105,7 +105,7 @@ pub async fn snipe_regular(
             stream.write_all(b"\r\n").await.unwrap();
             stream.read_exact(&mut buf).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
-            let res = String::from_utf8_lossy(&mut buf);
+            let res = String::from_utf8_lossy(&buf);
             let status = res[9..].parse::<u16>().unwrap();
             if status == 200 {
                 bunt::println!(
@@ -171,7 +171,7 @@ pub async fn snipe_gc(
             stream.write_all(b"\r\n").await.unwrap();
             stream.read_exact(&mut buf).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
-            let res = String::from_utf8_lossy(&mut buf);
+            let res = String::from_utf8_lossy(&buf);
             let status = res[9..].parse::<u16>().unwrap();
             if status == 200 {
                 bunt::println!(
