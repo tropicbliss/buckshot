@@ -51,7 +51,7 @@ impl Requests {
         username: &str,
         password: &str,
     ) -> (String, Option<DateTime<Utc>>) {
-        pub fn authentication() -> (String, Option<DateTime<Utc>>) {
+        fn authentication() -> (String, Option<DateTime<Utc>>) {
             let url = constants::MS_AUTH_SERVER;
             println!("Opening browser...");
             thread::sleep(time::Duration::from_secs(3));
