@@ -1,6 +1,6 @@
 # buckshot
 
-A Minecraft username sniper made in Rust. Performant and capable.
+A Minecraft username sniper (shotgun) made in Rust. Performant and capable.
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
@@ -50,7 +50,7 @@ Run `buckshot --help` or `./buckshot --help`.
 
 1. Download the `rustup` toolchain right [here](https://rustup.rs/). Follow the instructions for your platform.
 2. Run `git clone https://github.com/chronicallyunfunny/buckshot.git` in an appropriate directory to clone the repo.
-3. In the folder named `buckshot`, run `cargo build --release`. The resulting executable file after compilation should be in the `target/release/` directory relative from the `buckshot` folder. If you encounter any errors throughout the compilation process, read through the errors as they generally tell you exactly what to do. Typically, when compiling for Linux, you'll need dev packages for OpenSSL and a package to trace the OpenSSL directory. If you get a "linker `cc`" error, install `build-essential`.
+3. In the folder named `buckshot`, run `cargo build --release`. The resulting executable file after compilation should be in the `target/release/` directory relative from the `buckshot` folder. If you encounter any errors throughout the compilation process, read through the errors as they generally tell you exactly what to do. Typically, when compiling for Linux, you'll need `libssl-dev`, `build-essential`, and `pkg-config`.
 
 ## Bug reporting
 
