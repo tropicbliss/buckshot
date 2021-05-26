@@ -136,6 +136,11 @@ impl Requests {
     }
 
     pub async fn send_sq(&self, access_token: &str, id: [u8; 3], answer: [&String; 3]) {
+        if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
+            pretty_panic(
+                "Your account has security questions and you did not provide any answers.",
+            );
+        }
         let post_body = json!([
             {
                 "id": id[0],
