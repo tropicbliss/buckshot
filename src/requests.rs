@@ -114,12 +114,11 @@ impl Requests {
             None
         } else {
             let v: Value = serde_json::from_str(&body).unwrap();
-            let first = v[0]["answer"]["id"].as_u64().unwrap() as u8;
-            let second = v[1]["answer"]["id"].as_u64().unwrap() as u8;
-            let third = v[2]["answer"]["id"].as_u64().unwrap() as u8;
-            let fourth = v[3]["answer"]["id"].as_u64().unwrap() as u8;
-            println!("{:?}", [first, second, third, fourth]);
-            Some([first, second, third])
+            let first = v[0]["answer"]["id"].as_u64().unwrap();
+            let second = v[1]["answer"]["id"].as_u64().unwrap();
+            let third = v[2]["answer"]["id"].as_u64().unwrap();
+            println!("{:?}", [first, second, third]);
+            Some([first as u8, second as u8, third as u8])
         }
     }
 
