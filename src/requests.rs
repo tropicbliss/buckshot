@@ -116,6 +116,7 @@ impl Requests {
             let first = v[0]["answer"]["id"].as_u64().unwrap() as u8;
             let second = v[1]["answer"]["id"].as_u64().unwrap() as u8;
             let third = v[2]["answer"]["id"].as_u64().unwrap() as u8;
+            println!("{:?}", [first, second, third]);
             Some([first, second, third])
         }
     }
