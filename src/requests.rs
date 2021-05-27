@@ -24,17 +24,18 @@ impl Requests {
         password: &str,
     ) -> (String, Option<DateTime<Utc>>) {
         let post_json = json!({
-            "agent": {
-                "name": "Minecraft",
-                "version": 1
-            },
             "username": username,
-            "password": password,
-            "clientToken": "Mojang-API-Client",
-            "requestUser": "true"
+            "password": password
         });
         let url = format!("{}/authenticate", constants::YGGDRASIL_ORIGIN_SERVER);
-        let res = self.client.post(url).json(&post_json).send().await.unwrap();
+        let res = self
+            .client
+            .post(url)
+            .json(&post_json)
+            .header("User-Agent", constants::USER_AGENT)
+            .send()
+            .await
+            .unwrap();
         match res.status().as_u16() {
             200 => {
                 let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
@@ -92,22 +93,6 @@ impl Requests {
             }
         } else {
             oauth2_authentication()
-        }
-    }
-
-    pub async fn check_sq(&self, access_token: &str) -> bool {
-        let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
-        let res = self
-            .client
-            .get(url)
-            .bearer_auth(access_token)
-            .send()
-            .await
-            .unwrap();
-        match res.status().as_u16() {
-            204 => false,
-            403 => true,
-            code => pretty_panic(&format!("HTTP status code: {}", code)),
         }
     }
 

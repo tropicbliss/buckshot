@@ -333,15 +333,13 @@ impl Sniper {
         let (access_token, auth_time) = requestor
             .authenticate_mojang(&self.config.account.username, &self.config.account.password)
             .await;
-        if requestor.check_sq(&access_token).await {
-            if let Some(sq_id) = requestor.get_sq_id(&access_token).await {
-                let answer = [
-                    &self.config.account.sq1,
-                    &self.config.account.sq2,
-                    &self.config.account.sq3,
-                ];
-                requestor.send_sq(&access_token, sq_id, answer).await;
-            }
+        if let Some(sq_id) = requestor.get_sq_id(&access_token).await {
+            let answer = [
+                &self.config.account.sq1,
+                &self.config.account.sq2,
+                &self.config.account.sq3,
+            ];
+            requestor.send_sq(&access_token, sq_id, answer).await;
         }
         (access_token, auth_time)
     }
