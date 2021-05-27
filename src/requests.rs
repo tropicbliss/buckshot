@@ -140,6 +140,7 @@ impl Requests {
                 "answer": answer[2]
             }
         ]);
+        println!("{}", post_body.to_string());
         let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
         let res = self
             .client
@@ -149,11 +150,12 @@ impl Requests {
             .send()
             .await
             .unwrap();
-        match res.status().as_u16() {
-            204 => (),
-            403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
-            code => pretty_panic(&format!("HTTP status code: {}", code)),
-        }
+        println!("{}", res.text().await.unwrap());
+        // match res.status().as_u16() {
+        //     204 => (),
+        //     403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
+        //     code => pretty_panic(&format!("HTTP status code: {}", code)),
+        // }
     }
 
     pub async fn check_name_availability_time(
