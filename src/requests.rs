@@ -96,7 +96,7 @@ impl Requests {
         }
     }
 
-    pub async fn get_sq_id(&self, access_token: &str) -> Option<[u8; 3]> {
+    pub async fn get_sq_id(&self, access_token: &str) -> Option<[i64; 3]> {
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
         let res = self
             .client
@@ -109,20 +109,18 @@ impl Requests {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
-        println!("{}", body);
         if body == "[]" {
             None
         } else {
             let v: Value = serde_json::from_str(&body).unwrap();
-            let first = v[0]["answer"]["id"].as_u64().unwrap();
-            let second = v[1]["answer"]["id"].as_u64().unwrap();
-            let third = v[2]["answer"]["id"].as_u64().unwrap();
-            println!("{:?}", [first, second, third]);
-            Some([first as u8, second as u8, third as u8])
+            let first = v[0]["answer"]["id"].as_i64().unwrap();
+            let second = v[1]["answer"]["id"].as_i64().unwrap();
+            let third = v[2]["answer"]["id"].as_i64().unwrap();
+            Some([first, second, third])
         }
     }
 
-    pub async fn send_sq(&self, access_token: &str, id: [u8; 3], answer: [&String; 3]) {
+    pub async fn send_sq(&self, access_token: &str, id: [i64; 3], answer: [&String; 3]) {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             pretty_panic(
                 "Your account has security questions and you did not provide any answers.",
@@ -142,7 +140,6 @@ impl Requests {
                 "answer": answer[2]
             }
         ]);
-        println!("{}", post_body.to_string());
         let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
         let res = self
             .client
@@ -152,12 +149,11 @@ impl Requests {
             .send()
             .await
             .unwrap();
-        println!("{}", res.text().await.unwrap());
-        // match res.status().as_u16() {
-        //     204 => (),
-        //     403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
-        //     code => pretty_panic(&format!("HTTP status code: {}", code)),
-        // }
+        match res.status().as_u16() {
+            204 => (),
+            403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
+            code => pretty_panic(&format!("HTTP status code: {}", code)),
+        }
     }
 
     pub async fn check_name_availability_time(
