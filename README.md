@@ -4,7 +4,7 @@ A Minecraft username sniper (shotgun) made in Rust. Performant and capable.
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-## New update (v0.8.2)
+## New update (v0.8.1)
 
 Fixed issue with security questions.
 
@@ -31,7 +31,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.8.0).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.8.1).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. Open up `config.toml` on your favourite editor and configure it if need be.
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
