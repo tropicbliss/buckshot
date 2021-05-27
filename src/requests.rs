@@ -140,7 +140,6 @@ impl Requests {
                 "answer": answer[2]
             }
         ]);
-        println!("{}", post_body.to_string());
         let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
         let res = self
             .client
