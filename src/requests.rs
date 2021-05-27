@@ -109,8 +109,6 @@ impl Requests {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
-        // Remove this after testing
-        println!("{}", body);
         if body == "[]" {
             None
         } else {
@@ -141,14 +139,13 @@ impl Requests {
                 "id": id[2],
                 "answer": answer[2]
             }
-        ])
-        .to_string();
+        ]);
         let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
         let res = self
             .client
             .post(url)
             .bearer_auth(access_token)
-            .body(post_body)
+            .json(&post_body)
             .send()
             .await
             .unwrap();
