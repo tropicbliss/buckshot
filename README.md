@@ -10,9 +10,19 @@ Fixed issue with security questions.
 
 ## For sniper developers
 
-Microsoft authentication server link this sniper uses:
+### Microsoft OAuth2 authentication
 
 https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://auth.buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
+
+### Simple username and password authentication
+
+`POST auth.buckshotrs.com/simpleauth`
+```
+{
+  username: <username>,
+  password: <password>
+}
+```
 
 ## Features
 
