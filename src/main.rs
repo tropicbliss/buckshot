@@ -16,13 +16,17 @@ struct Options {
     /// an optional argument for specifying the offset
     #[argh(option, short = 'o')]
     offset: Option<i32>,
+
+    /// an optional argument for specifying the name of the config file (must be a TOML file)
+    #[argh(option, short = 'c')]
+    config_name: Option<String>,
 }
 
 #[tokio::main]
 async fn main() {
-    let (username_to_snipe, offset) = get_username_arg();
+    let (username_to_snipe, offset, config_name) = get_envargs();
     cli::print_splash_screen();
-    let config = config::Config::new().await;
+    let config = config::Config::new(config_name).await;
     let snipe_task = impl_chooser(&config);
     let sniper = runner::Sniper::new(snipe_task, username_to_snipe, offset, config);
     sniper.run().await;
@@ -46,7 +50,11 @@ fn impl_chooser(config: &config::Config) -> runner::SnipeTask {
     }
 }
 
-fn get_username_arg() -> (Option<String>, Option<i32>) {
+fn get_envargs() -> (Option<String>, Option<i32>, Option<String>) {
     let options: Options = argh::from_env();
-    (options.username_to_snipe, options.offset)
+    (
+        options.username_to_snipe,
+        options.offset,
+        options.config_name,
+    )
 }

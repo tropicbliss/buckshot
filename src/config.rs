@@ -31,8 +31,13 @@ pub struct SubConfig {
 }
 
 impl Config {
-    pub async fn new() -> Self {
-        match File::open(CONFIG_PATH).await {
+    pub async fn new(config_name: Option<String>) -> Self {
+        let config_path = if let Some(x) = config_name {
+            x
+        } else {
+            CONFIG_PATH.to_string()
+        };
+        match File::open(&config_path).await {
             Ok(mut f) => {
                 let mut s = String::new();
                 f.read_to_string(&mut s).await.unwrap();
@@ -41,7 +46,7 @@ impl Config {
                     Ok(c) => c,
                     Err(_) => pretty_panic(&format!(
                         "Error parsing {}, please check the formatting of the file.",
-                        CONFIG_PATH
+                        config_path
                     )),
                 };
                 if !(config.config.skin_model.to_lowercase() == "slim"
@@ -51,7 +56,7 @@ impl Config {
                 }
                 config
             }
-            Err(_) => pretty_panic(&format!("File {} not found.", CONFIG_PATH)),
+            Err(_) => pretty_panic(&format!("File {} not found.", config_path)),
         }
     }
 }

@@ -14,7 +14,10 @@ pub struct Requests {
 impl Requests {
     pub fn new() -> Self {
         Self {
-            client: Client::new(),
+            client: Client::builder()
+                .timeout(std::time::Duration::from_secs(5))
+                .build()
+                .unwrap(),
         }
     }
 
@@ -34,8 +37,11 @@ impl Requests {
             .json(&post_json)
             .header("User-Agent", constants::USER_AGENT)
             .send()
-            .await
-            .unwrap();
+            .await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            _ => res.unwrap(),
+        };
         match res.status().as_u16() {
             200 => {
                 let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
@@ -58,7 +64,7 @@ impl Requests {
             thread::sleep(time::Duration::from_secs(3));
             let auth_time = Utc::now();
             if webbrowser::open(url).is_err() {
-                println!("Looks like you are running this program in a headless environment. Copy the following URL into your browser:");
+                println!("Seems like you are running this program in a headless environment. Copy the following URL into your browser:");
                 println!("{}", constants::MS_AUTH_SERVER);
             }
             let access_token = cli::get_access_token();
@@ -71,7 +77,11 @@ impl Requests {
             });
             let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
             let auth_time = Utc::now();
-            let res = self.client.post(url).json(&post_json).send().await.unwrap();
+            let res = self.client.post(url).json(&post_json).send().await;
+            let res = match res {
+                Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+                _ => res.unwrap(),
+            };
             let status = res.status().as_u16();
             if status == 200 {
                 let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
@@ -98,13 +108,11 @@ impl Requests {
 
     pub async fn get_sq_id(&self, access_token: &str) -> Option<[i64; 3]> {
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
-        let res = self
-            .client
-            .get(url)
-            .bearer_auth(access_token)
-            .send()
-            .await
-            .unwrap();
+        let res = self.client.get(url).bearer_auth(access_token).send().await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            _ => res.unwrap(),
+        };
         if res.status().as_u16() != 200 {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
@@ -147,8 +155,11 @@ impl Requests {
             .bearer_auth(access_token)
             .json(&post_body)
             .send()
-            .await
-            .unwrap();
+            .await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            _ => res.unwrap(),
+        };
         match res.status().as_u16() {
             204 => (),
             403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
@@ -166,7 +177,11 @@ impl Requests {
             constants::TEUN_NAMEMC_API,
             username_to_snipe
         );
-        let res = self.client.get(url).send().await.unwrap();
+        let res = self.client.get(url).send().await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            _ => res.unwrap(),
+        };
         let epoch = match res.status().as_u16() {
             200 => {
                 let body = res.text().await.unwrap();
@@ -187,7 +202,11 @@ impl Requests {
                     "name": username_to_snipe,
                     "prevOwner": previous_owner,
                 });
-                let res = self.client.post(url).json(&post_body).send().await.unwrap();
+                let res = self.client.post(url).json(&post_body).send().await;
+                let res = match res {
+                    Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+                    _ => res.unwrap(),
+                };
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
                 v["UNIX"].as_f64().unwrap() as i64
@@ -207,13 +226,11 @@ impl Requests {
             "{}/minecraft/profile/namechange",
             constants::MINECRAFTSERVICES_API_SERVER
         );
-        let res = self
-            .client
-            .get(url)
-            .bearer_auth(access_token)
-            .send()
-            .await
-            .unwrap();
+        let res = self.client.get(url).bearer_auth(access_token).send().await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            _ => res.unwrap(),
+        };
         if res.status().as_u16() != 200 {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
@@ -252,8 +269,11 @@ impl Requests {
             .bearer_auth(access_token)
             .multipart(form)
             .send()
-            .await
-            .unwrap();
+            .await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            _ => res.unwrap(),
+        };
         if res.status().as_u16() == 200 {
             bunt::println!("{$green}Successfully changed skin!{/$}")
         } else {
@@ -273,8 +293,11 @@ impl Requests {
             .bearer_auth(access_token)
             .json("")
             .send()
-            .await
-            .unwrap();
+            .await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            _ => res.unwrap(),
+        };
         if res.status().as_u16() != 200 {
             pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
         }
