@@ -6,9 +6,9 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 Note: If the sniper ever gets stuck and doesn't do anything, the servers are probably down and I'm too lazy to add a timeout 💤.
 
-## New update (v0.8.1)
+## New update (v1.0.0)
 
-Fixed issue with security questions.
+Final release unless there is bugs.
 
 ## For sniper developers
 
@@ -43,7 +43,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v0.8.1).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.0.0).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. Open up `config.toml` on your favourite editor and configure it if need be.
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
