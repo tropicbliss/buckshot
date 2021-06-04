@@ -6,7 +6,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 ## New update (v1.0.0)
 
-Final release unless there is bugs. The error handling tho ;)
+Final release unless there is bugs. The error handling tho (I can't be bothered to propagate errors).
 
 ## For sniper developers
 
