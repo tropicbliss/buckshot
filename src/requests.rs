@@ -39,7 +39,7 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -79,7 +79,7 @@ impl Requests {
             let auth_time = Utc::now();
             let res = self.client.post(url).json(&post_json).send().await;
             let res = match res {
-                Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+                Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
                 _ => res.unwrap(),
             };
             let status = res.status().as_u16();
@@ -110,7 +110,7 @@ impl Requests {
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
         let res = self.client.get(url).bearer_auth(access_token).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
@@ -157,7 +157,7 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -179,7 +179,7 @@ impl Requests {
         );
         let res = self.client.get(url).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
         let epoch = match res.status().as_u16() {
@@ -204,7 +204,7 @@ impl Requests {
                 });
                 let res = self.client.post(url).json(&post_body).send().await;
                 let res = match res {
-                    Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+                    Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
                     _ => res.unwrap(),
                 };
                 let body = res.text().await.unwrap();
@@ -228,7 +228,7 @@ impl Requests {
         );
         let res = self.client.get(url).bearer_auth(access_token).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
@@ -271,7 +271,7 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
         if res.status().as_u16() == 200 {
@@ -295,7 +295,7 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout"),
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
