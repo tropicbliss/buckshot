@@ -72,8 +72,8 @@ pub async fn snipe_regular(
     access_token: String,
     spread_offset: i32,
 ) -> bool {
-    let mut status_vec = Vec::new();
-    let mut handle_vec = Vec::new();
+    let mut status_vec = Vec::with_capacity(constants::REGULAR_SNIPE_REQS as usize);
+    let mut handle_vec = Vec::with_capacity(constants::REGULAR_SNIPE_REQS as usize);
     let mut spread = 0;
     let access_token = Arc::new(access_token);
     let username_to_snipe = Arc::new(username_to_snipe);
@@ -137,8 +137,8 @@ pub async fn snipe_gc(
     access_token: String,
     spread_offset: i32,
 ) -> bool {
-    let mut status_vec = Vec::new();
-    let mut handle_vec = Vec::new();
+    let mut status_vec = Vec::with_capacity(constants::GC_SNIPE_REQS as usize);
+    let mut handle_vec = Vec::with_capacity(constants::GC_SNIPE_REQS as usize);
     let mut spread = 0;
     let access_token = Arc::new(access_token);
     let username_to_snipe = Arc::new(username_to_snipe);
