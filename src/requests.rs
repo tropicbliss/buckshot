@@ -16,6 +16,7 @@ impl Requests {
         Self {
             client: Client::builder()
                 .timeout(std::time::Duration::from_secs(5))
+                .use_rustls_tls()
                 .build()
                 .unwrap(),
         }

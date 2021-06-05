@@ -1,6 +1,5 @@
 use crate::constants;
 use chrono::{DateTime, Duration, Utc};
-use native_tls::TlsConnector;
 use serde_json::json;
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
@@ -8,6 +7,7 @@ use std::time::Instant;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::sleep;
+use tokio_rustls::{rustls::ClientConfig, webpki::DNSNameRef, TlsConnector};
 
 pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     println!("Measuring offset...");
@@ -18,15 +18,16 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
         .next()
         .ok_or("failed to resolve api.minecraftservices.com")
         .unwrap();
-    let stream = TcpStream::connect(&addr).await.unwrap();
-    let connector = TlsConnector::builder().build().unwrap();
-    let connector = tokio_native_tls::TlsConnector::from(connector);
-    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nConnection: close\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", username_to_snipe);
+    let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", username_to_snipe);
     let data = data.as_bytes();
-    let mut stream = connector
-        .connect("api.minecraftservices.com", stream)
-        .await
-        .unwrap();
+    let mut config = ClientConfig::new();
+    config
+        .root_store
+        .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+    let connector = TlsConnector::from(Arc::new(config));
+    let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
+    let stream = TcpStream::connect(&addr).await.unwrap();
+    let mut stream = connector.connect(domain, stream).await.unwrap();
     stream.write_all(data).await.unwrap();
     let before = Instant::now();
     stream.write_all(b"\r\n").await.unwrap();
@@ -46,16 +47,17 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
         .next()
         .ok_or("failed to resolve api.minecraftservices.com")
         .unwrap();
-    let stream = TcpStream::connect(&addr).await.unwrap();
-    let connector = TlsConnector::builder().build().unwrap();
-    let connector = tokio_native_tls::TlsConnector::from(connector);
     let post_body = json!({ "profileName": username_to_snipe }).to_string();
-    let data = format!("POST /minecraft/profile HTTP/1.1\r\nConnection: close\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}", post_body);
+    let data = format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}", post_body);
     let data = data.as_bytes();
-    let mut stream = connector
-        .connect("api.minecraftservices.com", stream)
-        .await
-        .unwrap();
+    let mut config = ClientConfig::new();
+    config
+        .root_store
+        .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+    let connector = TlsConnector::from(Arc::new(config));
+    let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
+    let stream = TcpStream::connect(&addr).await.unwrap();
+    let mut stream = connector.connect(domain, stream).await.unwrap();
     stream.write_all(data).await.unwrap();
     let before = Instant::now();
     stream.write_all(b"\r\n").await.unwrap();
@@ -90,16 +92,17 @@ pub async fn snipe_regular(
                 .next()
                 .ok_or("failed to resolve api.minecraftservices.com")
                 .unwrap();
-            let connector = TlsConnector::builder().build().unwrap();
-            let connector = tokio_native_tls::TlsConnector::from(connector);
-            let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nConnection: close\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token);
+            let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token);
             let data = data.as_bytes();
+            let mut config = ClientConfig::new();
+            config
+                .root_store
+                .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+            let connector = TlsConnector::from(Arc::new(config));
+            let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
             sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
-            let mut stream = connector
-                .connect("api.minecraftservices.com", stream)
-                .await
-                .unwrap();
+            let mut stream = connector.connect(domain, stream).await.unwrap();
             stream.write_all(data).await.unwrap();
             sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
@@ -155,17 +158,18 @@ pub async fn snipe_gc(
                 .next()
                 .ok_or("failed to resolve api.minecraftservices.com")
                 .unwrap();
-            let connector = TlsConnector::builder().build().unwrap();
-            let connector = tokio_native_tls::TlsConnector::from(connector);
             let post_body = json!({ "profileName": *username_to_snipe }).to_string();
-            let data = format!("POST /minecraft/profile HTTP/1.1\r\nConnection: close\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token);
+            let data = format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token);
             let data = data.as_bytes();
+            let mut config = ClientConfig::new();
+            config
+                .root_store
+                .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+            let connector = TlsConnector::from(Arc::new(config));
+            let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
             sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
-            let mut stream = connector
-                .connect("api.minecraftservices.com", stream)
-                .await
-                .unwrap();
+            let mut stream = connector.connect(domain, stream).await.unwrap();
             stream.write_all(data).await.unwrap();
             sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
