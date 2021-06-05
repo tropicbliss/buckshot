@@ -10,6 +10,8 @@ I lied about final release. This version uses Rustls instead of your system's na
 
 ## For sniper developers
 
+`ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).
+
 ### Microsoft OAuth2 authentication
 
 https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://auth.buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
@@ -42,7 +44,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.0.0).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.0).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. Open up `config.toml` on your favourite editor and configure it if need be.
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
