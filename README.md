@@ -10,6 +10,8 @@ I lied about final release. This version uses Rustls instead of your system's na
 
 ## For sniper developers
 
+`ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).
+
 ### Microsoft OAuth2 authentication
 
 https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://auth.buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
