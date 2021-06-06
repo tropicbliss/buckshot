@@ -4,6 +4,10 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
+## New version (v1.1.1)
+
+Fix bug with GC sniping.
+
 ## For sniper developers
 
 `ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).
@@ -31,6 +35,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 - Spread (delay between asynchronous sniping requests)
 - Auto offset (never rely on this feature for reliable sniping, it should only be used to gauge the delay for first time snipers, adjust upon that offset for subsequent snipes)
 - Change skin on snipe
+- Multi-bearer GC mode (comes with lesser functionality than other modes)
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks arceus-sniper for yoinking your feature list phrasing)
 
