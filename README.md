@@ -4,10 +4,6 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-## New update (v1.1.0)
-
-I lied about final release. This version uses Rustls instead of your system's native TLS. Should remove the dependency for OpenSSL on Linux machines (though which Linux machines doesn't have OpenSSL) and Rustls is [probably faster](https://www.zdnet.com/article/a-rust-based-tls-library-outperformed-openssl-in-almost-every-category/) than your system's native TLS.
-
 ## For sniper developers
 
 `ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).

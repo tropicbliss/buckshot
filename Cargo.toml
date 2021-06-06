@@ -1,6 +1,6 @@
 [package]
 name = "buckshot"
-version = "1.1.0"
+version = "1.1.1"
 authors = ["tropicbliss <test@example.com>"]
 edition = "2018"
 

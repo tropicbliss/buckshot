@@ -6,6 +6,7 @@ pub enum SnipeTask {
     Mojang,
     Microsoft,
     Giftcode,
+    MultiBearerGC,
 }
 
 pub struct Sniper {
@@ -35,6 +36,7 @@ impl Sniper {
             SnipeTask::Mojang => self.run_mojang().await,
             SnipeTask::Microsoft => self.run_msa().await,
             SnipeTask::Giftcode => self.run_gc().await,
+            SnipeTask::MultiBearerGC => self.run_multibearer_gc().await,
         }
     }
 
@@ -162,6 +164,94 @@ impl Sniper {
             requestor,
         )
         .await;
+    }
+
+    async fn run_multibearer_gc(&self) {
+        println!("Initialising...");
+        let auth_time = Some(Utc::now());
+        let requestor = requests::Requests::new();
+        let access_token_list = self.config.config.multi_bearers.clone().unwrap();
+        let (snipe_time, username_to_snipe) =
+            if let Some(username_to_snipe) = self.username_to_snipe.clone() {
+                (
+                    requestor
+                        .check_name_availability_time(&username_to_snipe, auth_time)
+                        .await,
+                    username_to_snipe,
+                )
+            } else {
+                let username_to_snipe = cli::get_username_choice();
+                (
+                    requestor
+                        .check_name_availability_time(&username_to_snipe, auth_time)
+                        .await,
+                    username_to_snipe,
+                )
+            };
+        let offset = if let Some(offset) = self.offset {
+            offset
+        } else if self.config.config.auto_offset {
+            sockets::auto_offset_calculation_gc(&username_to_snipe).await
+        } else {
+            cli::get_offset()
+        };
+        self.snipe_multibearer_gc(
+            snipe_time,
+            username_to_snipe,
+            offset,
+            access_token_list,
+            requestor,
+        )
+        .await;
+    }
+
+    async fn snipe_multibearer_gc(
+        &self,
+        droptime: DateTime<Utc>,
+        username_to_snipe: String,
+        offset: i32,
+        access_token_list: Vec<String>,
+        requestor: requests::Requests,
+    ) {
+        let formatted_droptime = droptime.format("%F %T");
+        let duration_in_sec = droptime - Utc::now();
+        if duration_in_sec < Duration::minutes(1) {
+            println!(
+                "Sniping {} in ~{} seconds | sniping at {} (utc).",
+                username_to_snipe,
+                duration_in_sec.num_seconds(),
+                formatted_droptime
+            )
+        } else {
+            println!(
+                "Sniping {} in ~{} minutes | sniping at {} (utc).",
+                username_to_snipe,
+                duration_in_sec.num_minutes(),
+                formatted_droptime
+            )
+        }
+        let snipe_time = droptime - Duration::milliseconds(offset as i64);
+        let setup_time = snipe_time - Duration::minutes(12);
+        if Utc::now() < setup_time {
+            time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
+            requestor
+                .check_name_availability_time(&username_to_snipe, None)
+                .await;
+            bunt::println!("{$green}Multi-bearer sign-in success.{/$}");
+        } else {
+            bunt::println!("{$green}Multi-bearer sign-in success.{/$}");
+        }
+        let is_success = sockets::snipe_gc(
+            snipe_time,
+            username_to_snipe.clone(),
+            access_token_list,
+            self.config.config.spread as i32,
+        )
+        .await;
+        if is_success {
+            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+        }
+        cli::exit_program();
     }
 
     async fn snipe_mojang(
@@ -302,10 +392,9 @@ impl Sniper {
         let setup_time = snipe_time - Duration::minutes(12);
         if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
-            join!(
-                requestor.check_name_availability_time(&username_to_snipe, None),
-                requestor.check_name_change_eligibility(&access_token)
-            );
+            requestor
+                .check_name_availability_time(&username_to_snipe, None)
+                .await;
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         } else {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
@@ -313,7 +402,7 @@ impl Sniper {
         let is_success = sockets::snipe_gc(
             snipe_time,
             username_to_snipe.clone(),
-            access_token.to_string(),
+            vec![access_token.to_string()],
             self.config.config.spread as i32,
         )
         .await;
