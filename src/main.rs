@@ -39,20 +39,12 @@ fn impl_chooser(config: &config::Config) -> runner::SnipeTask {
             println!(
                 r#""microsoft_auth" is set to false yet "gc_snipe" is set to true. Defaulting to gift code sniping instead."#
             );
-            if config.config.multi_bearers.is_some() {
-                Task::MultiBearerGC
-            } else {
-                Task::Giftcode
-            }
+            Task::Giftcode
         } else {
             Task::Mojang
         }
     } else if config.config.gc_snipe {
-        if config.config.multi_bearers.is_some() {
-            Task::MultiBearerGC
-        } else {
-            Task::Giftcode
-        }
+        Task::Giftcode
     } else {
         Task::Microsoft
     }

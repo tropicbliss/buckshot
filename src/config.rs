@@ -28,7 +28,6 @@ pub struct SubConfig {
     pub change_skin: bool,
     pub skin_model: String,
     pub skin_filename: String,
-    pub multi_bearers: Option<Vec<String>>,
 }
 
 impl Config {
