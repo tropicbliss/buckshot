@@ -6,7 +6,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 ## New version (v1.1.2)
 
-Fix bug with GC sniping.
+Fix bug with GC sniping. Rolled back changes that resulted in antivirus programs flagging the executable as a false positive.
 
 ## For sniper developers
 
