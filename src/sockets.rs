@@ -146,10 +146,10 @@ pub async fn snipe_gc(
     let access_token = Arc::new(access_token);
     let username_to_snipe = Arc::new(username_to_snipe);
     for _ in 0..constants::GC_SNIPE_REQS {
-        let mut buf = [0; 12];
         let access_token = Arc::clone(&access_token);
         let username_to_snipe = Arc::clone(&username_to_snipe);
         let handle = tokio::task::spawn(async move {
+            let mut buf = [0; 12];
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
             let addr = "api.minecraftservices.com:443"
