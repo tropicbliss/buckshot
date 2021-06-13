@@ -10,7 +10,7 @@ Improved memory usage.
 
 ## For sniper developers
 
-If you look through my code, error propagation is not a thing 🥲.
+If you look through my code, error propagation is not a thing 🥲. `panic!`s everywhere!
 
 `ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).
 
