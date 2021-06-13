@@ -77,33 +77,30 @@ pub async fn snipe_regular(
     let mut status_vec = Vec::with_capacity(constants::REGULAR_SNIPE_REQS as usize);
     let mut handle_vec = Vec::with_capacity(constants::REGULAR_SNIPE_REQS as usize);
     let mut spread = 0;
-    let access_token = Arc::new(access_token);
-    let username_to_snipe = Arc::new(username_to_snipe);
+    let addr = "api.minecraftservices.com:443"
+        .to_socket_addrs()
+        .unwrap()
+        .next()
+        .ok_or("failed to resolve api.minecraftservices.com")
+        .unwrap();
+    let data = Arc::new(format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token).into_bytes());
+    let mut config = ClientConfig::new();
+    config
+        .root_store
+        .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+    let connector = Arc::new(TlsConnector::from(Arc::new(config)));
+    let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
     for _ in 0..constants::REGULAR_SNIPE_REQS {
-        let access_token = Arc::clone(&access_token);
-        let username_to_snipe = Arc::clone(&username_to_snipe);
+        let connector = Arc::clone(&connector);
+        let data = Arc::clone(&data);
         let handle = tokio::task::spawn(async move {
             let mut buf = [0; 12];
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
-            let addr = "api.minecraftservices.com:443"
-                .to_socket_addrs()
-                .unwrap()
-                .next()
-                .ok_or("failed to resolve api.minecraftservices.com")
-                .unwrap();
-            let data = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", username_to_snipe, access_token);
-            let data = data.as_bytes();
-            let mut config = ClientConfig::new();
-            config
-                .root_store
-                .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-            let connector = TlsConnector::from(Arc::new(config));
-            let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
             sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector.connect(domain, stream).await.unwrap();
-            stream.write_all(data).await.unwrap();
+            stream.write_all(&data).await.unwrap();
             sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
             stream.read_exact(&mut buf).await.unwrap();
@@ -143,34 +140,31 @@ pub async fn snipe_gc(
     let mut status_vec = Vec::with_capacity(constants::GC_SNIPE_REQS as usize);
     let mut handle_vec = Vec::with_capacity(constants::GC_SNIPE_REQS as usize);
     let mut spread = 0;
-    let access_token = Arc::new(access_token);
-    let username_to_snipe = Arc::new(username_to_snipe);
+    let addr = "api.minecraftservices.com:443"
+        .to_socket_addrs()
+        .unwrap()
+        .next()
+        .ok_or("failed to resolve api.minecraftservices.com")
+        .unwrap();
+    let post_body = json!({ "profileName": username_to_snipe }).to_string();
+    let data = Arc::new(format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token).into_bytes());
+    let mut config = ClientConfig::new();
+    config
+        .root_store
+        .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+    let connector = Arc::new(TlsConnector::from(Arc::new(config)));
+    let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
     for _ in 0..constants::GC_SNIPE_REQS {
-        let access_token = Arc::clone(&access_token);
-        let username_to_snipe = Arc::clone(&username_to_snipe);
+        let connector = Arc::clone(&connector);
+        let data = Arc::clone(&data);
         let handle = tokio::task::spawn(async move {
             let mut buf = [0; 12];
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
-            let addr = "api.minecraftservices.com:443"
-                .to_socket_addrs()
-                .unwrap()
-                .next()
-                .ok_or("failed to resolve api.minecraftservices.com")
-                .unwrap();
-            let post_body = json!({ "profileName": *username_to_snipe }).to_string();
-            let data = format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token);
-            let data = data.as_bytes();
-            let mut config = ClientConfig::new();
-            config
-                .root_store
-                .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-            let connector = TlsConnector::from(Arc::new(config));
-            let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
             sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector.connect(domain, stream).await.unwrap();
-            stream.write_all(data).await.unwrap();
+            stream.write_all(&data).await.unwrap();
             sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
             stream.read_exact(&mut buf).await.unwrap();
