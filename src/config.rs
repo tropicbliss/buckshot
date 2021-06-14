@@ -31,11 +31,11 @@ pub struct SubConfig {
 }
 
 impl Config {
-    pub async fn new(config_name: Option<String>) -> Self {
+    pub async fn new(config_name: &Option<String>) -> Self {
         let config_path = if let Some(x) = config_name {
             x
         } else {
-            CONFIG_PATH.to_string()
+            CONFIG_PATH
         };
         match File::open(&config_path).await {
             Ok(mut f) => {

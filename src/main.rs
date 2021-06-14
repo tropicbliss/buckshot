@@ -26,7 +26,7 @@ struct Options {
 async fn main() {
     let (username_to_snipe, offset, config_name) = get_envargs();
     cli::print_splash_screen();
-    let config = config::Config::new(config_name).await;
+    let config = config::Config::new(&config_name).await;
     let snipe_task = impl_chooser(&config);
     let sniper = runner::Sniper::new(snipe_task, username_to_snipe, offset, config);
     sniper.run().await;

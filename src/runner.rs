@@ -65,8 +65,8 @@ impl Sniper {
             cli::get_offset()
         };
         self.snipe_mojang(
-            snipe_time,
-            username_to_snipe,
+            &snipe_time,
+            &username_to_snipe,
             offset,
             &access_token,
             requestor,
@@ -101,8 +101,8 @@ impl Sniper {
             cli::get_offset()
         };
         self.snipe_msa(
-            snipe_time,
-            username_to_snipe,
+            &snipe_time,
+            &username_to_snipe,
             offset,
             &access_token,
             requestor,
@@ -155,8 +155,8 @@ impl Sniper {
             cli::get_offset()
         };
         self.snipe_gc(
-            snipe_time,
-            username_to_snipe,
+            &snipe_time,
+            &username_to_snipe,
             offset,
             &access_token,
             requestor,
@@ -166,12 +166,13 @@ impl Sniper {
 
     async fn snipe_mojang(
         &self,
-        droptime: DateTime<Utc>,
-        username_to_snipe: String,
+        droptime: &DateTime<Utc>,
+        username_to_snipe: &str,
         offset: i32,
         access_token: &str,
         requestor: requests::Requests,
     ) {
+        let droptime = droptime.to_owned();
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
@@ -206,7 +207,7 @@ impl Sniper {
         };
         let is_success = sockets::snipe_regular(
             &snipe_time,
-            &username_to_snipe,
+            username_to_snipe,
             &access_token,
             self.config.config.spread as i32,
         )
@@ -222,12 +223,13 @@ impl Sniper {
 
     async fn snipe_msa(
         &self,
-        droptime: DateTime<Utc>,
-        username_to_snipe: String,
+        droptime: &DateTime<Utc>,
+        username_to_snipe: &str,
         offset: i32,
         access_token: &str,
         requestor: requests::Requests,
     ) {
+        let droptime = droptime.to_owned();
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
@@ -259,7 +261,7 @@ impl Sniper {
         }
         let is_success = sockets::snipe_regular(
             &snipe_time,
-            &username_to_snipe,
+            username_to_snipe,
             access_token,
             self.config.config.spread as i32,
         )
@@ -275,12 +277,13 @@ impl Sniper {
 
     async fn snipe_gc(
         &self,
-        droptime: DateTime<Utc>,
-        username_to_snipe: String,
+        droptime: &DateTime<Utc>,
+        username_to_snipe: &str,
         offset: i32,
         access_token: &str,
         requestor: requests::Requests,
     ) {
+        let droptime = droptime.to_owned();
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
@@ -311,7 +314,7 @@ impl Sniper {
         }
         let is_success = sockets::snipe_gc(
             &snipe_time,
-            &username_to_snipe,
+            username_to_snipe,
             access_token,
             self.config.config.spread as i32,
         )
