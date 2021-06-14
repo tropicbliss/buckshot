@@ -130,7 +130,7 @@ impl Requests {
         }
     }
 
-    pub async fn send_sq(&self, access_token: &str, id: [i64; 3], answer: [&String; 3]) {
+    pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             pretty_panic(
                 "Your account has security questions and you did not provide any answers.",
@@ -172,7 +172,7 @@ impl Requests {
     pub async fn check_name_availability_time(
         &self,
         username_to_snipe: &str,
-        auth_time: Option<DateTime<Utc>>,
+        auth_time: &Option<DateTime<Utc>>,
     ) -> DateTime<Utc> {
         let url = format!(
             "{}/droptime/{}",
@@ -216,7 +216,7 @@ impl Requests {
         };
         let droptime = Utc.timestamp(epoch, 0);
         if let Some(auth) = auth_time {
-            if droptime - auth > Duration::days(1) {
+            if droptime - auth.to_owned() > Duration::days(1) {
                 pretty_panic("You cannot snipe a name available more than one day later if you are using a Microsoft account.");
             }
         }

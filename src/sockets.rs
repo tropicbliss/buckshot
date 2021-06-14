@@ -69,9 +69,9 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
 }
 
 pub async fn snipe_regular(
-    snipe_time: DateTime<Utc>,
-    username_to_snipe: String,
-    access_token: String,
+    snipe_time: &DateTime<Utc>,
+    username_to_snipe: &str,
+    access_token: &str,
     spread_offset: i32,
 ) -> bool {
     let mut status_vec = Vec::with_capacity(constants::REGULAR_SNIPE_REQS as usize);
@@ -90,6 +90,7 @@ pub async fn snipe_regular(
         .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
     let connector = Arc::new(TlsConnector::from(Arc::new(config)));
     let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
+    let snipe_time = snipe_time.to_owned();
     for _ in 0..constants::REGULAR_SNIPE_REQS {
         let connector = Arc::clone(&connector);
         let data = Arc::clone(&data);
@@ -133,9 +134,9 @@ pub async fn snipe_regular(
 }
 
 pub async fn snipe_gc(
-    snipe_time: DateTime<Utc>,
-    username_to_snipe: String,
-    access_token: String,
+    snipe_time: &DateTime<Utc>,
+    username_to_snipe: &str,
+    access_token: &str,
     spread_offset: i32,
 ) -> bool {
     let mut status_vec = Vec::with_capacity(constants::GC_SNIPE_REQS as usize);
@@ -155,6 +156,7 @@ pub async fn snipe_gc(
         .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
     let connector = Arc::new(TlsConnector::from(Arc::new(config)));
     let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
+    let snipe_time = snipe_time.to_owned();
     for _ in 0..constants::GC_SNIPE_REQS {
         let connector = Arc::clone(&connector);
         let data = Arc::clone(&data);

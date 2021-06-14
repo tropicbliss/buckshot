@@ -45,14 +45,14 @@ impl Sniper {
         let (snipe_time, username_to_snipe) =
             if let Some(username_to_snipe) = self.username_to_snipe.clone() {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe.clone())
             } else {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe)
@@ -81,14 +81,14 @@ impl Sniper {
         let (snipe_time, username_to_snipe) =
             if let Some(username_to_snipe) = self.username_to_snipe.clone() {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe.clone())
             } else {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe)
@@ -119,14 +119,14 @@ impl Sniper {
             if let Some(username_to_snipe) = self.username_to_snipe.clone() {
                 if let Some(gc) = giftcode {
                     let (snipe_time, _) = join!(
-                        requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                        requestor.check_name_availability_time(&username_to_snipe, &auth_time),
                         requestor.redeem_giftcode(&gc, &access_token)
                     );
                     (snipe_time, username_to_snipe)
                 } else {
                     (
                         requestor
-                            .check_name_availability_time(&username_to_snipe, auth_time)
+                            .check_name_availability_time(&username_to_snipe, &auth_time)
                             .await,
                         username_to_snipe,
                     )
@@ -134,7 +134,7 @@ impl Sniper {
             } else if let Some(gc) = giftcode {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
                     requestor.redeem_giftcode(&gc, &access_token)
                 );
                 (snipe_time, username_to_snipe)
@@ -142,7 +142,7 @@ impl Sniper {
                 let username_to_snipe = cli::get_username_choice();
                 (
                     requestor
-                        .check_name_availability_time(&username_to_snipe, auth_time)
+                        .check_name_availability_time(&username_to_snipe, &auth_time)
                         .await,
                     username_to_snipe,
                 )
@@ -195,7 +195,7 @@ impl Sniper {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             let (access_token, auth_time) = self.setup_mojang(&requestor).await;
             join!(
-                requestor.check_name_availability_time(&username_to_snipe, auth_time),
+                requestor.check_name_availability_time(&username_to_snipe, &auth_time),
                 requestor.check_name_change_eligibility(&access_token)
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
@@ -205,9 +205,9 @@ impl Sniper {
             access_token.to_string()
         };
         let is_success = sockets::snipe_regular(
-            snipe_time,
-            username_to_snipe.clone(),
-            access_token.to_string(),
+            &snipe_time,
+            &username_to_snipe,
+            &access_token,
             self.config.config.spread as i32,
         )
         .await;
@@ -250,7 +250,7 @@ impl Sniper {
         if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             join!(
-                requestor.check_name_availability_time(&username_to_snipe, None),
+                requestor.check_name_availability_time(&username_to_snipe, &None),
                 requestor.check_name_change_eligibility(&access_token)
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
@@ -258,9 +258,9 @@ impl Sniper {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
         let is_success = sockets::snipe_regular(
-            snipe_time,
-            username_to_snipe.clone(),
-            access_token.to_string(),
+            &snipe_time,
+            &username_to_snipe,
+            access_token,
             self.config.config.spread as i32,
         )
         .await;
@@ -303,16 +303,16 @@ impl Sniper {
         if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             requestor
-                .check_name_availability_time(&username_to_snipe, None)
+                .check_name_availability_time(&username_to_snipe, &None)
                 .await;
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         } else {
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         }
         let is_success = sockets::snipe_gc(
-            snipe_time,
-            username_to_snipe.clone(),
-            access_token.to_string(),
+            &snipe_time,
+            &username_to_snipe,
+            access_token,
             self.config.config.spread as i32,
         )
         .await;
@@ -338,7 +338,7 @@ impl Sniper {
                 &self.config.account.sq2,
                 &self.config.account.sq3,
             ];
-            requestor.send_sq(&access_token, sq_id, answer).await;
+            requestor.send_sq(&access_token, &sq_id, &answer).await;
         }
         (access_token, auth_time)
     }
