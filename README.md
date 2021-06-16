@@ -8,6 +8,10 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 Improved memory usage.
 
+## Full disclosure
+
+If you scan the latest version (v1.1.3) Windows executable using VirusTotal, one of VirusTotal's sources will flag it as malicious. If you are not comfortable with this, you can use the previous version (v1.1.2) which is not flagged as malicious. You can also look through the code and determine whether the code is malicious and compile it yourself in Windows and you will get the same result in VirusTotal. This executable is not flagged as malicious by Windows Defender, and is only flagged as malicious by a random no-name chinese antivirus, so take that as you will.
+
 ## For sniper developers
 
 If you look through my code, error propagation is not a thing 🥲. `panic!`s everywhere!
