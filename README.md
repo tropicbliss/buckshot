@@ -4,10 +4,6 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-## New version (v1.1.3)
-
-Improved memory usage.
-
 ## Full disclosure
 
 If you scan the latest version's (v1.1.3) Windows executable using VirusTotal, one of VirusTotal's sources will flag it as malicious. If you are not comfortable with this, you can download the previous version's executable (v1.1.2) which is not flagged as malicious [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.2). You can also look through the code and determine whether the code is malicious and compile it yourself in Windows and you will get the same result in VirusTotal. This executable is not flagged as malicious by Windows Defender, and is only flagged as malicious by a random no-name chinese antivirus, so take that as you will.
