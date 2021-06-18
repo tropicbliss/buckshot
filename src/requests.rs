@@ -207,13 +207,14 @@ impl Requests {
             username_to_snipe
         );
         let res = self.client.get(url).send().await;
-        let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
-            _ => res.unwrap(),
-        };
-        let body = res.text().await.unwrap();
-        let v: Value = serde_json::from_str(&body).unwrap();
-        v["searches"].as_f64()
+        match res {
+            Err(_) => None,
+            Ok(res) => {
+                let body = res.text().await.unwrap();
+                let v: Value = serde_json::from_str(&body).unwrap();
+                v["searches"].as_f64()
+            }
+        }
     }
 
     pub async fn check_name_change_eligibility(&self, access_token: &str) {
@@ -265,15 +266,19 @@ impl Requests {
             .multipart(form)
             .send()
             .await;
-        let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
-            _ => res.unwrap(),
+        match res {
+            Err(e) if e.is_timeout() => {
+                bunt::eprintln!("{$red}Error{/$}: HTTP request timeout.");
+            }
+            Ok(res) => {
+                if res.status().as_u16() == 200 {
+                    bunt::println!("{$green}Successfully changed skin!{/$}")
+                } else {
+                    bunt::eprintln!("{$red}Error{/$}: Failed to upload skin.")
+                }
+            }
+            Err(_) => {}
         };
-        if res.status().as_u16() == 200 {
-            bunt::println!("{$green}Successfully changed skin!{/$}")
-        } else {
-            bunt::eprintln!("{$red}Error{/$}: Failed to upload skin.")
-        }
     }
 
     pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) {
