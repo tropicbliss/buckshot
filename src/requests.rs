@@ -200,7 +200,7 @@ impl Requests {
         }
     }
 
-    pub async fn get_searches(&self, username_to_snipe: &str) -> Option<f64> {
+    pub async fn get_searches(&self, username_to_snipe: &str) {
         let url = format!(
             "{}/searches/{}",
             constants::TEUN_NAMEMC_API,
@@ -208,11 +208,26 @@ impl Requests {
         );
         let res = self.client.get(url).send().await;
         match res {
-            Err(_) => None,
+            Err(e) if e.is_timeout() => {
+                bunt::eprintln!("{$red}Error{/$}: HTTP request timeout.");
+            }
+            Err(_) => {}
             Ok(res) => {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
-                v["searches"].as_f64()
+                match v["searches"].as_f64() {
+                    Some(x) => {
+                        bunt::println!(
+                            "{$green}Successfully sniped {} with {} searches!{/$}",
+                            username_to_snipe,
+                            x
+                        );
+                    }
+                    None => {
+                        bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+                        bunt::eprintln!("{$red}Error{/$}: Failed to get number of name searches.");
+                    }
+                }
             }
         }
     }
