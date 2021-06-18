@@ -95,12 +95,11 @@ impl Requests {
                     let error_msg = v["error"].as_str().unwrap().to_string();
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: {}", error_msg);
-                    eprintln!("Reverting to OAuth2 authentication...");
                 } else {
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: Unknown server error.");
-                    eprintln!("Reverting to OAuth2 authentication...");
                 }
+                eprintln!("Reverting to OAuth2 authentication...");
                 oauth2_authentication()
             }
         } else {
@@ -184,43 +183,37 @@ impl Requests {
             Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
             _ => res.unwrap(),
         };
-        let epoch = match res.status().as_u16() {
+        match res.status().as_u16() {
             200 => {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
-                match v.get("UNIX") {
-                    Some(droptime) => droptime,
-                    None => pretty_panic(
-                        "Error checking droptime. Check if username is freely available.",
-                    ),
+                let epoch = v["UNIX"].as_i64().unwrap();
+                let droptime = Utc.timestamp(epoch, 0);
+                if let Some(auth) = auth_time {
+                    if droptime - auth.to_owned() > Duration::days(1) {
+                        pretty_panic("You cannot snipe a name available more than one day later if you are using a Microsoft account.");
+                    }
                 }
-                .as_f64()
-                .unwrap() as i64
+                droptime
             }
-            _ => {
-                let url = format!("{}/upload-droptime", constants::TEUN_NAMEMC_API);
-                let previous_owner = cli::get_previous_owner();
-                let post_body = json!({
-                    "name": username_to_snipe,
-                    "prevOwner": previous_owner,
-                });
-                let res = self.client.post(url).json(&post_body).send().await;
-                let res = match res {
-                    Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
-                    _ => res.unwrap(),
-                };
-                let body = res.text().await.unwrap();
-                let v: Value = serde_json::from_str(&body).unwrap();
-                v["UNIX"].as_f64().unwrap() as i64
-            }
-        };
-        let droptime = Utc.timestamp(epoch, 0);
-        if let Some(auth) = auth_time {
-            if droptime - auth.to_owned() > Duration::days(1) {
-                pretty_panic("You cannot snipe a name available more than one day later if you are using a Microsoft account.");
-            }
+            _ => pretty_panic("This name is not dropping or has already dropped."),
         }
-        droptime
+    }
+
+    pub async fn get_searches(&self, username_to_snipe: &str) -> Option<f64> {
+        let url = format!(
+            "{}/searches/{}",
+            constants::TEUN_NAMEMC_API,
+            username_to_snipe
+        );
+        let res = self.client.get(url).send().await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            _ => res.unwrap(),
+        };
+        let body = res.text().await.unwrap();
+        let v: Value = serde_json::from_str(&body).unwrap();
+        v["searches"].as_f64()
     }
 
     pub async fn check_name_change_eligibility(&self, access_token: &str) {

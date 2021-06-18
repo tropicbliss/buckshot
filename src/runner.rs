@@ -213,7 +213,17 @@ impl Sniper {
         )
         .await;
         if is_success {
-            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+            match requestor.get_searches(username_to_snipe).await {
+                Some(x) => bunt::println!(
+                    "{$green}Successfully sniped {} with {} searches!{/$}",
+                    username_to_snipe,
+                    x
+                ),
+                None => {
+                    bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+                    bunt::eprintln!("{$red}Error{/$}: Failed to get number of name searches.");
+                }
+            }
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
@@ -267,7 +277,17 @@ impl Sniper {
         )
         .await;
         if is_success {
-            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+            match requestor.get_searches(username_to_snipe).await {
+                Some(x) => bunt::println!(
+                    "{$green}Successfully sniped {} with {} searches!{/$}",
+                    username_to_snipe,
+                    x
+                ),
+                None => {
+                    bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+                    bunt::eprintln!("{$red}Error{/$}: Failed to get number of name searches.");
+                }
+            }
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
@@ -320,7 +340,17 @@ impl Sniper {
         )
         .await;
         if is_success {
-            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+            match requestor.get_searches(username_to_snipe).await {
+                Some(x) => bunt::println!(
+                    "{$green}Successfully sniped {} with {} searches!{/$}",
+                    username_to_snipe,
+                    x
+                ),
+                None => {
+                    bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+                    bunt::eprintln!("{$red}Error{/$}: Failed to get number of name searches.");
+                }
+            }
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
