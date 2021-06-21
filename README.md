@@ -10,7 +10,7 @@ If you scan the latest version's (v1.1.4) Windows executable using VirusTotal, o
 
 ## For sniper developers
 
-If you look through my code, error propagation is not a thing. `panic!`s everywhere!
+If you look through my code, error propagation is not a thing. Sorry 'bout that.
 
 `ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).
 
