@@ -36,7 +36,7 @@ impl Requests {
             .client
             .post(url)
             .json(&post_json)
-            .header("User-Agent", constants::USER_AGENT)
+            .header(reqwest::header::USER_AGENT, constants::USER_AGENT)
             .send()
             .await;
         let res = match res {
