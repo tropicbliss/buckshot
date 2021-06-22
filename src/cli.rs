@@ -33,22 +33,6 @@ pub fn get_username_choice() -> String {
     }
 }
 
-pub fn get_offset() -> i32 {
-    loop {
-        let mut input = String::new();
-        print!("What will be your offset: ");
-        io::Write::flush(&mut io::stdout()).unwrap();
-        io::stdin().read_line(&mut input).unwrap();
-        match input.lines().collect::<String>().parse::<i32>() {
-            Ok(x) => break x,
-            Err(_) => {
-                println!("Invalid offset entered, please try again.");
-                continue;
-            }
-        }
-    }
-}
-
 pub fn get_giftcode() -> Option<String> {
     let mut input = String::new();
     print!("Enter your gift code (press ENTER if you have already redeemed your gift code): ");

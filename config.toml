@@ -8,6 +8,7 @@ sq2 = "Bar"
 sq3 = "Baz"
 
 [config]
+offset = 0
 auto_offset = false
 spread = 0
 microsoft_auth = false

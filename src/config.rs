@@ -21,6 +21,7 @@ pub struct Account {
 
 #[derive(Deserialize)]
 pub struct SubConfig {
+    pub offset: i32,
     pub auto_offset: bool,
     pub spread: u32,
     pub microsoft_auth: bool,

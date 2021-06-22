@@ -6,7 +6,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 ## Full disclosure
 
-If you scan the latest version's (v1.1.4) Windows executable using VirusTotal, one of VirusTotal's sources will flag it as malicious. If you are not comfortable with this, you can download the previous version's executable (v1.1.2) which is not flagged as malicious [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.2). You can also look through the code and determine whether the code is malicious and compile it yourself in Windows and you will get the same result in VirusTotal. This executable is not flagged as malicious by Windows Defender, and is only flagged as malicious by a single antivirus source (Jiangmin), so take that as you will.
+If you scan the latest version's (v1.1.5) Windows executable using VirusTotal, one of VirusTotal's sources will flag it as malicious. If you are not comfortable with this, you can download the previous version's executable (v1.1.2) which is not flagged as malicious [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.2). You can also look through the code and determine whether the code is malicious and compile it yourself in Windows and you will get the same result in VirusTotal. This executable is not flagged as malicious by Windows Defender, and is only flagged as malicious by a single antivirus source (Jiangmin), so take that as you will.
 
 ## For sniper developers
 
