@@ -6,7 +6,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 ## Full disclosure
 
-Ignore this, the latest version of Buckshot is clean for VirusTotal!
+Ignore this, the latest version of Buckshot is clean when scanned with VirusTotal!
 
 ## For sniper developers
 
