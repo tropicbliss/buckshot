@@ -1,3 +1,6 @@
+// Error propagation, not a thing
+// Feels like I'm coding in Go lol
+
 use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
 use chrono::{DateTime, Duration, TimeZone, Utc};
@@ -268,7 +271,7 @@ impl Requests {
         let stream = Body::wrap_stream(stream);
         let image_part = reqwest::multipart::Part::stream(stream);
         let form = reqwest::multipart::Form::new()
-            .text("variant", config.config.skin_model.clone())
+            .text("variant", config.config.skin_model.to_owned())
             .part("file", image_part);
         let url = format!(
             "{}/minecraft/profile/skins",

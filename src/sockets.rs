@@ -1,3 +1,5 @@
+// It is at this point, that I gave up making my code look nice
+
 use crate::constants;
 use chrono::{DateTime, Duration, Utc};
 use serde_json::json;

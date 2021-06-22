@@ -1,3 +1,5 @@
+// The ultimate offender of DRY, ladies and gentlemen
+
 use crate::{cli, config, requests, sockets};
 use chrono::{DateTime, Duration, Utc};
 use tokio::{join, time};
@@ -43,12 +45,12 @@ impl Sniper {
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_mojang(&requestor).await;
         let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = self.username_to_snipe.clone() {
+            if let Some(username_to_snipe) = &self.username_to_snipe {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
+                    requestor.check_name_availability_time(username_to_snipe, &auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
-                (snipe_time, username_to_snipe.clone())
+                (snipe_time, username_to_snipe.to_owned())
             } else {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
@@ -79,12 +81,12 @@ impl Sniper {
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
         let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = self.username_to_snipe.clone() {
+            if let Some(username_to_snipe) = &self.username_to_snipe {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
+                    requestor.check_name_availability_time(username_to_snipe, &auth_time),
                     requestor.check_name_change_eligibility(&access_token)
                 );
-                (snipe_time, username_to_snipe.clone())
+                (snipe_time, username_to_snipe.to_owned())
             } else {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
@@ -116,19 +118,19 @@ impl Sniper {
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
         let giftcode = cli::get_giftcode();
         let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = self.username_to_snipe.clone() {
+            if let Some(username_to_snipe) = &self.username_to_snipe {
                 if let Some(gc) = giftcode {
                     let (snipe_time, _) = join!(
-                        requestor.check_name_availability_time(&username_to_snipe, &auth_time),
+                        requestor.check_name_availability_time(username_to_snipe, &auth_time),
                         requestor.redeem_giftcode(&gc, &access_token)
                     );
-                    (snipe_time, username_to_snipe)
+                    (snipe_time, username_to_snipe.to_owned())
                 } else {
                     (
                         requestor
                             .check_name_availability_time(&username_to_snipe, &auth_time)
                             .await,
-                        username_to_snipe,
+                        username_to_snipe.to_owned(),
                     )
                 }
             } else if let Some(gc) = giftcode {

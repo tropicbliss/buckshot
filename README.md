@@ -10,8 +10,6 @@ If you scan the latest version's (v1.1.4) Windows executable using VirusTotal, o
 
 ## For sniper developers
 
-If you look through my code, error propagation is not a thing. Sorry 'bout that. If you can't tell I rushed through the development of this sniper without bothering to make things idiomatic and I'm too lazy to fix it.
-
 `ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).
 
 ### Microsoft OAuth2 authentication
