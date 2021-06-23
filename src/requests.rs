@@ -100,7 +100,7 @@ impl Requests {
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: Unknown server error.");
                 }
-                eprintln!("Reverting to OAuth2 authentication...");
+                println!("Reverting to OAuth2 authentication...");
                 oauth2_authentication()
             }
         } else {
