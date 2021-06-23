@@ -7,6 +7,6 @@ pub const TEUN_NAMEMC_API: &str = "https://mojang-api.teun.lol";
 pub const REGULAR_SNIPE_REQS: u8 = 3;
 pub const GC_SNIPE_REQS: u8 = 6;
 pub const SERVER_RESPONSE_TIME: u8 = 100;
-pub const BUCKSHOT_API_SERVER: &str = "https://auth.buckshot.com";
+pub const BUCKSHOT_API_SERVER: &str = "https://auth.buckshotrs.com";
 pub const USER_AGENT: &str =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0";
