@@ -25,11 +25,7 @@ impl Requests {
         }
     }
 
-    pub async fn authenticate_mojang(
-        &self,
-        username: &str,
-        password: &str,
-    ) -> (String, Option<DateTime<Utc>>) {
+    pub async fn authenticate_mojang(&self, username: &str, password: &str) -> String {
         let post_json = json!({
             "username": username,
             "password": password
@@ -50,7 +46,7 @@ impl Requests {
             200 => {
                 let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
                 let access_token = v["accessToken"].as_str().unwrap().to_string();
-                (access_token, None)
+                access_token
             },
             403 => pretty_panic("Authentication error. Check if you have entered your username and password correctly."),
             code => pretty_panic(&format!("HTTP status code: {}", code)),
@@ -61,8 +57,8 @@ impl Requests {
         &self,
         username: &str,
         password: &str,
-    ) -> (String, Option<DateTime<Utc>>) {
-        fn oauth2_authentication() -> (String, Option<DateTime<Utc>>) {
+    ) -> (String, DateTime<Utc>) {
+        fn oauth2_authentication() -> (String, DateTime<Utc>) {
             let url = constants::MS_AUTH_SERVER;
             println!("Opening browser...");
             thread::sleep(time::Duration::from_secs(3));
@@ -73,7 +69,7 @@ impl Requests {
             }
             bunt::println!("{$red}Note: If you signed in with another Microsoft account recently and are experiencing auto sign-in behaviour, disable cookies on your browser.{/$}");
             let access_token = cli::get_access_token();
-            (access_token, Some(auth_time))
+            (access_token, auth_time)
         }
         if !(username.is_empty() || password.is_empty()) {
             let post_json = json!({
@@ -92,7 +88,7 @@ impl Requests {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
                 let access_token = v["access_token"].as_str().unwrap().to_string();
-                (access_token, Some(auth_time))
+                (access_token, auth_time)
             } else {
                 if status == 400 {
                     let body = res.text().await.unwrap();
@@ -176,7 +172,7 @@ impl Requests {
     pub async fn check_name_availability_time(
         &self,
         username_to_snipe: &str,
-        auth_time: &Option<DateTime<Utc>>,
+        auth_time: Option<DateTime<Utc>>,
     ) -> DateTime<Utc> {
         let url = format!(
             "{}/droptime/{}",

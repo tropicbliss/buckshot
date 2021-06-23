@@ -36,18 +36,18 @@ impl Sniper {
     async fn run_mojang(&self) {
         println!("Initialising...");
         let requestor = requests::Requests::new();
-        let (access_token, auth_time) = self.setup_mojang(&requestor).await;
+        let access_token = self.setup_mojang(&requestor).await;
         let (snipe_time, username_to_snipe) =
             if let Some(username_to_snipe) = &self.username_to_snipe {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(username_to_snipe, &auth_time),
+                    requestor.check_name_availability_time(username_to_snipe, None),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe.to_owned())
             } else {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, None),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe)
@@ -75,14 +75,14 @@ impl Sniper {
         let (snipe_time, username_to_snipe) =
             if let Some(username_to_snipe) = &self.username_to_snipe {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(username_to_snipe, &auth_time),
+                    requestor.check_name_availability_time(username_to_snipe, Some(auth_time)),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe.to_owned())
             } else {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 (snipe_time, username_to_snipe)
@@ -112,14 +112,14 @@ impl Sniper {
             if let Some(username_to_snipe) = &self.username_to_snipe {
                 if let Some(gc) = giftcode {
                     let (snipe_time, _) = join!(
-                        requestor.check_name_availability_time(username_to_snipe, &auth_time),
+                        requestor.check_name_availability_time(username_to_snipe, Some(auth_time)),
                         requestor.redeem_giftcode(&gc, &access_token)
                     );
                     (snipe_time, username_to_snipe.to_owned())
                 } else {
                     (
                         requestor
-                            .check_name_availability_time(&username_to_snipe, &auth_time)
+                            .check_name_availability_time(&username_to_snipe, Some(auth_time))
                             .await,
                         username_to_snipe.to_owned(),
                     )
@@ -127,7 +127,7 @@ impl Sniper {
             } else if let Some(gc) = giftcode {
                 let username_to_snipe = cli::get_username_choice();
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, &auth_time),
+                    requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
                     requestor.redeem_giftcode(&gc, &access_token)
                 );
                 (snipe_time, username_to_snipe)
@@ -135,7 +135,7 @@ impl Sniper {
                 let username_to_snipe = cli::get_username_choice();
                 (
                     requestor
-                        .check_name_availability_time(&username_to_snipe, &auth_time)
+                        .check_name_availability_time(&username_to_snipe, Some(auth_time))
                         .await,
                     username_to_snipe,
                 )
@@ -186,9 +186,9 @@ impl Sniper {
         let setup_time = snipe_time - Duration::minutes(12);
         let access_token = if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
-            let (access_token, auth_time) = self.setup_mojang(&requestor).await;
+            let access_token = self.setup_mojang(&requestor).await;
             join!(
-                requestor.check_name_availability_time(&username_to_snipe, &auth_time),
+                requestor.check_name_availability_time(&username_to_snipe, None),
                 requestor.check_name_change_eligibility(&access_token)
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
@@ -244,7 +244,7 @@ impl Sniper {
         if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             join!(
-                requestor.check_name_availability_time(&username_to_snipe, &None),
+                requestor.check_name_availability_time(&username_to_snipe, None),
                 requestor.check_name_change_eligibility(&access_token)
             );
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
@@ -298,7 +298,7 @@ impl Sniper {
         if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             requestor
-                .check_name_availability_time(&username_to_snipe, &None)
+                .check_name_availability_time(&username_to_snipe, None)
                 .await;
             bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
         } else {
@@ -320,11 +320,8 @@ impl Sniper {
         cli::exit_program();
     }
 
-    async fn setup_mojang(
-        &self,
-        requestor: &requests::Requests,
-    ) -> (String, Option<DateTime<Utc>>) {
-        let (access_token, auth_time) = requestor
+    async fn setup_mojang(&self, requestor: &requests::Requests) -> String {
+        let access_token = requestor
             .authenticate_mojang(&self.config.account.username, &self.config.account.password)
             .await;
         if let Some(sq_id) = requestor.get_sq_id(&access_token).await {
@@ -335,10 +332,10 @@ impl Sniper {
             ];
             requestor.send_sq(&access_token, &sq_id, &answer).await;
         }
-        (access_token, auth_time)
+        access_token
     }
 
-    async fn setup_msa(&self, requestor: &requests::Requests) -> (String, Option<DateTime<Utc>>) {
+    async fn setup_msa(&self, requestor: &requests::Requests) -> (String, DateTime<Utc>) {
         requestor
             .authenticate_microsoft(&self.config.account.username, &self.config.account.password)
             .await

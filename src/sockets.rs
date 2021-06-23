@@ -35,8 +35,7 @@ pub async fn auto_offset_calculation_regular(username_to_snipe: &str) -> i32 {
     stream.write_all(b"\r\n").await.unwrap();
     stream.read_exact(&mut buf).await.unwrap();
     let after = Instant::now();
-    let offset = ((after - before).as_millis() as i32 - constants::SERVER_RESPONSE_TIME as i32) / 2;
-    offset
+    ((after - before).as_millis() as i32 - constants::SERVER_RESPONSE_TIME as i32) / 2
 }
 
 pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
@@ -64,8 +63,7 @@ pub async fn auto_offset_calculation_gc(username_to_snipe: &str) -> i32 {
     stream.write_all(b"\r\n").await.unwrap();
     stream.read_exact(&mut buf).await.unwrap();
     let after = Instant::now();
-    let offset = ((after - before).as_millis() as i32 - constants::SERVER_RESPONSE_TIME as i32) / 2;
-    offset
+    ((after - before).as_millis() as i32 - constants::SERVER_RESPONSE_TIME as i32) / 2
 }
 
 pub async fn snipe_regular(
