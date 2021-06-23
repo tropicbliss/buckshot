@@ -89,12 +89,14 @@ impl Requests {
             };
             let status = res.status().as_u16();
             if status == 200 {
-                let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
+                let body = res.text().await.unwrap();
+                let v: Value = serde_json::from_str(&body).unwrap();
                 let access_token = v["access_token"].as_str().unwrap().to_string();
                 (access_token, Some(auth_time))
             } else {
                 if status == 400 {
-                    let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
+                    let body = res.text().await.unwrap();
+                    let v: Value = serde_json::from_str(&body).unwrap();
                     let error_msg = v["error"].as_str().unwrap().to_string();
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: {}", error_msg);
