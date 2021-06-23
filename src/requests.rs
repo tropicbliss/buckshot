@@ -1,5 +1,5 @@
-// Error propagation, not a thing
-// Feels like I'm coding in Go lol
+// My error handling is terrible :(
+
 
 use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
