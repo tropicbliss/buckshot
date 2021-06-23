@@ -6,7 +6,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 ## Full disclosure
 
-If you scan the latest version's (v1.1.5) Windows executable using VirusTotal, one of VirusTotal's sources will flag it as malicious. If you are not comfortable with this, you can download the previous version's executable (v1.1.2) which is not flagged as malicious [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.2). You can also look through the code and determine whether the code is malicious and compile it yourself in Windows and you will get the same result in VirusTotal. This executable is not flagged as malicious by Windows Defender, and is only flagged as malicious by a single antivirus source (Jiangmin), so take that as you will.
+Ignore this, the latest version of Buckshot is clean when scanned with VirusTotal!
 
 ## For sniper developers
 
@@ -45,7 +45,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.4).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.5).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. Open up `config.toml` on your favourite editor and configure it if need be.
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
