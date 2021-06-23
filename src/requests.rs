@@ -97,7 +97,7 @@ impl Requests {
                 if status == 400 {
                     let body = res.text().await.unwrap();
                     let v: Value = serde_json::from_str(&body).unwrap();
-                    let error_msg = v["error"].as_str().unwrap().to_string();
+                    let error_msg = v["error"].as_str().unwrap();
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: {}", error_msg);
                 } else {
