@@ -57,6 +57,7 @@ impl Sniper {
         } else {
             self.config.config.offset
         };
+        println!("Your offset is: {} ms.", offset);
         self.snipe_mojang(
             &snipe_time,
             &username_to_snipe,
@@ -91,6 +92,7 @@ impl Sniper {
         } else {
             self.config.config.offset
         };
+        println!("Your offset is: {} ms.", offset);
         self.snipe_msa(
             &snipe_time,
             &username_to_snipe,
@@ -143,6 +145,7 @@ impl Sniper {
         } else {
             self.config.config.offset
         };
+        println!("Your offset is: {} ms.", offset);
         self.snipe_gc(
             &snipe_time,
             &username_to_snipe,
