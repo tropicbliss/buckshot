@@ -1,6 +1,5 @@
 // My error handling is terrible :(
 
-
 use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
 use chrono::{DateTime, Duration, TimeZone, Utc};
