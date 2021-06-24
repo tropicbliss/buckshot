@@ -1,5 +1,5 @@
-// Error propagation, not a thing
-// Feels like I'm coding in Go lol
+// My error handling is terrible :(
+
 
 use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
@@ -100,7 +100,7 @@ impl Requests {
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: Unknown server error.");
                 }
-                eprintln!("Reverting to OAuth2 authentication...");
+                println!("Reverting to OAuth2 authentication...");
                 oauth2_authentication()
             }
         } else {
