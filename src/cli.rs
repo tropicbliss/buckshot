@@ -10,7 +10,7 @@ pub fn print_splash_screen() {
     bunt::println!("                                                   ");
     bunt::println!("                                                   ");
     bunt::println!("");
-    bunt::println!("{$green}Developed by @chronicallyunfunny#1113 on Discord.{/$}");
+    bunt::println!("{$green}Developed by @tropicbliss#0027 on Discord.{/$}");
     bunt::println!("");
 }
 
