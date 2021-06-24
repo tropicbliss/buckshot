@@ -100,7 +100,7 @@ pub async fn snipe_regular(
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector.connect(domain, stream).await.unwrap();
             stream.write_all(&data).await.unwrap();
-            bunt::println!("{$green}TCP handshake established!{/$}");
+            bunt::println!("{$green}TCP connection established!{/$}");
             sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
             stream.read_exact(&mut buf).await.unwrap();
@@ -166,7 +166,7 @@ pub async fn snipe_gc(
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector.connect(domain, stream).await.unwrap();
             stream.write_all(&data).await.unwrap();
-            bunt::println!("{$green}TCP handshake established!{/$}");
+            bunt::println!("{$green}TCP connection established!{/$}");
             sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
             stream.write_all(b"\r\n").await.unwrap();
             stream.read_exact(&mut buf).await.unwrap();
