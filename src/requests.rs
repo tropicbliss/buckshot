@@ -64,7 +64,7 @@ impl Requests {
             thread::sleep(time::Duration::from_secs(3));
             let auth_time = Utc::now();
             if webbrowser::open(url).is_err() {
-                println!("Seems like you are running this program in a headless environment. Copy the following URL into your browser:");
+                println!("It seems like you are running this program in a headless environment. Copy the following URL into your browser:");
                 println!("{}", constants::MS_AUTH_SERVER);
             }
             bunt::println!("{$red}Note: If you signed in with another Microsoft account recently and are experiencing auto sign-in behaviour, disable cookies on your browser.{/$}");
