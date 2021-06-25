@@ -213,27 +213,24 @@ impl Requests {
             username_to_snipe
         );
         let res = self.client.get(url).send().await;
-        match res {
-            Err(e) if e.is_timeout() => {
-                bunt::eprintln!("{$red}Error{/$}: HTTP request timeout.");
-            }
-            Err(_) => {}
-            Ok(res) => {
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            _ => res.unwrap(),
+        };
+        match res.status().as_u16() {
+            200 => {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
-                match v["searches"].as_f64() {
-                    Some(x) => {
-                        bunt::println!(
-                            "{$green}Successfully sniped {} with {} searches!{/$}",
-                            username_to_snipe,
-                            x
-                        );
-                    }
-                    None => {
-                        bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
-                        bunt::eprintln!("{$red}Error{/$}: Failed to get number of name searches.");
-                    }
-                }
+                let searches = v["searches"].as_i64().unwrap();
+                bunt::println!(
+                    "{$green}Successfully sniped {} with {} searches!{/$}",
+                    username_to_snipe,
+                    searches
+                );
+            }
+            _ => {
+                bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+                bunt::eprintln!("{$red}Error{/$}: Failed to get number of name searches.");
             }
         }
     }
