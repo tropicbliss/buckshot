@@ -51,7 +51,7 @@ impl Requests {
                 access_token
             },
             403 => pretty_panic("Authentication error. Check if you have entered your username and password correctly."),
-            code => pretty_panic(&format!("HTTP status code: {}", code)),
+            code => pretty_panic(&format!("HTTP status code: {}.", code)),
         }
     }
 
@@ -103,7 +103,7 @@ impl Requests {
                     eprintln!("Reason: SimpleAuth API is rate limited.")
                 } else {
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
-                    eprintln!("Reason: HTTP status code: {}", status);
+                    eprintln!("Reason: HTTP status code: {}.", status);
                 }
                 println!("Reverting to OAuth2 authentication...");
                 oauth2_authentication()
@@ -121,7 +121,7 @@ impl Requests {
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
-            pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
+            pretty_panic(&format!("HTTP status code: {}.", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
         if body == "[]" {
@@ -170,7 +170,7 @@ impl Requests {
         match res.status().as_u16() {
             204 => (),
             403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
-            code => pretty_panic(&format!("HTTP status code: {}", code)),
+            code => pretty_panic(&format!("HTTP status code: {}.", code)),
         }
     }
 
@@ -249,7 +249,7 @@ impl Requests {
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
-            pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
+            pretty_panic(&format!("HTTP status code: {}.", res.status().as_u16()));
         }
         let body = res.text().await.unwrap();
         let v: Value = serde_json::from_str(&body).unwrap();
@@ -320,7 +320,7 @@ impl Requests {
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
-            pretty_panic(&format!("HTTP status code: {}", res.status().as_u16()));
+            pretty_panic(&format!("HTTP status code: {}.", res.status().as_u16()));
         }
     }
 }
