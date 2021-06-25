@@ -98,9 +98,12 @@ impl Requests {
                     let error_msg = v["error"].as_str().unwrap();
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: {}", error_msg);
+                } else if status == 429 {
+                    bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
+                    eprintln!("Reason: SimpleAuth API is rate limited.")
                 } else {
                     bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
-                    eprintln!("Reason: Unknown server error.");
+                    eprintln!("Reason: HTTP status code: {}", status);
                 }
                 println!("Reverting to OAuth2 authentication...");
                 oauth2_authentication()
