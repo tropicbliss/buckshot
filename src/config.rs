@@ -1,8 +1,10 @@
 use crate::cli::pretty_panic;
 use crate::constants::CONFIG_PATH;
 use serde::Deserialize;
+use std::io::ErrorKind::NotFound;
+use std::path::Path;
 use tokio::fs::File;
-use tokio::io::AsyncReadExt;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -39,7 +41,8 @@ impl Config {
         } else {
             CONFIG_PATH
         };
-        match File::open(&config_path).await {
+        let file = File::open(&config_path).await;
+        match file {
             Ok(mut f) => {
                 let mut s = String::new();
                 f.read_to_string(&mut s).await.unwrap();
@@ -58,7 +61,46 @@ impl Config {
                 }
                 config
             }
-            Err(_) => pretty_panic(&format!("File {} not found.", config_path)),
+            Err(e) if e.kind() == NotFound => {
+                let path = Path::new(config_path);
+                let mut file = File::create(path).await.unwrap();
+                file.write_all(&get_default_config().into_bytes())
+                    .await
+                    .unwrap();
+                pretty_panic(&format!(
+                    "File {} not found. Creating a new config file.",
+                    config_path,
+                ));
+            }
+            Err(e) => panic!("{}", e),
         }
     }
+}
+
+fn get_default_config() -> String {
+    [
+        r#"# Leave the account section empty if you are using a Microsoft account"#,
+        r#"[account]"#,
+        r#"username = "test@example.com""#,
+        r#"password = "test""#,
+        r#"# Leave the rest empty if you do not have security questions"#,
+        r#"sq1 = "Foo""#,
+        r#"sq2 = "Bar""#,
+        r#"sq3 = "Baz""#,
+        r#""#,
+        r#"[config]"#,
+        r#"offset = 0"#,
+        r#"auto_offset = false"#,
+        r#"spread = 0"#,
+        r#"microsoft_auth = false"#,
+        r#"gc_snipe = false"#,
+        r#"change_skin = false"#,
+        r#"skin_model = "slim""#,
+        r#"skin_filename = "example.png""#,
+        r#"# Name queueing example:"#,
+        r#"# name_queue = ["Marc", "Dream"]"#,
+        r#"name_queue = []"#,
+        r#""#,
+    ]
+    .join("\r\n")
 }
