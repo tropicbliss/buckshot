@@ -309,7 +309,7 @@ impl Requests {
             .client
             .put(url)
             .bearer_auth(access_token)
-            .json("")
+            .header(reqwest::header::CONTENT_TYPE, "application/json")
             .send()
             .await;
         let res = match res {
