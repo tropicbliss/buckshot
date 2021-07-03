@@ -108,38 +108,21 @@ impl Sniper {
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
         let giftcode = cli::get_giftcode();
-        let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = &self.username_to_snipe {
-                if let Some(gc) = giftcode {
-                    let (snipe_time, _) = join!(
-                        requestor.check_name_availability_time(username_to_snipe, Some(auth_time)),
-                        requestor.redeem_giftcode(&gc, &access_token)
-                    );
-                    (snipe_time, username_to_snipe.to_owned())
-                } else {
-                    (
-                        requestor
-                            .check_name_availability_time(&username_to_snipe, Some(auth_time))
-                            .await,
-                        username_to_snipe.to_owned(),
-                    )
-                }
-            } else if let Some(gc) = giftcode {
-                let username_to_snipe = cli::get_username_choice();
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
-                    requestor.redeem_giftcode(&gc, &access_token)
-                );
-                (snipe_time, username_to_snipe)
-            } else {
-                let username_to_snipe = cli::get_username_choice();
-                (
-                    requestor
-                        .check_name_availability_time(&username_to_snipe, Some(auth_time))
-                        .await,
-                    username_to_snipe,
-                )
-            };
+        let username_to_snipe = match self.username_to_snipe.to_owned() {
+            Some(x) => x,
+            None => cli::get_username_choice(),
+        };
+        let snipe_time = if let Some(gc) = giftcode {
+            let (snipe_time, _) = join!(
+                requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
+                requestor.redeem_giftcode(&gc, &access_token)
+            );
+            snipe_time
+        } else {
+            requestor
+                .check_name_availability_time(&username_to_snipe, Some(auth_time))
+                .await
+        };
         let offset = if self.config.config.auto_offset {
             sockets::auto_offset_calculation_gc(&username_to_snipe).await
         } else {
