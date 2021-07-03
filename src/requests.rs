@@ -296,7 +296,7 @@ impl Requests {
                     bunt::eprintln!("{$red}Error{/$}: Failed to upload skin.")
                 }
             }
-            Err(_) => {}
+            Err(e) => panic!("{}", e),
         };
     }
 
