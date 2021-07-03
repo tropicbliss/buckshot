@@ -2,6 +2,7 @@
 
 use crate::{cli, config, requests, sockets};
 use chrono::{DateTime, Duration, Utc};
+use std::sync::Arc;
 use tokio::{join, time};
 
 pub enum SnipeTask {
@@ -34,32 +35,48 @@ impl Sniper {
     }
 
     async fn run_mojang(&self) {
-        let count = 0;
-        println!("Initialising...");
-        let requestor = requests::Requests::new();
-        let access_token = self.setup_mojang(&requestor).await;
-        let username_to_snipe = match self.username_to_snipe.to_owned() {
-            Some(x) => x,
-            None => cli::get_username_choice(),
-        };
-        let (snipe_time, _) = join!(
-            requestor.check_name_availability_time(&username_to_snipe, None),
-            requestor.check_name_change_eligibility(&access_token)
-        );
-        let offset = if self.config.config.auto_offset {
-            sockets::auto_offset_calculation_regular(&username_to_snipe).await
+        let mut count = 0;
+        let name_list = if let Some(username_to_snipe) = self.username_to_snipe.to_owned() {
+            vec![username_to_snipe]
+        } else if !self.config.config.name_queue.is_empty() {
+            self.config.config.name_queue.to_owned()
         } else {
-            self.config.config.offset
+            vec![cli::get_username_choice()]
         };
-        println!("Your offset is: {} ms.", offset);
-        self.snipe_mojang(
-            &snipe_time,
-            &username_to_snipe,
-            offset,
-            &access_token,
-            requestor,
-        )
-        .await;
+        let requestor = Arc::new(requests::Requests::new());
+        for username_to_snipe in name_list {
+            let requestor = Arc::clone(&requestor);
+            count += 1;
+            if count == 1 {
+                println!("Initialising...");
+            } else {
+                println!("Moving on to next name...");
+            }
+            let access_token = self.setup_mojang(&requestor).await;
+            let (snipe_time, _) = join!(
+                requestor.check_name_availability_time(&username_to_snipe, None),
+                requestor.check_name_change_eligibility(&access_token)
+            );
+            let offset = if self.config.config.auto_offset {
+                sockets::auto_offset_calculation_regular(&username_to_snipe).await
+            } else {
+                self.config.config.offset
+            };
+            println!("Your offset is: {} ms.", offset);
+            if self
+                .snipe_mojang(
+                    &snipe_time,
+                    &username_to_snipe,
+                    offset,
+                    &access_token,
+                    requestor,
+                )
+                .await
+            {
+                break;
+            }
+        }
+        cli::exit_program();
     }
 
     async fn run_msa(&self) {
@@ -135,8 +152,8 @@ impl Sniper {
         username_to_snipe: &str,
         offset: i32,
         access_token: &str,
-        requestor: requests::Requests,
-    ) {
+        requestor: Arc<requests::Requests>,
+    ) -> bool {
         let droptime = droptime.to_owned();
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
@@ -189,7 +206,7 @@ impl Sniper {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
         }
-        cli::exit_program();
+        is_success
     }
 
     async fn snipe_msa(

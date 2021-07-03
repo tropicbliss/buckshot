@@ -29,6 +29,7 @@ pub struct SubConfig {
     pub change_skin: bool,
     pub skin_model: String,
     pub skin_filename: String,
+    pub name_queue: Vec<String>,
 }
 
 impl Config {

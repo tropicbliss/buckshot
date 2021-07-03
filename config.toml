@@ -16,3 +16,4 @@ gc_snipe = false
 change_skin = false
 skin_model = "slim"
 skin_filename = "example.png"
+name_queue = []
