@@ -34,24 +34,18 @@ impl Sniper {
     }
 
     async fn run_mojang(&self) {
+        let count = 0;
         println!("Initialising...");
         let requestor = requests::Requests::new();
         let access_token = self.setup_mojang(&requestor).await;
-        let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = &self.username_to_snipe {
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(username_to_snipe, None),
-                    requestor.check_name_change_eligibility(&access_token)
-                );
-                (snipe_time, username_to_snipe.to_owned())
-            } else {
-                let username_to_snipe = cli::get_username_choice();
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, None),
-                    requestor.check_name_change_eligibility(&access_token)
-                );
-                (snipe_time, username_to_snipe)
-            };
+        let username_to_snipe = match self.username_to_snipe.to_owned() {
+            Some(x) => x,
+            None => cli::get_username_choice(),
+        };
+        let (snipe_time, _) = join!(
+            requestor.check_name_availability_time(&username_to_snipe, None),
+            requestor.check_name_change_eligibility(&access_token)
+        );
         let offset = if self.config.config.auto_offset {
             sockets::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
@@ -72,21 +66,14 @@ impl Sniper {
         println!("Initialising...");
         let requestor = requests::Requests::new();
         let (access_token, auth_time) = self.setup_msa(&requestor).await;
-        let (snipe_time, username_to_snipe) =
-            if let Some(username_to_snipe) = &self.username_to_snipe {
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(username_to_snipe, Some(auth_time)),
-                    requestor.check_name_change_eligibility(&access_token)
-                );
-                (snipe_time, username_to_snipe.to_owned())
-            } else {
-                let username_to_snipe = cli::get_username_choice();
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
-                    requestor.check_name_change_eligibility(&access_token)
-                );
-                (snipe_time, username_to_snipe)
-            };
+        let username_to_snipe = match self.username_to_snipe.to_owned() {
+            Some(x) => x,
+            None => cli::get_username_choice(),
+        };
+        let (snipe_time, _) = join!(
+            requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
+            requestor.check_name_change_eligibility(&access_token)
+        );
         let offset = if self.config.config.auto_offset {
             sockets::auto_offset_calculation_regular(&username_to_snipe).await
         } else {
