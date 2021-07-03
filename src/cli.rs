@@ -66,3 +66,7 @@ pub fn pretty_panic(err: &str) -> ! {
     exit_program();
     process::exit(1);
 }
+
+pub fn kalm_panic(err: &str) {
+    bunt::eprintln!("{$red}Error{/$}: {}", err);
+}

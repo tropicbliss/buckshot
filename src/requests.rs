@@ -93,17 +93,15 @@ impl Requests {
                 let access_token = v["access_token"].as_str().unwrap().to_string();
                 (access_token, auth_time)
             } else {
+                cli::kalm_panic("SimpleAuth failed.");
                 if status == 400 {
                     let body = res.text().await.unwrap();
                     let v: Value = serde_json::from_str(&body).unwrap();
                     let error_msg = v["error"].as_str().unwrap();
-                    bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: {}", error_msg);
                 } else if status == 429 {
-                    bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: SimpleAuth API is rate limited.")
                 } else {
-                    bunt::eprintln!("{$red}Error{/$}: SimpleAuth failed.");
                     eprintln!("Reason: HTTP status code: {}.", status);
                 }
                 println!("Reverting to OAuth2 authentication...");
@@ -231,7 +229,7 @@ impl Requests {
             }
             _ => {
                 bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
-                bunt::eprintln!("{$red}Error{/$}: Failed to get number of name searches.");
+                cli::kalm_panic("Failed to get number of name searches.");
             }
         }
     }
@@ -261,10 +259,7 @@ impl Requests {
         let img_file = match File::open(&config.config.skin_filename).await {
             Ok(f) => f,
             Err(_) => {
-                bunt::eprintln!(
-                    "{$red}Error{/$}: File {} not found.",
-                    config.config.skin_filename
-                );
+                cli::kalm_panic(&format!("File {} not found.", config.config.skin_filename));
                 return;
             }
         };
@@ -287,13 +282,13 @@ impl Requests {
             .await;
         match res {
             Err(e) if e.is_timeout() => {
-                bunt::eprintln!("{$red}Error{/$}: HTTP request timeout.");
+                cli::kalm_panic("HTTP request timeout.");
             }
             Ok(res) => {
                 if res.status().as_u16() == 200 {
                     bunt::println!("{$green}Successfully changed skin!{/$}")
                 } else {
-                    bunt::eprintln!("{$red}Error{/$}: Failed to upload skin.")
+                    cli::kalm_panic("Failed to upload skin.");
                 }
             }
             Err(e) => panic!("{}", e),
