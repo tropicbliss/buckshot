@@ -31,6 +31,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 - Spread (delay between asynchronous sniping requests)
 - Auto offset (never rely on this feature for reliable sniping, it should only be used to gauge the delay for first time snipers, adjust upon that offset for subsequent snipes)
 - Change skin on snipe
+- Name queueing for Mojang accounts (NEW)
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks arceus-sniper for yoinking your feature list phrasing)
 
@@ -40,7 +41,7 @@ https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-2
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.6).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v1.1.7).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. Open up `config.toml` on your favourite editor and configure it if need be.
 4. Make sure `config.toml` is on the same directory as the executable and double click it. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. I assume you use MCsniperPY so this process should be relatively straightforward.
