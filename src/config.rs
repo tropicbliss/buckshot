@@ -72,7 +72,10 @@ impl Config {
                     config_path
                 ));
             }
-            Err(e) => panic!("{}", e),
+            Err(e) => pretty_panic(&format!(
+                "File {} not found, a new config file cannot be created. Reason: {}.",
+                config_path, e
+            )),
         }
     }
 }
