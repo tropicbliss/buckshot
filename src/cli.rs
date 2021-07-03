@@ -27,7 +27,7 @@ pub fn get_username_choice() -> String {
             println!("Invalid username entered, please try again.");
             continue;
         } else {
-            break input.to_string();
+            break input;
         }
     }
 }
@@ -40,7 +40,7 @@ pub fn get_giftcode() -> Option<String> {
     if input.is_empty() {
         None
     } else {
-        Some(input.to_string())
+        Some(input)
     }
 }
 
@@ -51,7 +51,7 @@ pub fn get_access_token() -> String {
     );
     io::Write::flush(&mut io::stdout()).unwrap();
     io::stdin().read_line(&mut input).unwrap();
-    input.to_string()
+    input
 }
 
 pub fn exit_program() {
