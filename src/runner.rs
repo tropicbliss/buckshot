@@ -36,6 +36,7 @@ impl Sniper {
 
     async fn run_mojang(&self) {
         let mut count = 0;
+        let mut is_success = false;
         let name_list = if let Some(username_to_snipe) = self.username_to_snipe.to_owned() {
             vec![username_to_snipe]
         } else if !self.config.config.name_queue.is_empty() {
@@ -73,8 +74,12 @@ impl Sniper {
                 )
                 .await
             {
+                is_success = true;
                 break;
             }
+        }
+        if !is_success && count > 1 {
+            println!("Unfortunately, you did not snipe a name.");
         }
         cli::exit_program();
     }
