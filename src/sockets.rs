@@ -147,7 +147,7 @@ pub async fn snipe_gc(
         .ok_or("failed to resolve api.minecraftservices.com")
         .unwrap();
     let post_body = json!({ "profileName": username_to_snipe }).to_string();
-    let data = Arc::new(format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", post_body, access_token).into_bytes());
+    let data = Arc::new(format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n\r\n{}", access_token, post_body).into_bytes());
     let mut config = ClientConfig::new();
     config
         .root_store
