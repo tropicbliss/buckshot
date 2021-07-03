@@ -68,8 +68,8 @@ impl Config {
                     .await
                     .unwrap();
                 pretty_panic(&format!(
-                    "File {} not found. Creating a new config file.",
-                    config_path,
+                    "File {} not found, creating a new config file.",
+                    config_path
                 ));
             }
             Err(e) => panic!("{}", e),
