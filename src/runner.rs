@@ -112,16 +112,19 @@ impl Sniper {
             Some(x) => x,
             None => cli::get_username_choice(),
         };
-        let snipe_time = if let Some(gc) = giftcode {
-            let (snipe_time, _) = join!(
-                requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
-                requestor.redeem_giftcode(&gc, &access_token)
-            );
-            snipe_time
-        } else {
-            requestor
-                .check_name_availability_time(&username_to_snipe, Some(auth_time))
-                .await
+        let snipe_time = match giftcode {
+            Some(gc) => {
+                let (snipe_time, _) = join!(
+                    requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
+                    requestor.redeem_giftcode(&gc, &access_token)
+                );
+                snipe_time
+            }
+            None => {
+                requestor
+                    .check_name_availability_time(&username_to_snipe, Some(auth_time))
+                    .await
+            }
         };
         let offset = if self.config.config.auto_offset {
             sockets::auto_offset_calculation_gc(&username_to_snipe).await
