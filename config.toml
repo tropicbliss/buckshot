@@ -17,5 +17,5 @@ change_skin = false
 skin_model = "slim"
 skin_filename = "example.png"
 # Name queueing example:
-# name_queue = ["E10"]
+# name_queue = ["Marc", "Dream"]
 name_queue = []
