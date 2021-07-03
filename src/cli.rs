@@ -20,7 +20,6 @@ pub fn get_username_choice() -> String {
         print!("What name will you like to snipe: ");
         io::Write::flush(&mut io::stdout()).unwrap();
         io::stdin().read_line(&mut input).unwrap();
-        let input = input.trim();
         if input.len() < 3
             || input.len() > 16
             || !input.chars().all(|x| char::is_alphanumeric(x) || x == '_')
@@ -38,7 +37,6 @@ pub fn get_giftcode() -> Option<String> {
     print!("Enter your gift code (press ENTER if you have already redeemed your gift code): ");
     io::Write::flush(&mut io::stdout()).unwrap();
     io::stdin().read_line(&mut input).unwrap();
-    let input = input.trim();
     if input.is_empty() {
         None
     } else {
@@ -53,7 +51,7 @@ pub fn get_access_token() -> String {
     );
     io::Write::flush(&mut io::stdout()).unwrap();
     io::stdin().read_line(&mut input).unwrap();
-    input.trim().to_string()
+    input.to_string()
 }
 
 pub fn exit_program() {
