@@ -36,13 +36,11 @@ pub struct SubConfig {
 
 impl Config {
     pub async fn new(config_name: &Option<String>) -> Self {
-        let config_path = if let Some(x) = config_name {
-            x
-        } else {
-            CONFIG_PATH
+        let config_path = match config_name {
+            Some(x) => x,
+            None => CONFIG_PATH,
         };
-        let file = File::open(&config_path).await;
-        match file {
+        match File::open(&config_path).await {
             Ok(mut f) => {
                 let mut s = String::new();
                 f.read_to_string(&mut s).await.unwrap();
