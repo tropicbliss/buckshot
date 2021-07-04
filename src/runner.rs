@@ -76,6 +76,13 @@ impl Sniper {
                     snipe_time
                 }
             };
+            let snipe_time = match snipe_time {
+                Ok(x) => x,
+                Err(requests::NameAvailabilityError::NameNotAvailableError) => {
+                    cli::kalm_panik("GetDrop", "Name is not available or has already dropped.");
+                    continue;
+                }
+            };
             let offset = if self.config.config.auto_offset {
                 match task {
                     SnipeTask::Giftcode => {
@@ -97,6 +104,13 @@ impl Sniper {
                     task,
                 )
                 .await;
+            let snipe_status = match snipe_status {
+                Some(x) => x,
+                None => {
+                    cli::kalm_panik("GetDrop", "Name is not available or has already dropped.");
+                    continue;
+                }
+            };
             if snipe_status {
                 is_success = true;
                 break;
@@ -116,7 +130,7 @@ impl Sniper {
         access_token: &str,
         requestor: &Arc<requests::Requests>,
         task: &SnipeTask,
-    ) -> bool {
+    ) -> Option<bool> {
         let droptime = droptime.to_owned();
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
@@ -140,18 +154,22 @@ impl Sniper {
         let access_token = if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             let access_token = self.setup(&requestor, task).await;
-            match task {
+            let stub_snipe_time = match task {
                 SnipeTask::Giftcode => {
                     requestor
                         .check_name_availability_time(&username_to_snipe)
-                        .await;
+                        .await
                 }
                 _ => {
-                    join!(
+                    let (snipe_time, _) = join!(
                         requestor.check_name_availability_time(&username_to_snipe),
                         requestor.check_name_change_eligibility(&access_token)
                     );
+                    snipe_time
                 }
+            };
+            if stub_snipe_time.is_err() {
+                return None;
             }
             bunt::println!(
                 "{$green}Signed in to {} successfully.{/$}",
@@ -191,7 +209,7 @@ impl Sniper {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
         }
-        is_success
+        Some(is_success)
     }
 
     async fn setup(&self, requestor: &Arc<requests::Requests>, task: &SnipeTask) -> String {
@@ -225,7 +243,7 @@ impl Sniper {
                         .await
                     {
                         Ok(x) => break x,
-                        Err(requests::GeneralSniperError::RetryableAuthenticationError) => {
+                        Err(requests::AuthenicationError::RetryableAuthenticationError) => {
                             cli::kalm_panik(
                                 "MicroAuth",
                                 &format!(

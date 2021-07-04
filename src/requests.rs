@@ -8,8 +8,12 @@ use serde_json::{json, Value};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
-pub enum GeneralSniperError {
+pub enum AuthenicationError {
     RetryableAuthenticationError,
+}
+
+pub enum NameAvailabilityError {
+    NameNotAvailableError,
 }
 
 pub struct Requests {
@@ -63,7 +67,7 @@ impl Requests {
         &self,
         username: &str,
         password: &str,
-    ) -> Result<String, GeneralSniperError> {
+    ) -> Result<String, AuthenicationError> {
         let function_id = "MicroAuth";
         if username.is_empty() || password.is_empty() {
             pretty_panik(function_id, "You did not provide a username or password.");
@@ -89,7 +93,7 @@ impl Requests {
                 let v: Value = serde_json::from_str(&body).unwrap();
                 let err = v["error"].as_str().unwrap().to_string();
                 if err == "This API is currently overloaded. Please try again later." {
-                    Err(GeneralSniperError::RetryableAuthenticationError)
+                    Err(AuthenicationError::RetryableAuthenticationError)
                 } else {
                     pretty_panik(
                         function_id,
@@ -166,7 +170,10 @@ impl Requests {
         }
     }
 
-    pub async fn check_name_availability_time(&self, username_to_snipe: &str) -> DateTime<Utc> {
+    pub async fn check_name_availability_time(
+        &self,
+        username_to_snipe: &str,
+    ) -> Result<DateTime<Utc>, NameAvailabilityError> {
         let function_id = "GetDrop";
         let url = format!("{}/droptime/{}", constants::DROPTIME_API, username_to_snipe);
         let res = self.client.get(url).send().await;
@@ -179,12 +186,9 @@ impl Requests {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
                 let epoch = v["UNIX"].as_i64().unwrap();
-                Utc.timestamp(epoch, 0)
+                Ok(Utc.timestamp(epoch, 0))
             }
-            _ => pretty_panik(
-                function_id,
-                "This name is not dropping or has already dropped.",
-            ),
+            _ => Err(NameAvailabilityError::NameNotAvailableError),
         }
     }
 
