@@ -27,14 +27,10 @@ impl Sniper {
     }
 
     pub async fn run(&self) {
-        match self.task {
-            SnipeTask::Mojang => self.run_mojang().await,
-            SnipeTask::Microsoft => self.run_msa().await,
-            SnipeTask::Giftcode => self.run_gc().await,
-        }
+        self.execute(&self.task).await;
     }
 
-    async fn run_mojang(&self) {
+    async fn execute(&self, task: &SnipeTask) {
         let mut count = 0;
         let mut is_success = false;
         let name_list = if let Some(username_to_snipe) = self.username_to_snipe.to_owned() {
@@ -53,27 +49,55 @@ impl Sniper {
             } else {
                 println!("Moving on to next name...");
             }
-            let access_token = self.setup_mojang(&requestor).await;
-            let (snipe_time, _) = join!(
-                requestor.check_name_availability_time(&username_to_snipe, None),
-                requestor.check_name_change_eligibility(&access_token)
-            );
+            let access_token = self.setup(&requestor, task).await;
+            let snipe_time = match task {
+                SnipeTask::Giftcode => {
+                    let giftcode = cli::get_giftcode();
+                    match giftcode {
+                        Some(gc) => {
+                            let (snipe_time, _) = join!(
+                                requestor.check_name_availability_time(&username_to_snipe),
+                                requestor.redeem_giftcode(&gc, &access_token)
+                            );
+                            snipe_time
+                        }
+                        None => {
+                            requestor
+                                .check_name_availability_time(&username_to_snipe)
+                                .await
+                        }
+                    }
+                }
+                _ => {
+                    let (snipe_time, _) = join!(
+                        requestor.check_name_availability_time(&username_to_snipe),
+                        requestor.check_name_change_eligibility(&access_token)
+                    );
+                    snipe_time
+                }
+            };
             let offset = if self.config.config.auto_offset {
-                sockets::auto_offset_calculation_regular(&username_to_snipe).await
+                match task {
+                    SnipeTask::Giftcode => {
+                        sockets::auto_offset_calculation_gc(&username_to_snipe).await
+                    }
+                    _ => sockets::auto_offset_calculation_regular(&username_to_snipe).await,
+                }
             } else {
                 self.config.config.offset
             };
             println!("Your offset is: {} ms.", offset);
-            if self
-                .snipe_mojang(
+            let snipe_status = self
+                .snipe(
                     &snipe_time,
                     &username_to_snipe,
                     offset,
                     &access_token,
-                    requestor,
+                    &requestor,
+                    task,
                 )
-                .await
-            {
+                .await;
+            if snipe_status {
                 is_success = true;
                 break;
             }
@@ -84,80 +108,14 @@ impl Sniper {
         cli::exit_program();
     }
 
-    async fn run_msa(&self) {
-        println!("Initialising...");
-        let requestor = requests::Requests::new();
-        let (access_token, auth_time) = self.setup_msa(&requestor).await;
-        let username_to_snipe = match self.username_to_snipe.to_owned() {
-            Some(x) => x,
-            None => cli::get_username_choice(),
-        };
-        let (snipe_time, _) = join!(
-            requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
-            requestor.check_name_change_eligibility(&access_token)
-        );
-        let offset = if self.config.config.auto_offset {
-            sockets::auto_offset_calculation_regular(&username_to_snipe).await
-        } else {
-            self.config.config.offset
-        };
-        println!("Your offset is: {} ms.", offset);
-        self.snipe_msa(
-            &snipe_time,
-            &username_to_snipe,
-            offset,
-            &access_token,
-            requestor,
-        )
-        .await;
-    }
-
-    async fn run_gc(&self) {
-        println!("Initialising...");
-        let requestor = requests::Requests::new();
-        let (access_token, auth_time) = self.setup_msa(&requestor).await;
-        let giftcode = cli::get_giftcode();
-        let username_to_snipe = match self.username_to_snipe.to_owned() {
-            Some(x) => x,
-            None => cli::get_username_choice(),
-        };
-        let snipe_time = match giftcode {
-            Some(gc) => {
-                let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe, Some(auth_time)),
-                    requestor.redeem_giftcode(&gc, &access_token)
-                );
-                snipe_time
-            }
-            None => {
-                requestor
-                    .check_name_availability_time(&username_to_snipe, Some(auth_time))
-                    .await
-            }
-        };
-        let offset = if self.config.config.auto_offset {
-            sockets::auto_offset_calculation_gc(&username_to_snipe).await
-        } else {
-            self.config.config.offset
-        };
-        println!("Your offset is: {} ms.", offset);
-        self.snipe_gc(
-            &snipe_time,
-            &username_to_snipe,
-            offset,
-            &access_token,
-            requestor,
-        )
-        .await;
-    }
-
-    async fn snipe_mojang(
+    async fn snipe(
         &self,
         droptime: &DateTime<Utc>,
         username_to_snipe: &str,
         offset: i32,
         access_token: &str,
-        requestor: Arc<requests::Requests>,
+        requestor: &Arc<requests::Requests>,
+        task: &SnipeTask,
     ) -> bool {
         let droptime = droptime.to_owned();
         let formatted_droptime = droptime.format("%F %T");
@@ -181,11 +139,20 @@ impl Sniper {
         let setup_time = snipe_time - Duration::minutes(12);
         let access_token = if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
-            let access_token = self.setup_mojang(&requestor).await;
-            join!(
-                requestor.check_name_availability_time(&username_to_snipe, None),
-                requestor.check_name_change_eligibility(&access_token)
-            );
+            let access_token = self.setup(&requestor, task).await;
+            match task {
+                SnipeTask::Giftcode => {
+                    requestor
+                        .check_name_availability_time(&username_to_snipe)
+                        .await;
+                }
+                _ => {
+                    join!(
+                        requestor.check_name_availability_time(&username_to_snipe),
+                        requestor.check_name_change_eligibility(&access_token)
+                    );
+                }
+            }
             bunt::println!(
                 "{$green}Signed in to {} successfully.{/$}",
                 self.config.account.username
@@ -198,13 +165,26 @@ impl Sniper {
             );
             access_token.to_string()
         };
-        let is_success = sockets::snipe_regular(
-            &snipe_time,
-            username_to_snipe,
-            &access_token,
-            self.config.config.spread as i32,
-        )
-        .await;
+        let is_success = match task {
+            SnipeTask::Giftcode => {
+                sockets::snipe_gc(
+                    &snipe_time,
+                    username_to_snipe,
+                    &access_token,
+                    self.config.config.spread as i32,
+                )
+                .await
+            }
+            _ => {
+                sockets::snipe_regular(
+                    &snipe_time,
+                    username_to_snipe,
+                    &access_token,
+                    self.config.config.spread as i32,
+                )
+                .await
+            }
+        };
         if is_success {
             requestor.get_searches(username_to_snipe).await;
             if self.config.config.change_skin {
@@ -214,131 +194,50 @@ impl Sniper {
         is_success
     }
 
-    async fn snipe_msa(
-        &self,
-        droptime: &DateTime<Utc>,
-        username_to_snipe: &str,
-        offset: i32,
-        access_token: &str,
-        requestor: requests::Requests,
-    ) {
-        let droptime = droptime.to_owned();
-        let formatted_droptime = droptime.format("%F %T");
-        let duration_in_sec = droptime - Utc::now();
-        if duration_in_sec < Duration::minutes(1) {
-            println!(
-                "Sniping {} in ~{} seconds | sniping at {} (utc).",
-                username_to_snipe,
-                duration_in_sec.num_seconds(),
-                formatted_droptime
-            )
-        } else {
-            println!(
-                "Sniping {} in ~{} minutes | sniping at {} (utc).",
-                username_to_snipe,
-                duration_in_sec.num_minutes(),
-                formatted_droptime
-            )
-        }
-        let snipe_time = droptime - Duration::milliseconds(offset as i64);
-        let setup_time = snipe_time - Duration::minutes(12);
-        if Utc::now() < setup_time {
-            time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
-            join!(
-                requestor.check_name_availability_time(&username_to_snipe, None),
-                requestor.check_name_change_eligibility(&access_token)
-            );
-            bunt::println!("{$green}Signed in successfully.{/$}");
-        } else {
-            bunt::println!("{$green}Signed in successfully.{/$}");
-        }
-        let is_success = sockets::snipe_regular(
-            &snipe_time,
-            username_to_snipe,
-            access_token,
-            self.config.config.spread as i32,
-        )
-        .await;
-        if is_success {
-            requestor.get_searches(username_to_snipe).await;
-            if self.config.config.change_skin {
-                requestor.upload_skin(&self.config, &access_token).await;
+    async fn setup(&self, requestor: &Arc<requests::Requests>, task: &SnipeTask) -> String {
+        match task {
+            SnipeTask::Mojang => {
+                let access_token = requestor
+                    .authenticate_mojang(
+                        &self.config.account.username,
+                        &self.config.account.password,
+                    )
+                    .await;
+                if let Some(sq_id) = requestor.get_sq_id(&access_token).await {
+                    let answer = [
+                        &self.config.account.sq1,
+                        &self.config.account.sq2,
+                        &self.config.account.sq3,
+                    ];
+                    requestor.send_sq(&access_token, &sq_id, &answer).await;
+                }
+                access_token
+            }
+            _ => {
+                let mut count = 0;
+                loop {
+                    count += 1;
+                    match requestor
+                        .authenticate_microsoft(
+                            &self.config.account.username,
+                            &self.config.account.password,
+                        )
+                        .await
+                    {
+                        Ok(x) => break x,
+                        Err(requests::GeneralSniperError::RetryableAuthenticationError) => {
+                            cli::kalm_panic(&format!(
+                                "Authentication error. Retrying in 10 seconds. Attempt(s): {}.",
+                                count
+                            ));
+                            time::sleep(std::time::Duration::from_secs(10)).await;
+                            if count == 3 {
+                                cli::pretty_panic("Authentication failed.");
+                            }
+                        }
+                    }
+                }
             }
         }
-        cli::exit_program();
-    }
-
-    async fn snipe_gc(
-        &self,
-        droptime: &DateTime<Utc>,
-        username_to_snipe: &str,
-        offset: i32,
-        access_token: &str,
-        requestor: requests::Requests,
-    ) {
-        let droptime = droptime.to_owned();
-        let formatted_droptime = droptime.format("%F %T");
-        let duration_in_sec = droptime - Utc::now();
-        if duration_in_sec < Duration::minutes(1) {
-            println!(
-                "Sniping {} in ~{} seconds | sniping at {} (utc).",
-                username_to_snipe,
-                duration_in_sec.num_seconds(),
-                formatted_droptime
-            )
-        } else {
-            println!(
-                "Sniping {} in ~{} minutes | sniping at {} (utc).",
-                username_to_snipe,
-                duration_in_sec.num_minutes(),
-                formatted_droptime
-            )
-        }
-        let snipe_time = droptime - Duration::milliseconds(offset as i64);
-        let setup_time = snipe_time - Duration::minutes(12);
-        if Utc::now() < setup_time {
-            time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
-            requestor
-                .check_name_availability_time(&username_to_snipe, None)
-                .await;
-            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
-        } else {
-            bunt::println!("{$green}Signed in to {}.{/$}", self.config.account.username);
-        }
-        let is_success = sockets::snipe_gc(
-            &snipe_time,
-            username_to_snipe,
-            access_token,
-            self.config.config.spread as i32,
-        )
-        .await;
-        if is_success {
-            requestor.get_searches(username_to_snipe).await;
-            if self.config.config.change_skin {
-                requestor.upload_skin(&self.config, &access_token).await;
-            }
-        }
-        cli::exit_program();
-    }
-
-    async fn setup_mojang(&self, requestor: &requests::Requests) -> String {
-        let access_token = requestor
-            .authenticate_mojang(&self.config.account.username, &self.config.account.password)
-            .await;
-        if let Some(sq_id) = requestor.get_sq_id(&access_token).await {
-            let answer = [
-                &self.config.account.sq1,
-                &self.config.account.sq2,
-                &self.config.account.sq3,
-            ];
-            requestor.send_sq(&access_token, &sq_id, &answer).await;
-        }
-        access_token
-    }
-
-    async fn setup_msa(&self, requestor: &requests::Requests) -> (String, DateTime<Utc>) {
-        requestor
-            .authenticate_microsoft(&self.config.account.username, &self.config.account.password)
-            .await
     }
 }

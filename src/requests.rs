@@ -2,12 +2,15 @@
 
 use crate::cli::pretty_panic;
 use crate::{cli, config, constants};
-use chrono::{DateTime, Duration, TimeZone, Utc};
+use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
 use serde_json::{json, Value};
-use std::{thread, time};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
+
+pub enum GeneralSniperError {
+    RetryableAuthenticationError,
+}
 
 pub struct Requests {
     client: Client,
@@ -50,7 +53,7 @@ impl Requests {
                 let access_token = v["accessToken"].as_str().unwrap().to_string();
                 access_token
             },
-            403 => pretty_panic("Authentication error. Check if you have entered your username and password correctly."),
+            403 => pretty_panic("Authentication error. Please check if you have entered your username and password correctly."),
             code => pretty_panic(&format!("HTTP status code: {}.", code)),
         }
     }
@@ -59,55 +62,37 @@ impl Requests {
         &self,
         username: &str,
         password: &str,
-    ) -> (String, DateTime<Utc>) {
-        fn oauth2_authentication() -> (String, DateTime<Utc>) {
-            let url = constants::MS_AUTH_SERVER;
-            println!("Opening browser...");
-            thread::sleep(time::Duration::from_secs(3));
-            let auth_time = Utc::now();
-            if webbrowser::open(url).is_err() {
-                println!("It seems like you are running this program in a headless environment. Copy the following URL into your browser:");
-                println!("{}", constants::MS_AUTH_SERVER);
-            }
-            bunt::println!("{$red}Note: If you signed in with another Microsoft account recently and are experiencing auto sign-in behaviour, disable cookies on your browser.{/$}");
-            let access_token = cli::get_access_token();
-            (access_token, auth_time)
+    ) -> Result<String, GeneralSniperError> {
+        if username.is_empty() || password.is_empty() {
+            pretty_panic("You did not provide a username or password.");
         }
-        if !(username.is_empty() || password.is_empty()) {
-            let post_json = json!({
-                "username": username,
-                "password": password
-            });
-            let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
-            let auth_time = Utc::now();
-            let res = self.client.post(url).json(&post_json).send().await;
-            let res = match res {
-                Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
-                _ => res.unwrap(),
-            };
-            let status = res.status().as_u16();
-            if status == 200 {
+        let post_json = json!({
+            "username": username,
+            "password": password
+        });
+        let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
+        let res = self.client.post(url).json(&post_json).send().await;
+        let res = match res {
+            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            _ => res.unwrap(),
+        };
+        match res.status().as_u16() {
+            200 => {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
-                let access_token = v["access_token"].as_str().unwrap().to_string();
-                (access_token, auth_time)
-            } else {
-                cli::kalm_panic("SimpleAuth failed.");
-                if status == 400 {
-                    let body = res.text().await.unwrap();
-                    let v: Value = serde_json::from_str(&body).unwrap();
-                    let error_msg = v["error"].as_str().unwrap();
-                    eprintln!("Reason: {}", error_msg);
-                } else if status == 429 {
-                    eprintln!("Reason: SimpleAuth API is rate limited.")
-                } else {
-                    eprintln!("Reason: HTTP status code: {}.", status);
-                }
-                println!("Reverting to OAuth2 authentication...");
-                oauth2_authentication()
+                Ok(v["access_token"].as_str().unwrap().to_string())
             }
-        } else {
-            oauth2_authentication()
+            400 => {
+                let body = res.text().await.unwrap();
+                let v: Value = serde_json::from_str(&body).unwrap();
+                let err = v["error"].as_str().unwrap().to_string();
+                if err == "This API is currently overloaded. Please try again later." {
+                    Err(GeneralSniperError::RetryableAuthenticationError)
+                } else {
+                    pretty_panic(&format!("Authentication error. Reason: {}", err))
+                }
+            }
+            code => pretty_panic(&format!("HTTP status code: {}.", code)),
         }
     }
 
@@ -172,11 +157,7 @@ impl Requests {
         }
     }
 
-    pub async fn check_name_availability_time(
-        &self,
-        username_to_snipe: &str,
-        auth_time: Option<DateTime<Utc>>,
-    ) -> DateTime<Utc> {
+    pub async fn check_name_availability_time(&self, username_to_snipe: &str) -> DateTime<Utc> {
         let url = format!(
             "{}/droptime/{}",
             constants::TEUN_NAMEMC_API,
@@ -192,13 +173,7 @@ impl Requests {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
                 let epoch = v["UNIX"].as_i64().unwrap();
-                let droptime = Utc.timestamp(epoch, 0);
-                if let Some(auth) = auth_time {
-                    if droptime - auth.to_owned() > Duration::days(1) {
-                        pretty_panic("You cannot snipe a name available more than one day later if you are using a Microsoft account.");
-                    }
-                }
-                droptime
+                Utc.timestamp(epoch, 0)
             }
             _ => pretty_panic("This name is not dropping or has already dropped."),
         }

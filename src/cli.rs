@@ -44,16 +44,6 @@ pub fn get_giftcode() -> Option<String> {
     }
 }
 
-pub fn get_access_token() -> String {
-    let mut input = String::new();
-    print!(
-        r#"Sign in with your Microsoft account and copy the access token from the authentication page right here: "#
-    );
-    io::Write::flush(&mut io::stdout()).unwrap();
-    io::stdin().read_line(&mut input).unwrap();
-    input
-}
-
 pub fn exit_program() {
     let mut input = String::new();
     print!("Press ENTER to quit: ");
