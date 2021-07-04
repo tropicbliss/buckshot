@@ -50,39 +50,24 @@ impl Sniper {
                 println!("Moving on to next name...");
             }
             let access_token = self.setup(&requestor, task).await;
-            let snipe_time = match task {
-                SnipeTask::Giftcode => {
-                    let giftcode = cli::get_giftcode();
-                    match giftcode {
-                        Some(gc) => {
-                            let (snipe_time, _) = join!(
-                                requestor.check_name_availability_time(&username_to_snipe),
-                                requestor.redeem_giftcode(&gc, &access_token)
-                            );
-                            snipe_time
-                        }
-                        None => {
-                            requestor
-                                .check_name_availability_time(&username_to_snipe)
-                                .await
-                        }
-                    }
-                }
-                _ => {
-                    let (snipe_time, _) = join!(
-                        requestor.check_name_availability_time(&username_to_snipe),
-                        requestor.check_name_change_eligibility(&access_token)
-                    );
-                    snipe_time
-                }
-            };
-            let snipe_time = match snipe_time {
+            let snipe_time = match requestor.check_name_availability_time(&access_token).await {
                 Ok(x) => x,
                 Err(requests::NameAvailabilityError::NameNotAvailableError) => {
                     cli::kalm_panik("GetDrop", "Name is not available or has already dropped.");
                     continue;
                 }
             };
+            match task {
+                SnipeTask::Giftcode => {
+                    let giftcode = cli::get_giftcode();
+                    if let Some(gc) = giftcode {
+                        requestor.redeem_giftcode(&gc, &access_token).await;
+                    }
+                }
+                _ => {
+                    requestor.check_name_change_eligibility(&access_token).await;
+                }
+            }
             let offset = if self.config.config.auto_offset {
                 match task {
                     SnipeTask::Giftcode => {
