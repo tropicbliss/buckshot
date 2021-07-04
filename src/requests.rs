@@ -181,7 +181,6 @@ impl Requests {
             Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
-        println!("{}", res.status().as_u16());
         match res.status().as_u16() {
             200 => {
                 let body = res.text().await.unwrap();
