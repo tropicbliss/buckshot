@@ -49,14 +49,17 @@ impl Sniper {
             } else {
                 println!("Moving on to next name...");
             }
-            let access_token = self.setup(&requestor, task).await;
-            let snipe_time = match requestor.check_name_availability_time(&access_token).await {
+            let snipe_time = match requestor
+                .check_name_availability_time(&username_to_snipe)
+                .await
+            {
                 Ok(x) => x,
                 Err(requests::NameAvailabilityError::NameNotAvailableError) => {
                     cli::kalm_panik("GetDrop", "Name is not available or has already dropped.");
                     continue;
                 }
             };
+            let access_token = self.setup(&requestor, task).await;
             match task {
                 SnipeTask::Giftcode => {
                     let giftcode = cli::get_giftcode();
