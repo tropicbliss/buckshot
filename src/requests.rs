@@ -29,7 +29,7 @@ impl Requests {
 
     pub async fn authenticate_mojang(&self, username: &str, password: &str) -> String {
         if username.is_empty() || password.is_empty() {
-            pretty_panic("You did not provide a username or password.");
+            pretty_panic("[YggdrasilAuth] You did not provide a username or password.");
         }
         let post_json = json!({
             "username": username,
@@ -44,7 +44,7 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[YggdrasilAuth] HTTP request timeout."),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -53,8 +53,8 @@ impl Requests {
                 let access_token = v["accessToken"].as_str().unwrap().to_string();
                 access_token
             },
-            403 => pretty_panic("Authentication error. Please check if you have entered your username and password correctly."),
-            code => pretty_panic(&format!("HTTP status code: {}.", code)),
+            403 => pretty_panic("[YggdrasilAuth] Authentication error. Please check if you have entered your username and password correctly."),
+            code => pretty_panic(&format!("[YggdrasilAuth] HTTP status code: {}.", code)),
         }
     }
 
@@ -64,7 +64,7 @@ impl Requests {
         password: &str,
     ) -> Result<String, GeneralSniperError> {
         if username.is_empty() || password.is_empty() {
-            pretty_panic("You did not provide a username or password.");
+            pretty_panic("[MicroAuth] You did not provide a username or password.");
         }
         let post_json = json!({
             "username": username,
@@ -73,7 +73,7 @@ impl Requests {
         let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
         let res = self.client.post(url).json(&post_json).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[MicroAuth] HTTP request timeout."),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -89,10 +89,13 @@ impl Requests {
                 if err == "This API is currently overloaded. Please try again later." {
                     Err(GeneralSniperError::RetryableAuthenticationError)
                 } else {
-                    pretty_panic(&format!("Authentication error. Reason: {}", err))
+                    pretty_panic(&format!(
+                        "[MicroAuth] Authentication error. Reason: {}",
+                        err
+                    ))
                 }
             }
-            code => pretty_panic(&format!("HTTP status code: {}.", code)),
+            code => pretty_panic(&format!("[MicroAuth] HTTP status code: {}.", code)),
         }
     }
 
@@ -100,11 +103,14 @@ impl Requests {
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
         let res = self.client.get(url).bearer_auth(access_token).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[GetSQID] HTTP request timeout."),
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
-            pretty_panic(&format!("HTTP status code: {}.", res.status().as_u16()));
+            pretty_panic(&format!(
+                "[GetSQID] HTTP status code: {}.",
+                res.status().as_u16()
+            ));
         }
         let body = res.text().await.unwrap();
         if body == "[]" {
@@ -121,7 +127,7 @@ impl Requests {
     pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             pretty_panic(
-                "Your account has security questions and you did not provide any answers.",
+                "[SendSQ] Your account has security questions and you did not provide any answers.",
             );
         }
         let post_body = json!([
@@ -147,13 +153,13 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[SendSQ] HTTP request timeout."),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
             204 => (),
-            403 => pretty_panic("Authentication error. Check if you have entered your security questions correctly."),
-            code => pretty_panic(&format!("HTTP status code: {}.", code)),
+            403 => pretty_panic("[SendSQ] Authentication error. Check if you have entered your security questions correctly."),
+            code => pretty_panic(&format!("[SendSQ] HTTP status code: {}.", code)),
         }
     }
 
@@ -161,7 +167,7 @@ impl Requests {
         let url = format!("{}/droptime/{}", constants::DROPTIME_API, username_to_snipe);
         let res = self.client.get(url).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[GetDrop] HTTP request timeout."),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -171,7 +177,7 @@ impl Requests {
                 let epoch = v["UNIX"].as_i64().unwrap();
                 Utc.timestamp(epoch, 0)
             }
-            _ => pretty_panic("This name is not dropping or has already dropped."),
+            _ => pretty_panic("[GetDrop] This name is not dropping or has already dropped."),
         }
     }
 
@@ -183,7 +189,7 @@ impl Requests {
         );
         let res = self.client.get(url).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[GetSearch] HTTP request timeout."),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -211,17 +217,20 @@ impl Requests {
         );
         let res = self.client.get(url).bearer_auth(access_token).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[CheckEligible] HTTP request timeout."),
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
-            pretty_panic(&format!("HTTP status code: {}.", res.status().as_u16()));
+            pretty_panic(&format!(
+                "[CheckEligible] HTTP status code: {}.",
+                res.status().as_u16()
+            ));
         }
         let body = res.text().await.unwrap();
         let v: Value = serde_json::from_str(&body).unwrap();
         let is_allowed = v["nameChangeAllowed"].as_bool().unwrap();
         if !is_allowed {
-            pretty_panic("You cannot name change within the cooldown period.")
+            pretty_panic("[CheckEligible] You cannot name change within the cooldown period.")
         }
     }
 
@@ -279,11 +288,14 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
+            Err(e) if e.is_timeout() => pretty_panic("[GCRedeem] HTTP request timeout."),
             _ => res.unwrap(),
         };
         if res.status().as_u16() != 200 {
-            pretty_panic(&format!("HTTP status code: {}.", res.status().as_u16()));
+            pretty_panic(&format!(
+                "[GCRedeem] HTTP status code: {}.",
+                res.status().as_u16()
+            ));
         }
     }
 }

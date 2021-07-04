@@ -232,7 +232,7 @@ impl Sniper {
                             ));
                             time::sleep(std::time::Duration::from_secs(10)).await;
                             if count == 3 {
-                                cli::pretty_panic("Authentication failed.");
+                                cli::pretty_panic("[MicroAuth] Authentication failed due to an unknown server error.");
                             }
                         }
                     }
