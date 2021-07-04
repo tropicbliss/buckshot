@@ -9,3 +9,4 @@ pub const SERVER_RESPONSE_TIME: u8 = 100;
 pub const BUCKSHOT_API_SERVER: &str = "https://auth.buckshotrs.com";
 pub const USER_AGENT: &str =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0";
+pub const DROPTIME_API: &str = "https://api.coolkidmacho.com";

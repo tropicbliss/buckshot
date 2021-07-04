@@ -158,11 +158,7 @@ impl Requests {
     }
 
     pub async fn check_name_availability_time(&self, username_to_snipe: &str) -> DateTime<Utc> {
-        let url = format!(
-            "{}/droptime/{}",
-            constants::TEUN_NAMEMC_API,
-            username_to_snipe
-        );
+        let url = format!("{}/droptime/{}", constants::DROPTIME_API, username_to_snipe);
         let res = self.client.get(url).send().await;
         let res = match res {
             Err(e) if e.is_timeout() => pretty_panic("HTTP request timeout."),
