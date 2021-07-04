@@ -51,12 +51,20 @@ pub fn exit_program() {
     io::stdin().read_line(&mut input).unwrap();
 }
 
-pub fn pretty_panic(err: &str) -> ! {
-    bunt::eprintln!("{$red}Error{/$}: {}", err);
+pub fn pretty_panik(fid: &str, err: &str) -> ! {
+    bunt::eprintln!("{$red}Error{/$}: [{}] {}", fid, err);
     exit_program();
     process::exit(1);
 }
 
-pub fn kalm_panic(err: &str) {
-    bunt::eprintln!("{$red}Error{/$}: {}", err);
+pub fn http_timeout_panik(fid: &str) -> ! {
+    pretty_panik(fid, "HTTP request timeout.");
+}
+
+pub fn http_not_ok_panik(fid: &str, code: u16) -> ! {
+    pretty_panik(fid, &format!("HTTP status code: {}.", code));
+}
+
+pub fn kalm_panik(fid: &str, err: &str) {
+    bunt::eprintln!("{$red}Error{/$}: [{}] {}", fid, err);
 }

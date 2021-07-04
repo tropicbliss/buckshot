@@ -1,6 +1,6 @@
 // My error handling is terrible :(
 
-use crate::cli::pretty_panic;
+use crate::cli::pretty_panik;
 use crate::{cli, config, constants};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
@@ -28,8 +28,9 @@ impl Requests {
     }
 
     pub async fn authenticate_mojang(&self, username: &str, password: &str) -> String {
+        let function_id = "YggdrasilAuth";
         if username.is_empty() || password.is_empty() {
-            pretty_panic("[YggdrasilAuth] You did not provide a username or password.");
+            pretty_panik(function_id, "You did not provide a username or password.");
         }
         let post_json = json!({
             "username": username,
@@ -44,7 +45,7 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[YggdrasilAuth] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -53,8 +54,8 @@ impl Requests {
                 let access_token = v["accessToken"].as_str().unwrap().to_string();
                 access_token
             },
-            403 => pretty_panic("[YggdrasilAuth] Authentication error. Please check if you have entered your username and password correctly."),
-            code => pretty_panic(&format!("[YggdrasilAuth] HTTP status code: {}.", code)),
+            403 => pretty_panik(function_id, "Authentication error. Please check if you have entered your username and password correctly."),
+            status => cli::http_not_ok_panik(function_id, status),
         }
     }
 
@@ -63,8 +64,9 @@ impl Requests {
         username: &str,
         password: &str,
     ) -> Result<String, GeneralSniperError> {
+        let function_id = "MicroAuth";
         if username.is_empty() || password.is_empty() {
-            pretty_panic("[MicroAuth] You did not provide a username or password.");
+            pretty_panik(function_id, "You did not provide a username or password.");
         }
         let post_json = json!({
             "username": username,
@@ -73,7 +75,7 @@ impl Requests {
         let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
         let res = self.client.post(url).json(&post_json).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[MicroAuth] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -89,28 +91,27 @@ impl Requests {
                 if err == "This API is currently overloaded. Please try again later." {
                     Err(GeneralSniperError::RetryableAuthenticationError)
                 } else {
-                    pretty_panic(&format!(
-                        "[MicroAuth] Authentication error. Reason: {}",
-                        err
-                    ))
+                    pretty_panik(
+                        function_id,
+                        &format!("Authentication error. Reason: {}", err),
+                    )
                 }
             }
-            code => pretty_panic(&format!("[MicroAuth] HTTP status code: {}.", code)),
+            status => cli::http_not_ok_panik(function_id, status),
         }
     }
 
     pub async fn get_sq_id(&self, access_token: &str) -> Option<[i64; 3]> {
+        let function_id = "GetSQID";
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
         let res = self.client.get(url).bearer_auth(access_token).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[GetSQID] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
-        if res.status().as_u16() != 200 {
-            pretty_panic(&format!(
-                "[GetSQID] HTTP status code: {}.",
-                res.status().as_u16()
-            ));
+        let status = res.status().as_u16();
+        if status != 200 {
+            cli::http_not_ok_panik(function_id, status);
         }
         let body = res.text().await.unwrap();
         if body == "[]" {
@@ -125,9 +126,11 @@ impl Requests {
     }
 
     pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) {
+        let function_id = "SendSQ";
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
-            pretty_panic(
-                "[SendSQ] Your account has security questions and you did not provide any answers.",
+            pretty_panik(
+                function_id,
+                "Your account has security questions and you did not provide any answers.",
             );
         }
         let post_body = json!([
@@ -153,21 +156,22 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[SendSQ] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
             204 => (),
-            403 => pretty_panic("[SendSQ] Authentication error. Check if you have entered your security questions correctly."),
-            code => pretty_panic(&format!("[SendSQ] HTTP status code: {}.", code)),
+            403 => pretty_panik(function_id, "Authentication error. Check if you have entered your security questions correctly."),
+            status => cli::http_not_ok_panik(function_id, status),
         }
     }
 
     pub async fn check_name_availability_time(&self, username_to_snipe: &str) -> DateTime<Utc> {
+        let function_id = "GetDrop";
         let url = format!("{}/droptime/{}", constants::DROPTIME_API, username_to_snipe);
         let res = self.client.get(url).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[GetDrop] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -177,11 +181,15 @@ impl Requests {
                 let epoch = v["UNIX"].as_i64().unwrap();
                 Utc.timestamp(epoch, 0)
             }
-            _ => pretty_panic("[GetDrop] This name is not dropping or has already dropped."),
+            _ => pretty_panik(
+                function_id,
+                "This name is not dropping or has already dropped.",
+            ),
         }
     }
 
     pub async fn get_searches(&self, username_to_snipe: &str) {
+        let function_id = "GetSearch";
         let url = format!(
             "{}/searches/{}",
             constants::TEUN_NAMEMC_API,
@@ -189,7 +197,7 @@ impl Requests {
         );
         let res = self.client.get(url).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[GetSearch] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
         match res.status().as_u16() {
@@ -205,40 +213,46 @@ impl Requests {
             }
             _ => {
                 bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
-                cli::kalm_panic("Failed to get number of name searches.");
+                cli::kalm_panik(function_id, "Failed to get number of name searches.");
             }
         }
     }
 
     pub async fn check_name_change_eligibility(&self, access_token: &str) {
+        let function_id = "CheckEligible";
         let url = format!(
             "{}/minecraft/profile/namechange",
             constants::MINECRAFTSERVICES_API_SERVER
         );
         let res = self.client.get(url).bearer_auth(access_token).send().await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[CheckEligible] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
-        if res.status().as_u16() != 200 {
-            pretty_panic(&format!(
-                "[CheckEligible] HTTP status code: {}.",
-                res.status().as_u16()
-            ));
+        let status = res.status().as_u16();
+        if status != 200 {
+            cli::http_not_ok_panik(function_id, status);
         }
         let body = res.text().await.unwrap();
         let v: Value = serde_json::from_str(&body).unwrap();
         let is_allowed = v["nameChangeAllowed"].as_bool().unwrap();
         if !is_allowed {
-            pretty_panic("[CheckEligible] You cannot name change within the cooldown period.")
+            pretty_panik(
+                function_id,
+                "You cannot name change within the cooldown period.",
+            )
         }
     }
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
+        let function_id = "SkinUpload";
         let img_file = match File::open(&config.config.skin_filename).await {
             Ok(f) => f,
             Err(_) => {
-                cli::kalm_panic(&format!("File {} not found.", config.config.skin_filename));
+                cli::kalm_panik(
+                    function_id,
+                    &format!("File {} not found.", config.config.skin_filename),
+                );
                 return;
             }
         };
@@ -261,13 +275,13 @@ impl Requests {
             .await;
         match res {
             Err(e) if e.is_timeout() => {
-                cli::kalm_panic("HTTP request timeout.");
+                cli::http_timeout_panik(function_id);
             }
             Ok(res) => {
                 if res.status().as_u16() == 200 {
                     bunt::println!("{$green}Successfully changed skin!{/$}")
                 } else {
-                    cli::kalm_panic("Failed to upload skin.");
+                    cli::kalm_panik(function_id, "Failed to upload skin.");
                 }
             }
             Err(e) => panic!("{}", e),
@@ -275,6 +289,7 @@ impl Requests {
     }
 
     pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) {
+        let function_id = "GCRedeem";
         let url = format!(
             "{}/productvoucher/{}",
             constants::MINECRAFTSERVICES_API_SERVER,
@@ -288,14 +303,12 @@ impl Requests {
             .send()
             .await;
         let res = match res {
-            Err(e) if e.is_timeout() => pretty_panic("[GCRedeem] HTTP request timeout."),
+            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
-        if res.status().as_u16() != 200 {
-            pretty_panic(&format!(
-                "[GCRedeem] HTTP status code: {}.",
-                res.status().as_u16()
-            ));
+        let status = res.status().as_u16();
+        if status != 200 {
+            cli::http_not_ok_panik(function_id, status);
         }
     }
 }

@@ -226,13 +226,19 @@ impl Sniper {
                     {
                         Ok(x) => break x,
                         Err(requests::GeneralSniperError::RetryableAuthenticationError) => {
-                            cli::kalm_panic(&format!(
-                                "Authentication error. Retrying in 10 seconds. Attempt(s): {}.",
-                                count
-                            ));
+                            cli::kalm_panik(
+                                "MicroAuth",
+                                &format!(
+                                    "Authentication error. Retrying in 10 seconds. Attempt(s): {}.",
+                                    count
+                                ),
+                            );
                             time::sleep(std::time::Duration::from_secs(10)).await;
                             if count == 3 {
-                                cli::pretty_panic("[MicroAuth] Authentication failed due to an unknown server error.");
+                                cli::pretty_panik(
+                                    "MicroAuth",
+                                    "Authentication failed due to an unknown server error.",
+                                );
                             }
                         }
                     }

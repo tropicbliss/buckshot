@@ -1,4 +1,4 @@
-use crate::cli::pretty_panic;
+use crate::cli::pretty_panik;
 use crate::constants::CONFIG_PATH;
 use serde::Deserialize;
 use std::io::ErrorKind::NotFound;
@@ -36,6 +36,7 @@ pub struct SubConfig {
 
 impl Config {
     pub async fn new(config_name: &Option<String>) -> Self {
+        let function_id = "ConfigMan";
         let config_path = match config_name {
             Some(x) => x,
             None => CONFIG_PATH,
@@ -47,15 +48,18 @@ impl Config {
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,
-                    Err(_) => pretty_panic(&format!(
-                        "Error parsing {}, please check the formatting of the file.",
-                        config_path
-                    )),
+                    Err(_) => pretty_panik(
+                        function_id,
+                        &format!(
+                            "Error parsing {}, please check the formatting of the file.",
+                            config_path
+                        ),
+                    ),
                 };
                 if !(config.config.skin_model.to_lowercase() == "slim"
                     || config.config.skin_model.to_lowercase() == "classic")
                 {
-                    pretty_panic("Invalid skin type.");
+                    pretty_panik(function_id, "Invalid skin type.");
                 }
                 config
             }
@@ -65,15 +69,18 @@ impl Config {
                 file.write_all(&get_default_config().into_bytes())
                     .await
                     .unwrap();
-                pretty_panic(&format!(
+                pretty_panik(function_id, &format!(
                     "File {} not found, creating a new config file. Please enter any relevant information to the file.",
                     config_path
                 ));
             }
-            Err(e) => pretty_panic(&format!(
-                "File {} not found, a new config file cannot be created. Reason: {}.",
-                config_path, e
-            )),
+            Err(e) => pretty_panik(
+                function_id,
+                &format!(
+                    "File {} not found, a new config file cannot be created. Reason: {}.",
+                    config_path, e
+                ),
+            ),
         }
     }
 }
