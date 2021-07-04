@@ -48,12 +48,9 @@ impl Config {
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,
-                    Err(_) => pretty_panik(
+                    Err(e) => pretty_panik(
                         function_id,
-                        &format!(
-                            "Error parsing {}, please check the formatting of the file.",
-                            config_path
-                        ),
+                        &format!("Error parsing {}. Reason: {}.", config_path, e),
                     ),
                 };
                 if !(config.config.skin_model.to_lowercase() == "slim"
