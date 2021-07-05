@@ -1,6 +1,5 @@
 // My error handling is terrible :(
 
-use crate::cli::pretty_panik;
 use crate::{cli, config, constants};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
@@ -34,7 +33,7 @@ impl Requests {
     pub async fn authenticate_mojang(&self, username: &str, password: &str) -> String {
         let function_id = "YggdrasilAuth";
         if username.is_empty() || password.is_empty() {
-            pretty_panik(function_id, "You did not provide a username or password.");
+            cli::pretty_panik(function_id, "You did not provide a username or password.");
         }
         let post_json = json!({
             "username": username,
@@ -58,7 +57,7 @@ impl Requests {
                 let access_token = v["accessToken"].as_str().unwrap().to_string();
                 access_token
             },
-            403 => pretty_panik(function_id, "Authentication error. Please check if you have entered your username and password correctly."),
+            403 => cli::pretty_panik(function_id, "Authentication error. Please check if you have entered your username and password correctly."),
             status => cli::http_not_ok_panik(function_id, status),
         }
     }
@@ -70,7 +69,7 @@ impl Requests {
     ) -> Result<String, AuthenicationError> {
         let function_id = "MicroAuth";
         if username.is_empty() || password.is_empty() {
-            pretty_panik(function_id, "You did not provide a username or password.");
+            cli::pretty_panik(function_id, "You did not provide a username or password.");
         }
         let post_json = json!({
             "username": username,
@@ -95,7 +94,7 @@ impl Requests {
                 if err == "This API is currently overloaded. Please try again later." {
                     Err(AuthenicationError::RetryableAuthenticationError)
                 } else {
-                    pretty_panik(
+                    cli::pretty_panik(
                         function_id,
                         &format!("Authentication error. Reason: {}", err),
                     )
@@ -132,7 +131,7 @@ impl Requests {
     pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) {
         let function_id = "SendSQ";
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
-            pretty_panik(
+            cli::pretty_panik(
                 function_id,
                 "Your account has security questions and you did not provide any answers.",
             );
@@ -165,7 +164,7 @@ impl Requests {
         };
         match res.status().as_u16() {
             204 => (),
-            403 => pretty_panik(function_id, "Authentication error. Check if you have entered your security questions correctly."),
+            403 => cli::pretty_panik(function_id, "Authentication error. Check if you have entered your security questions correctly."),
             status => cli::http_not_ok_panik(function_id, status),
         }
     }
@@ -224,7 +223,7 @@ impl Requests {
                 bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
                 cli::kalm_panik(function_id, "Failed to get number of name searches.");
             }
-            status => pretty_panik(function_id, &format!("HTTP status code: {}.", status)),
+            status => cli::pretty_panik(function_id, &format!("HTTP status code: {}.", status)),
         }
     }
 
@@ -247,7 +246,7 @@ impl Requests {
         let v: Value = serde_json::from_str(&body).unwrap();
         let is_allowed = v["nameChangeAllowed"].as_bool().unwrap();
         if !is_allowed {
-            pretty_panik(
+            cli::kalm_panik(
                 function_id,
                 "You cannot name change within the cooldown period.",
             )
@@ -289,7 +288,7 @@ impl Requests {
             }
             Ok(res) => match res.status().as_u16() {
                 200 => bunt::println!("{$green}Successfully changed skin!{/$}"),
-                status => pretty_panik(
+                status => cli::kalm_panik(
                     function_id,
                     &format!("Failed to change skin. HTTP status code: {}.", status),
                 ),
