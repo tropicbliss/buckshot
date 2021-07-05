@@ -223,7 +223,7 @@ impl Requests {
                 bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
                 cli::kalm_panik(function_id, "Failed to get number of name searches.");
             }
-            status => cli::pretty_panik(function_id, &format!("HTTP status code: {}.", status)),
+            status => cli::kalm_panik(function_id, &format!("HTTP status code: {}.", status)),
         }
     }
 
