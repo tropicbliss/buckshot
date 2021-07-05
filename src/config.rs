@@ -62,7 +62,17 @@ impl Config {
             }
             Err(e) if e.kind() == NotFound => {
                 let path = Path::new(config_path);
-                let mut file = File::create(path).await.unwrap();
+                let file = File::create(path).await;
+                let mut file = match file {
+                    Ok(x) => x,
+                    Err(e) => pretty_panik(
+                        function_id,
+                        &format!(
+                            "File {} not found, a new config file cannot be created. Reason: {}.",
+                            config_path, e
+                        ),
+                    ),
+                };
                 file.write_all(&get_default_config().into_bytes())
                     .await
                     .unwrap();
@@ -71,41 +81,33 @@ impl Config {
                     config_path
                 ));
             }
-            Err(e) => pretty_panik(
-                function_id,
-                &format!(
-                    "File {} not found, a new config file cannot be created. Reason: {}.",
-                    config_path, e
-                ),
-            ),
+            Err(e) => panic!("{}", e),
         }
     }
 }
 
 fn get_default_config() -> String {
-    [
-        r#"# Leave the account section empty if you are using a Microsoft account"#,
-        r#"[account]"#,
-        r#"username = "test@example.com""#,
-        r#"password = "test""#,
-        r#"# Leave the rest empty if you do not have security questions"#,
-        r#"sq1 = "Foo""#,
-        r#"sq2 = "Bar""#,
-        r#"sq3 = "Baz""#,
-        r#""#,
-        r#"[config]"#,
-        r#"offset = 0"#,
-        r#"auto_offset = false"#,
-        r#"spread = 0"#,
-        r#"microsoft_auth = false"#,
-        r#"gc_snipe = false"#,
-        r#"change_skin = false"#,
-        r#"skin_model = "slim""#,
-        r#"skin_filename = "example.png""#,
-        r#"# Name queueing example:"#,
-        r#"# name_queue = ["Marc", "Dream"]"#,
-        r#"name_queue = []"#,
-        r#""#,
-    ]
-    .join("\r\n")
+    r#"# Leave the account section empty if you are using a Microsoft account
+[account]
+username = "test@example.com"
+password = "test"
+# Leave the rest empty if you do not have security questions
+sq1 = "Foo"
+sq2 = "Bar"
+sq3 = "Baz"
+
+[config]
+offset = 0
+auto_offset = false
+spread = 0
+microsoft_auth = false
+gc_snipe = false
+change_skin = false
+skin_model = "slim"
+skin_filename = "example.png"
+# Name queueing example:
+# name_queue = ["Marc", "Dream"]
+name_queue = []
+"#
+    .to_string()
 }
