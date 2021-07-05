@@ -55,7 +55,13 @@ impl Sniper {
             {
                 Ok(x) => x,
                 Err(requests::NameAvailabilityError::NameNotAvailableError) => {
-                    cli::kalm_panik("GetDrop", "Name is not available or has already dropped.");
+                    cli::kalm_panik(
+                        "GetDrop",
+                        &format!(
+                            "The username {} is not available or has already dropped.",
+                            username_to_snipe
+                        ),
+                    );
                     continue;
                 }
             };
