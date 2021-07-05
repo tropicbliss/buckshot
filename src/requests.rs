@@ -191,7 +191,7 @@ impl Requests {
                 let epoch = v["UNIX"].as_i64().unwrap();
                 Ok(Utc.timestamp(epoch, 0))
             }
-            400 => Err(NameAvailabilityError::NameNotAvailableError),
+            404 => Err(NameAvailabilityError::NameNotAvailableError),
             status => cli::http_not_ok_panik(function_id, status),
         }
     }
@@ -219,7 +219,7 @@ impl Requests {
                     searches
                 );
             }
-            400 => {
+            404 => {
                 bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
                 cli::kalm_panik(function_id, "Failed to get number of name searches.");
             }
