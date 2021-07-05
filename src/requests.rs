@@ -224,7 +224,7 @@ impl Requests {
                 bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
                 cli::kalm_panik(function_id, "Failed to get number of name searches.");
             }
-            status => cli::http_not_ok_panik(function_id, status),
+            status => pretty_panik(function_id, &format!("HTTP status code: {}.", status)),
         }
     }
 
@@ -287,13 +287,13 @@ impl Requests {
             Err(e) if e.is_timeout() => {
                 cli::http_timeout_panik(function_id);
             }
-            Ok(res) => {
-                if res.status().as_u16() == 200 {
-                    bunt::println!("{$green}Successfully changed skin!{/$}")
-                } else {
-                    cli::kalm_panik(function_id, "Failed to upload skin.");
-                }
-            }
+            Ok(res) => match res.status().as_u16() {
+                200 => bunt::println!("{$green}Successfully changed skin!{/$}"),
+                status => pretty_panik(
+                    function_id,
+                    &format!("Failed to change skin. HTTP status code: {}.", status),
+                ),
+            },
             Err(e) => panic!("{}", e),
         };
     }
