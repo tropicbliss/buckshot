@@ -136,14 +136,14 @@ impl Sniper {
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
             println!(
-                "Sniping {} in ~{} seconds | sniping at {} (utc).",
+                "sniping {} in ~{} seconds | sniping at {} (utc).",
                 username_to_snipe,
                 duration_in_sec.num_seconds(),
                 formatted_droptime
             )
         } else {
             println!(
-                "Sniping {} in ~{} minutes | sniping at {} (utc).",
+                "sniping {} in ~{} minutes | sniping at {} (utc).",
                 username_to_snipe,
                 duration_in_sec.num_minutes(),
                 formatted_droptime
