@@ -58,7 +58,7 @@ impl Sniper {
                     cli::kalm_panik(
                         "GetDrop",
                         &format!(
-                            "The username {} is not available or has already dropped.",
+                            "The name {} is not available or has already dropped.",
                             username_to_snipe
                         ),
                     );
@@ -101,7 +101,13 @@ impl Sniper {
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
-                    cli::kalm_panik("GetDrop", "Name is not available or has already dropped.");
+                    cli::kalm_panik(
+                        "GetDrop",
+                        &format!(
+                            "The name {} is not available or has already dropped.",
+                            username_to_snipe
+                        ),
+                    );
                     continue;
                 }
             };
