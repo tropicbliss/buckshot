@@ -62,7 +62,6 @@ impl Config {
             }
             Err(e) if e.kind() == NotFound => {
                 let path = Path::new(config_path);
-
                 let mut file = match File::create(path).await {
                     Ok(x) => x,
                     Err(e) => pretty_panik(
