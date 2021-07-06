@@ -270,7 +270,7 @@ impl Sniper {
                     cli::kalm_panik(
                         "GetDrop",
                         &format!(
-                            "The name {} is not available or has already dropped.",
+                            "Failed to time snipe. The name {} is not available, has already dropped, or is not cached in the API server for various circumstances.",
                             username_to_snipe
                         ),
                     );
