@@ -284,7 +284,7 @@ impl Sniper {
                             count
                         ),
                     );
-                    time::sleep(std::time::Duration::from_secs(10)).await;
+                    time::sleep(std::time::Duration::from_secs(60)).await;
                     if count == 3 {
                         cli::pretty_panik(
                             "GetDrop",
