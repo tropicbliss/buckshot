@@ -13,6 +13,7 @@ pub enum AuthenicationError {
 
 pub enum NameAvailabilityError {
     NameNotAvailableError,
+    RateLimitedError,
 }
 
 pub struct Requests {
@@ -174,11 +175,7 @@ impl Requests {
         username_to_snipe: &str,
     ) -> Result<DateTime<Utc>, NameAvailabilityError> {
         let function_id = "GetDrop";
-        let url = format!(
-            "{}/droptime/{}",
-            constants::TEUN_NAMEMC_API,
-            username_to_snipe
-        );
+        let url = format!("{}/droptime/{}", constants::NAMEMC_API, username_to_snipe);
         let res = self.client.get(url).send().await;
         let res = match res {
             Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
@@ -192,38 +189,8 @@ impl Requests {
                 Ok(Utc.timestamp(epoch, 0))
             }
             404 => Err(NameAvailabilityError::NameNotAvailableError),
+            429 => Err(NameAvailabilityError::RateLimitedError),
             status => cli::http_not_ok_panik(function_id, status),
-        }
-    }
-
-    pub async fn get_searches(&self, username_to_snipe: &str) {
-        let function_id = "GetSearch";
-        let url = format!(
-            "{}/searches/{}",
-            constants::TEUN_NAMEMC_API,
-            username_to_snipe
-        );
-        let res = self.client.get(url).send().await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
-        match res.status().as_u16() {
-            200 => {
-                let body = res.text().await.unwrap();
-                let v: Value = serde_json::from_str(&body).unwrap();
-                let searches = v["searches"].as_i64().unwrap();
-                bunt::println!(
-                    "{$green}Successfully sniped {} with {} searches!{/$}",
-                    username_to_snipe,
-                    searches
-                );
-            }
-            404 => {
-                bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
-                cli::kalm_panik(function_id, "Failed to get number of name searches.");
-            }
-            status => cli::kalm_panik(function_id, &format!("HTTP status code: {}.", status)),
         }
     }
 
@@ -246,7 +213,7 @@ impl Requests {
         let v: Value = serde_json::from_str(&body).unwrap();
         let is_allowed = v["nameChangeAllowed"].as_bool().unwrap();
         if !is_allowed {
-            cli::kalm_panik(
+            cli::pretty_panik(
                 function_id,
                 "You cannot name change within the cooldown period.",
             )

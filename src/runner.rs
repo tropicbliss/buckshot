@@ -49,21 +49,9 @@ impl Sniper {
             } else {
                 println!("Moving on to next name...");
             }
-            let snipe_time = match requestor
-                .check_name_availability_time(&username_to_snipe)
-                .await
-            {
-                Ok(x) => x,
-                Err(requests::NameAvailabilityError::NameNotAvailableError) => {
-                    cli::kalm_panik(
-                        "GetDrop",
-                        &format!(
-                            "The name {} is not available or has already dropped.",
-                            username_to_snipe
-                        ),
-                    );
-                    continue;
-                }
+            let snipe_time = match self.get_snipe_time(&requestor, &username_to_snipe).await {
+                Some(x) => x,
+                None => continue,
             };
             let access_token = self.setup(&requestor, task).await;
             match task {
@@ -204,7 +192,7 @@ impl Sniper {
             }
         };
         if is_success {
-            requestor.get_searches(username_to_snipe).await;
+            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
@@ -259,6 +247,49 @@ impl Sniper {
                                 );
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    async fn get_snipe_time(
+        &self,
+        requestor: &Arc<requests::Requests>,
+        username_to_snipe: &str,
+    ) -> Option<DateTime<Utc>> {
+        let mut count = 0;
+        loop {
+            count += 1;
+            match requestor
+                .check_name_availability_time(&username_to_snipe)
+                .await
+            {
+                Ok(x) => break Some(x),
+                Err(requests::NameAvailabilityError::NameNotAvailableError) => {
+                    cli::kalm_panik(
+                        "GetDrop",
+                        &format!(
+                            "The name {} is not available or has already dropped.",
+                            username_to_snipe
+                        ),
+                    );
+                    break None;
+                }
+                Err(requests::NameAvailabilityError::RateLimitedError) => {
+                    cli::kalm_panik(
+                        "GetDrop",
+                        &format!(
+                            "API rate limited. Retrying in 1 minute. Attempt(s): {}.",
+                            count
+                        ),
+                    );
+                    time::sleep(std::time::Duration::from_secs(10)).await;
+                    if count == 3 {
+                        cli::pretty_panik(
+                            "GetDrop",
+                            "Authentication failed due to an unknown server error.",
+                        );
                     }
                 }
             }
