@@ -288,7 +288,7 @@ impl Sniper {
                     if count == 3 {
                         cli::pretty_panik(
                             "GetDrop",
-                            "Authentication failed due to an unknown server error.",
+                            "API request failed due to an unknown server error.",
                         );
                     }
                 }
