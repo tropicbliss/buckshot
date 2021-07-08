@@ -1,17 +1,24 @@
 use std::{io, process};
 
 pub fn print_splash_screen() {
-    bunt::println!(r"{$red}______ _   _ _____  _   __ _____ _   _ _____ _____ {/$}");
-    bunt::println!(r"{$red}| ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|{/$}");
-    bunt::println!(r"{$red}| |_/ / | | | /  \/| |/ / \ `--.| |_| | | | | | |  {/$}");
-    bunt::println!(r"{$red}| ___ \ | | | |    |    \  `--. \  _  | | | | | |  {/$}");
-    bunt::println!(r"{$red}| |_/ / |_| | \__/\| |\  \/\__/ / | | \ \_/ / | |  {/$}");
-    bunt::println!(r"{$red}\____/ \___/ \____/\_| \_/\____/\_| |_/\___/  \_/  {/$}");
-    bunt::println!("                                                   ");
-    bunt::println!("                                                   ");
-    bunt::println!("");
-    bunt::println!("{$green}Developed by @tropicbliss#0027 on Discord.{/$}");
-    bunt::println!("");
+    fn get_logo() -> String {
+        r#"______ _   _ _____  _   __ _____ _   _ _____ _____ 
+| ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|
+| |_/ / | | | /  \/| |/ / \ `--.| |_| | | | | | |  
+| ___ \ | | | |    |    \  `--. \  _  | | | | | |  
+| |_/ / |_| | \__/\| |\  \/\__/ / | | \ \_/ / | |  
+\____/ \___/ \____/\_| \_/\____/\_| |_/\___/  \_/  
+                                                   
+                                                   "#
+        .to_string()
+    }
+    fn get_credits() -> String {
+        "Developed by @tropicbliss#0027 on Discord.".to_string()
+    }
+    bunt::println!("{$red}{}{/$}", get_logo());
+    println!();
+    bunt::println!("{$green}{}{/$}", get_credits());
+    println!();
 }
 
 pub fn get_username_choice() -> String {
