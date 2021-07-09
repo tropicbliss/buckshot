@@ -4,25 +4,6 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-## For sniper developers
-
-`ms-auth-server` project open-sourced [here](https://github.com/tropicbliss/ms-auth-server).
-
-### Microsoft OAuth2 authentication
-
-https://login.live.com/oauth20_authorize.srf?client_id=68f2f45b-02e2-4625-8225-25c6fcc25039&response_type=code&redirect_uri=https://auth.buckshotrs.com/auth&scope=XboxLive.signin%20offline_access&state=STORAGE_ID
-
-### Simple username and password authentication
-
-`POST auth.buckshotrs.com/simpleauth`
-
-```
-{
-  username: <username>,
-  password: <password>
-}
-```
-
 ## Features
 
 - Mojang account sniping
