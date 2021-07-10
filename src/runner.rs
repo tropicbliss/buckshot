@@ -42,8 +42,15 @@ impl Sniper {
         };
         let requestor = Arc::new(requests::Requests::new());
         for username_to_snipe in name_list {
-            let requestor = Arc::clone(&requestor);
             count += 1;
+            if !cli::username_filter_predicate(&username_to_snipe) {
+                cli::kalm_panik(
+                    "Main",
+                    &format!("{} is an invalid username.", username_to_snipe),
+                );
+                continue;
+            }
+            let requestor = Arc::clone(&requestor);
             if count == 1 {
                 println!("Initialising...");
             } else {

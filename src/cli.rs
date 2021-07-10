@@ -28,16 +28,21 @@ pub fn get_username_choice() -> String {
         io::Write::flush(&mut io::stdout()).unwrap();
         io::stdin().read_line(&mut input).unwrap();
         let input = input.trim();
-        if input.len() < 3
-            || input.len() > 16
-            || !input.chars().all(|x| char::is_alphanumeric(x) || x == '_')
-        {
+        if !username_filter_predicate(input) {
             println!("Invalid username entered, please try again.");
             continue;
         } else {
             break input.to_string();
         }
     }
+}
+
+pub fn username_filter_predicate(username: &str) -> bool {
+    username.len() > 2
+        && username.len() < 17
+        && username
+            .chars()
+            .all(|x| char::is_alphanumeric(x) || x == '_')
 }
 
 pub fn get_giftcode() -> Option<String> {
