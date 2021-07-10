@@ -87,7 +87,6 @@ impl Config {
 
 fn get_default_config() -> String {
     r#"[account]
-
 username = "test@example.com"
 password = "test"
 # Leave the rest empty if you do not have security questions
