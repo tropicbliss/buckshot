@@ -1,4 +1,3 @@
-# Leave the account section empty if you are using a Microsoft account
 [account]
 username = "test@example.com"
 password = "test"
