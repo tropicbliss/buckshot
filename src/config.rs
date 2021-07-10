@@ -86,8 +86,8 @@ impl Config {
 }
 
 fn get_default_config() -> String {
-    r#"# Leave the account section empty if you are using a Microsoft account
-[account]
+    r#"[account]
+
 username = "test@example.com"
 password = "test"
 # Leave the rest empty if you do not have security questions
