@@ -33,17 +33,19 @@ impl Sniper {
     async fn execute(&self, task: &SnipeTask) {
         let mut count = 0;
         let mut is_success = false;
+        let mut check_filter = true;
         let name_list = if let Some(username_to_snipe) = self.username_to_snipe.to_owned() {
             vec![username_to_snipe]
         } else if !self.config.config.name_queue.is_empty() {
             self.config.config.name_queue.to_owned()
         } else {
+            check_filter = false;
             vec![cli::get_username_choice()]
         };
         let requestor = Arc::new(requests::Requests::new());
         for username_to_snipe in name_list {
             count += 1;
-            if !cli::username_filter_predicate(&username_to_snipe) {
+            if check_filter && !cli::username_filter_predicate(&username_to_snipe) {
                 cli::kalm_panik(
                     "Main",
                     &format!("{} is an invalid username.", username_to_snipe),
