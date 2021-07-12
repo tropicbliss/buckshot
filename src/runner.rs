@@ -267,40 +267,20 @@ impl Sniper {
         requestor: &Arc<requests::Requests>,
         username_to_snipe: &str,
     ) -> Option<DateTime<Utc>> {
-        let mut count = 0;
-        loop {
-            count += 1;
-            match requestor
-                .check_name_availability_time(&username_to_snipe)
-                .await
-            {
-                Ok(x) => break Some(x),
-                Err(requests::NameAvailabilityError::NameNotAvailableError) => {
-                    cli::kalm_panik(
+        match requestor
+            .check_name_availability_time(&username_to_snipe)
+            .await
+        {
+            Ok(x) => Some(x),
+            Err(requests::NameAvailabilityError::NameNotAvailableError) => {
+                cli::kalm_panik(
                         "GetDrop",
                         &format!(
                             "Failed to time snipe. The name {} is not available, has already dropped, or is not cached in the API server for various circumstances.",
                             username_to_snipe
                         ),
                     );
-                    break None;
-                }
-                Err(requests::NameAvailabilityError::RateLimitedError) => {
-                    cli::kalm_panik(
-                        "GetDrop",
-                        &format!(
-                            "API rate limited. Retrying in 1 minute. Attempt(s): {}.",
-                            count
-                        ),
-                    );
-                    time::sleep(std::time::Duration::from_secs(60)).await;
-                    if count == 3 {
-                        cli::pretty_panik(
-                            "GetDrop",
-                            "API request failed due to an unknown server error.",
-                        );
-                    }
-                }
+                None
             }
         }
     }

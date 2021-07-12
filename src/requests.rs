@@ -13,7 +13,6 @@ pub enum AuthenicationError {
 
 pub enum NameAvailabilityError {
     NameNotAvailableError,
-    RateLimitedError,
 }
 
 pub struct Requests {
@@ -176,21 +175,28 @@ impl Requests {
     ) -> Result<DateTime<Utc>, NameAvailabilityError> {
         let function_id = "GetDrop";
         let url = format!("{}/droptime/{}", constants::NAMEMC_API, username_to_snipe);
-        let res = self.client.get(url).send().await;
+        let res = self
+            .client
+            .get(url)
+            .header(reqwest::header::USER_AGENT, "PiratSnipe")
+            .send()
+            .await;
         let res = match res {
             Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
-        match res.status().as_u16() {
-            200 => {
-                let body = res.text().await.unwrap();
-                let v: Value = serde_json::from_str(&body).unwrap();
-                let epoch = v["UNIX"].as_i64().unwrap();
+        let status = res.status().as_u16();
+        if status != 200 {
+            cli::http_not_ok_panik(function_id, status);
+        }
+        let body = res.text().await.unwrap();
+        let v: Value = serde_json::from_str(&body).unwrap();
+        match v.get("UNIX") {
+            Some(x) => {
+                let epoch = x.as_i64().unwrap();
                 Ok(Utc.timestamp(epoch, 0))
             }
-            404 => Err(NameAvailabilityError::NameNotAvailableError),
-            429 => Err(NameAvailabilityError::RateLimitedError),
-            status => cli::http_not_ok_panik(function_id, status),
+            None => Err(NameAvailabilityError::NameNotAvailableError),
         }
     }
 
