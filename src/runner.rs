@@ -90,7 +90,7 @@ impl Sniper {
                     &snipe_time,
                     &username_to_snipe,
                     offset,
-                    &access_token,
+                    access_token,
                     &requestor,
                     task,
                 )
@@ -124,7 +124,7 @@ impl Sniper {
         droptime: &DateTime<Utc>,
         username_to_snipe: &str,
         offset: i32,
-        access_token: &str,
+        access_token: String,
         requestor: &Arc<requests::Requests>,
         task: &SnipeTask,
     ) -> Option<bool> {
@@ -153,7 +153,7 @@ impl Sniper {
             let access_token = self.setup(&requestor, task).await;
             access_token
         } else {
-            access_token.to_string()
+            access_token
         };
         let namemc_data = match task {
             SnipeTask::Giftcode => {
