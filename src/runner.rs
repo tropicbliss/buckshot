@@ -59,7 +59,7 @@ impl Sniper {
                 println!("Moving on to next name...");
             }
             let snipe_time = match self.get_snipe_time(&requestor, &username_to_snipe).await {
-                Some(x) => x,
+                Some(x) => x.droptime,
                 None => continue,
             };
             let access_token = self.setup(&requestor, task).await;
@@ -151,35 +151,32 @@ impl Sniper {
         let access_token = if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             let access_token = self.setup(&requestor, task).await;
-            let stub_snipe_time = match task {
-                SnipeTask::Giftcode => {
-                    requestor
-                        .check_name_availability_time(&username_to_snipe)
-                        .await
-                }
-                _ => {
-                    let (snipe_time, _) = join!(
-                        requestor.check_name_availability_time(&username_to_snipe),
-                        requestor.check_name_change_eligibility(&access_token)
-                    );
-                    snipe_time
-                }
-            };
-            if stub_snipe_time.is_err() {
-                return None;
-            }
-            bunt::println!(
-                "{$green}Signed in to {} successfully.{/$}",
-                self.config.account.username
-            );
             access_token
         } else {
-            bunt::println!(
-                "{$green}Signed in to {} successfully.{/$}",
-                self.config.account.username
-            );
             access_token.to_string()
         };
+        let namemc_data = match task {
+            SnipeTask::Giftcode => {
+                requestor
+                    .check_name_availability_time(&username_to_snipe)
+                    .await
+            }
+            _ => {
+                let (snipe_time, _) = join!(
+                    requestor.check_name_availability_time(&username_to_snipe),
+                    requestor.check_name_change_eligibility(&access_token)
+                );
+                snipe_time
+            }
+        };
+        let searches = match namemc_data {
+            Ok(x) => x.searches,
+            Err(_) => return None,
+        };
+        bunt::println!(
+            "{$green}Signed in to {} successfully.{/$}",
+            self.config.account.username
+        );
         let is_success = match task {
             SnipeTask::Giftcode => {
                 sockets::snipe_gc(
@@ -201,7 +198,11 @@ impl Sniper {
             }
         };
         if is_success {
-            bunt::println!("{$green}Successfully sniped {}!{/$}", username_to_snipe);
+            bunt::println!(
+                "{$green}Successfully sniped {} with {} searches!{/$}",
+                username_to_snipe,
+                searches
+            );
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
             }
@@ -266,7 +267,7 @@ impl Sniper {
         &self,
         requestor: &Arc<requests::Requests>,
         username_to_snipe: &str,
-    ) -> Option<DateTime<Utc>> {
+    ) -> Option<requests::NameMC> {
         match requestor
             .check_name_availability_time(&username_to_snipe)
             .await

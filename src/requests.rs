@@ -15,6 +15,11 @@ pub enum NameAvailabilityError {
     NameNotAvailableError,
 }
 
+pub struct NameMC {
+    pub droptime: DateTime<Utc>,
+    pub searches: u32,
+}
+
 pub struct Requests {
     client: Client,
 }
@@ -172,7 +177,7 @@ impl Requests {
     pub async fn check_name_availability_time(
         &self,
         username_to_snipe: &str,
-    ) -> Result<DateTime<Utc>, NameAvailabilityError> {
+    ) -> Result<NameMC, NameAvailabilityError> {
         let function_id = "GetDrop";
         let url = format!("{}/droptime/{}", constants::NAMEMC_API, username_to_snipe);
         let res = self
@@ -193,8 +198,10 @@ impl Requests {
         let v: Value = serde_json::from_str(&body).unwrap();
         match v.get("UNIX") {
             Some(x) => {
+                let searches = v["searches"].as_i64().unwrap() as u32;
                 let epoch = x.as_i64().unwrap();
-                Ok(Utc.timestamp(epoch, 0))
+                let droptime = Utc.timestamp(epoch, 0);
+                Ok(NameMC { droptime, searches })
             }
             None => Err(NameAvailabilityError::NameNotAvailableError),
         }
