@@ -253,7 +253,7 @@ impl Sniper {
                             if count == 3 {
                                 cli::pretty_panik(
                                     "MicroAuth",
-                                    "Authentication failed due to an unknown server error. Please try again later.",
+                                    "Authentication failed due to an unknown server error."
                                 );
                             }
                         }
