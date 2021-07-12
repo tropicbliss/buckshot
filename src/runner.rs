@@ -124,7 +124,7 @@ impl Sniper {
         droptime: &DateTime<Utc>,
         username_to_snipe: &str,
         offset: i32,
-        access_token: String,
+        mut access_token: String,
         requestor: &Arc<requests::Requests>,
         task: &SnipeTask,
     ) -> Option<bool> {
@@ -148,7 +148,7 @@ impl Sniper {
         }
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
-        let access_token = if Utc::now() < setup_time {
+        access_token = if Utc::now() < setup_time {
             time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
             let access_token = self.setup(&requestor, task).await;
             access_token
