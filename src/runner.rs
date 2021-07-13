@@ -253,7 +253,7 @@ impl Sniper {
                             if count == 3 {
                                 cli::pretty_panik(
                                     "MicroAuth",
-                                    "Authentication failed due to an unknown server error."
+                                    "Authentication failed due to an unknown server error. Please try again later."
                                 );
                             }
                         }
@@ -277,7 +277,7 @@ impl Sniper {
                 cli::kalm_panik(
                         "GetDrop",
                         &format!(
-                            "Failed to time snipe. The name {} is not available, has already dropped, or is not cached in the API server for various circumstances.",
+                            "Failed to time snipe. The name {} is not available, has already dropped, or is not cached in the API server for various reasons. Please try again later.",
                             username_to_snipe
                         ),
                     );
