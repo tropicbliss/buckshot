@@ -20,7 +20,7 @@ No more new features are going to be added to this sniper. Further developments 
 
 ## Credits ❤️
 
-- Teun for the drop-time caching API
+- Peet for the drop-time caching API
 
 ## Setup
 
