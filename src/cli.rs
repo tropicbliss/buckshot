@@ -76,7 +76,7 @@ pub fn http_timeout_panik(fid: &str) -> ! {
 }
 
 pub fn http_not_ok_panik(fid: &str, code: u16) -> ! {
-    pretty_panik(fid, &format!("HTTP status code: {}.", code));
+    pretty_panik(fid, &format!("HTTP status code: {}. Please try again later.", code));
 }
 
 pub fn kalm_panik(fid: &str, err: &str) {
