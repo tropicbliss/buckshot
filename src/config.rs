@@ -1,5 +1,5 @@
 use crate::cli::pretty_panik;
-use crate::constants::CONFIG_PATH;
+use crate::constants::DEFAULT_CONFIG_PATH;
 use serde::Deserialize;
 use std::io::ErrorKind::NotFound;
 use std::path::Path;
@@ -39,7 +39,7 @@ impl Config {
         let function_id = "ConfigMan";
         let config_path = match config_name {
             Some(x) => x,
-            None => CONFIG_PATH,
+            None => DEFAULT_CONFIG_PATH,
         };
         match File::open(&config_path).await {
             Ok(mut f) => {
