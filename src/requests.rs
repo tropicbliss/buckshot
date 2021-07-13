@@ -49,7 +49,7 @@ impl Requests {
             .client
             .post(url)
             .json(&post_json)
-            .header(reqwest::header::USER_AGENT, constants::USER_AGENT)
+            .header(reqwest::header::USER_AGENT, constants::AUTH_USER_AGENT)
             .send()
             .await;
         let res = match res {
@@ -183,7 +183,7 @@ impl Requests {
         let res = self
             .client
             .get(url)
-            .header(reqwest::header::USER_AGENT, "PiratSnipe")
+            .header(reqwest::header::USER_AGENT, constants::NAMEMC_USER_AGENT)
             .send()
             .await;
         let res = match res {
