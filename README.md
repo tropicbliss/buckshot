@@ -4,7 +4,7 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-No more new features are going to be added to this sniper due to my fear of significant time investment and feature creep. Further developments will be focused on maintaining this sniper and the authentication server.
+No more new features are going to be added to this sniper due to my fear of significant time investment spent in development and preventing feature creep. Further developments will be focused on maintaining this sniper and the authentication server.
 
 ## Features
 
