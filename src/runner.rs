@@ -277,7 +277,7 @@ impl Sniper {
                 cli::kalm_panik(
                         "GetDrop",
                         &format!(
-                            "Failed to time snipe. The name {} is not available, has already dropped, or is not cached in the API server for various reasons. Please try again later.",
+                            "Failed to time snipe. The name {} is either taken, freely available to claim at minecraft.net, or not cached in the droptime server for various reasons (in that case, please try again later).",
                             username_to_snipe
                         ),
                     );
