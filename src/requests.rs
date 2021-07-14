@@ -179,15 +179,12 @@ impl Requests {
         username_to_snipe: &str,
     ) -> Result<NameMC, NameAvailabilityError> {
         let function_id = "GetDrop";
-        let url = format!(
-            "{}/droptime?name={}",
-            constants::NAMEMC_API,
-            username_to_snipe
-        );
+        let url = format!("{}/droptime", constants::NAMEMC_API);
         let res = self
             .client
             .get(url)
             .header(reqwest::header::USER_AGENT, constants::NAMEMC_USER_AGENT)
+            .query(&[("name", username_to_snipe)])
             .send()
             .await;
         let res = match res {
