@@ -147,7 +147,17 @@ impl Sniper {
         let snipe_time = droptime - Duration::milliseconds(offset as i64);
         let setup_time = snipe_time - Duration::minutes(12);
         access_token = if Utc::now() < setup_time {
-            time::sleep((setup_time - Utc::now()).to_std().unwrap()).await;
+            let sleep_duration = match (setup_time - Utc::now()).to_std() {
+                Ok(x) => x,
+                Err(_) => {
+                    cli::kalm_panik(
+                        "Main",
+                        &format!("The name {} has already dropped.", username_to_snipe),
+                    );
+                    return None;
+                }
+            };
+            time::sleep(sleep_duration).await;
             let access_token = self.setup(&requestor, task).await;
             access_token
         } else {
@@ -188,7 +198,7 @@ impl Sniper {
             _ => {
                 sockets::snipe_regular(
                     &snipe_time,
-                    username_to_snipe,
+                    username_to_snipe.to_string(),
                     &access_token,
                     self.config.config.spread as i32,
                 )
