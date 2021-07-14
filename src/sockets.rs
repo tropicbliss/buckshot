@@ -1,4 +1,4 @@
-// It is at this point, that I gave up making my code look nice
+// It is at this point, that I gave up making my code look nice and maintainable
 
 use crate::{cli, constants};
 use chrono::{DateTime, Duration, Utc};
@@ -72,7 +72,7 @@ pub async fn snipe_regular(
     access_token: &str,
     spread_offset: i32,
 ) -> bool {
-    let function_id = "SnipeExecutor";
+    let function_id = "SnipeRegular";
     let mut status_vec = Vec::with_capacity(constants::REGULAR_SNIPE_REQS as usize);
     let mut handle_vec = Vec::with_capacity(constants::REGULAR_SNIPE_REQS as usize);
     let mut spread = 0;
@@ -160,10 +160,11 @@ pub async fn snipe_regular(
 
 pub async fn snipe_gc(
     snipe_time: &DateTime<Utc>,
-    username_to_snipe: &str,
+    username_to_snipe: String,
     access_token: &str,
     spread_offset: i32,
 ) -> bool {
+    let function_id = "SnipeGc";
     let mut status_vec = Vec::with_capacity(constants::GC_SNIPE_REQS as usize);
     let mut handle_vec = Vec::with_capacity(constants::GC_SNIPE_REQS as usize);
     let mut spread = 0;
@@ -182,37 +183,63 @@ pub async fn snipe_gc(
     let connector = Arc::new(TlsConnector::from(Arc::new(config)));
     let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com").unwrap();
     let snipe_time = snipe_time.to_owned();
+    let username_to_snipe = Arc::new(username_to_snipe);
     for _ in 0..constants::GC_SNIPE_REQS {
         let connector = Arc::clone(&connector);
         let data = Arc::clone(&data);
+        let username_to_snipe = Arc::clone(&username_to_snipe);
         let handle = tokio::task::spawn(async move {
             let mut buf = [0; 12];
             let snipe_time = snipe_time + Duration::milliseconds(spread);
             let handshake_time = snipe_time - Duration::seconds(5);
-            sleep((handshake_time - Utc::now()).to_std().unwrap()).await;
+            let sleep_duration = match (handshake_time - Utc::now()).to_std() {
+                Ok(x) => x,
+                Err(_) => {
+                    cli::kalm_panik(
+                        function_id,
+                        &format!("The name {} has already dropped.", username_to_snipe),
+                    );
+                    return false;
+                }
+            };
+            sleep(sleep_duration).await;
             let stream = TcpStream::connect(&addr).await.unwrap();
             let mut stream = connector.connect(domain, stream).await.unwrap();
             stream.write_all(&data).await.unwrap();
             bunt::println!("{$green}TCP connection established!{/$}");
-            sleep((snipe_time - Utc::now()).to_std().unwrap()).await;
+            let sleep_duration = match (snipe_time - Utc::now()).to_std() {
+                Ok(x) => x,
+                Err(_) => {
+                    cli::kalm_panik(
+                        function_id,
+                        &format!("The name {} has already dropped.", username_to_snipe),
+                    );
+                    return false;
+                }
+            };
+            sleep(sleep_duration).await;
             stream.write_all(b"\r\n").await.unwrap();
             stream.read_exact(&mut buf).await.unwrap();
             let formatted_resp_time = Utc::now().format("%F %T%.6f");
             let res = String::from_utf8_lossy(&buf);
             let status = res[9..].parse::<u16>().unwrap();
-            if status == 200 {
-                bunt::println!(
-                    "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
-                    formatted_resp_time
-                )
-            } else {
-                bunt::println!(
-                    "[{$red}fail{/$}] {[red]} @ {[cyan]}",
-                    status,
-                    formatted_resp_time
-                )
+            match status {
+                200 => {
+                    bunt::println!(
+                        "[{$green}success{/$}] {$green}200{/$} @ {[cyan]}",
+                        formatted_resp_time
+                    );
+                    true
+                }
+                _ => {
+                    bunt::println!(
+                        "[{$red}fail{/$}] {[red]} @ {[cyan]}",
+                        status,
+                        formatted_resp_time
+                    );
+                    false
+                }
             }
-            status
         });
         spread += spread_offset as i64;
         handle_vec.push(handle);
@@ -221,5 +248,5 @@ pub async fn snipe_gc(
         let status = handle.await.unwrap();
         status_vec.push(status);
     }
-    status_vec.contains(&200)
+    status_vec.contains(&true)
 }

@@ -36,7 +36,7 @@ impl Requests {
     }
 
     pub async fn authenticate_mojang(&self, username: &str, password: &str) -> String {
-        let function_id = "YggdrasilAuth";
+        let function_id = "AuthenticateMojang";
         if username.is_empty() || password.is_empty() {
             cli::pretty_panik(function_id, "You did not provide a username or password.");
         }
@@ -72,7 +72,7 @@ impl Requests {
         username: &str,
         password: &str,
     ) -> Result<String, AuthenicationError> {
-        let function_id = "MicroAuth";
+        let function_id = "AuthenticateMicrosoft";
         if username.is_empty() || password.is_empty() {
             cli::pretty_panik(function_id, "You did not provide a username or password.");
         }
@@ -110,7 +110,7 @@ impl Requests {
     }
 
     pub async fn get_sq_id(&self, access_token: &str) -> Option<[i64; 3]> {
-        let function_id = "GetSQID";
+        let function_id = "GetSqId";
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
         let res = self.client.get(url).bearer_auth(access_token).send().await;
         let res = match res {
@@ -134,7 +134,7 @@ impl Requests {
     }
 
     pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) {
-        let function_id = "SendSQ";
+        let function_id = "SendSq";
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             cli::pretty_panik(
                 function_id,
@@ -178,7 +178,7 @@ impl Requests {
         &self,
         username_to_snipe: &str,
     ) -> Result<NameMC, NameAvailabilityError> {
-        let function_id = "GetDrop";
+        let function_id = "CheckNameAvailabilityTime";
         let url = format!("{}/droptime", constants::NAMEMC_API);
         let res = self
             .client
@@ -209,7 +209,7 @@ impl Requests {
     }
 
     pub async fn check_name_change_eligibility(&self, access_token: &str) {
-        let function_id = "CheckEligible";
+        let function_id = "CheckNameChangeEligibility";
         let url = format!(
             "{}/minecraft/profile/namechange",
             constants::MINECRAFTSERVICES_API_SERVER
@@ -235,7 +235,7 @@ impl Requests {
     }
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
-        let function_id = "SkinUpload";
+        let function_id = "UploadSkin";
         let img_file = match File::open(&config.config.skin_filename).await {
             Ok(f) => f,
             Err(_) => {
@@ -279,7 +279,7 @@ impl Requests {
     }
 
     pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) {
-        let function_id = "GCRedeem";
+        let function_id = "RedeemGiftcode";
         let url = format!(
             "{}/productvoucher/{}",
             constants::MINECRAFTSERVICES_API_SERVER,

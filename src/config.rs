@@ -36,7 +36,7 @@ pub struct SubConfig {
 
 impl Config {
     pub async fn new(config_name: &Option<String>) -> Self {
-        let function_id = "ConfigMan";
+        let function_id = "ConfigNew";
         let config_path = match config_name {
             Some(x) => x,
             None => DEFAULT_CONFIG_PATH,

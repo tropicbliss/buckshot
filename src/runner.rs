@@ -119,6 +119,7 @@ impl Sniper {
         requestor: &Arc<requests::Requests>,
         task: &SnipeTask,
     ) -> Option<bool> {
+        let function_id = "Snipe";
         let droptime = droptime.to_owned();
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
@@ -144,7 +145,7 @@ impl Sniper {
                 Ok(x) => x,
                 Err(_) => {
                     cli::kalm_panik(
-                        "Main",
+                        function_id,
                         &format!("The name {} has already dropped.", username_to_snipe),
                     );
                     return None;
@@ -174,7 +175,7 @@ impl Sniper {
             Ok(x) => x.searches,
             Err(_) => {
                 cli::kalm_panik(
-                    "GetDrop",
+                    function_id,
                     &format!(
                         "The name {} is not available or has already dropped.",
                         username_to_snipe
@@ -191,7 +192,7 @@ impl Sniper {
             SnipeTask::Giftcode => {
                 sockets::snipe_gc(
                     &snipe_time,
-                    username_to_snipe,
+                    username_to_snipe.to_string(),
                     &access_token,
                     self.config.config.spread as i32,
                 )
@@ -221,6 +222,7 @@ impl Sniper {
     }
 
     async fn setup(&self, requestor: &Arc<requests::Requests>, task: &SnipeTask) -> String {
+        let function_id = "Setup";
         match task {
             SnipeTask::Mojang => {
                 let access_token = requestor
@@ -253,7 +255,7 @@ impl Sniper {
                         Ok(x) => break x,
                         Err(requests::AuthenicationError::RetryableAuthenticationError) => {
                             cli::kalm_panik(
-                                "MicroAuth",
+                                function_id,
                                 &format!(
                                     "Authentication error. Retrying in 10 seconds. Attempt(s): {}.",
                                     count
@@ -262,7 +264,7 @@ impl Sniper {
                             time::sleep(std::time::Duration::from_secs(10)).await;
                             if count == 3 {
                                 cli::pretty_panik(
-                                    "MicroAuth",
+                                    function_id,
                                     "Authentication failed due to an unknown server error. Please try again later."
                                 );
                             }
@@ -278,6 +280,7 @@ impl Sniper {
         requestor: &Arc<requests::Requests>,
         username_to_snipe: &str,
     ) -> Option<requests::NameMC> {
+        let function_id = "GetSnipeTime";
         match requestor
             .check_name_availability_time(&username_to_snipe)
             .await
@@ -285,7 +288,7 @@ impl Sniper {
             Ok(x) => Some(x),
             Err(requests::NameAvailabilityError::NameNotAvailableError) => {
                 cli::kalm_panik(
-                        "GetDrop",
+                        function_id,
                         &format!(
                             "Failed to time snipe. The name {} is either taken, freely available to claim at minecraft.net, or not cached in the droptime server for various reasons (in that case, please try again later).",
                             username_to_snipe
