@@ -1,5 +1,3 @@
-// The ultimate offender of DRY, ladies and gentlemen
-
 use crate::{cli, config, requests, sockets};
 use chrono::{DateTime, Duration, Utc};
 use std::sync::Arc;
