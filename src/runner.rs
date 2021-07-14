@@ -96,13 +96,6 @@ impl Sniper {
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
-                    cli::kalm_panik(
-                        "GetDrop",
-                        &format!(
-                            "The name {} is not available or has already dropped.",
-                            username_to_snipe
-                        ),
-                    );
                     continue;
                 }
             };
@@ -179,7 +172,16 @@ impl Sniper {
         };
         let searches = match namemc_data {
             Ok(x) => x.searches,
-            Err(_) => return None,
+            Err(_) => {
+                cli::kalm_panik(
+                    "GetDrop",
+                    &format!(
+                        "The name {} is not available or has already dropped.",
+                        username_to_snipe
+                    ),
+                );
+                return None;
+            }
         };
         bunt::println!(
             "{$green}Signed in to {} successfully.{/$}",
