@@ -4,7 +4,7 @@ version = "2.0.1"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 edition = "2018"
 license = "MIT"
-homepage = "https://auth.buckshotrs.com"
+homepage = "https://www.buckshotrs.com"
 repository = "https://github.com/tropicbliss/buckshot"
 description = "A Minecraft username sniper written in Rust. Performant and capable."
 categories = ["command-line-utilities"]
@@ -22,4 +22,4 @@ bunt = "0.2.5"
 argh = "0.1.5"
 tokio-util = { version = "0.6.7", features = ["codec"] }
 tokio-rustls = "0.22.0"
-webpki-roots = "0.21.0" # Do not upgrade this
+webpki-roots = "0.21.0" # do not upgrade
