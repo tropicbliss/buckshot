@@ -1,5 +1,4 @@
 use crate::cli::pretty_panik;
-use crate::constants::DEFAULT_CONFIG_PATH;
 use serde::Deserialize;
 use std::io::ErrorKind::NotFound;
 use std::path::Path;
@@ -35,12 +34,8 @@ pub struct SubConfig {
 }
 
 impl Config {
-    pub async fn new(config_name: &Option<String>) -> Self {
+    pub async fn new(config_path: &str) -> Self {
         let function_id = "ConfigNew";
-        let config_path = match config_name {
-            Some(x) => x,
-            None => DEFAULT_CONFIG_PATH,
-        };
         match File::open(&config_path).await {
             Ok(mut f) => {
                 let mut s = String::new();
@@ -61,7 +56,7 @@ impl Config {
                 config
             }
             Err(e) if e.kind() == NotFound => {
-                let path = Path::new(config_path);
+                let path = Path::new(&config_path);
                 let mut file = match File::create(path).await {
                     Ok(x) => x,
                     Err(e) => pretty_panik(

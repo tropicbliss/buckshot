@@ -14,8 +14,12 @@ struct Options {
     username_to_snipe: Option<String>,
 
     /// an optional argument for specifying the name of the config file (must be a TOML file)
-    #[argh(option, short = 'c')]
-    config_name: Option<String>,
+    #[argh(
+        option,
+        short = 'c',
+        default = "String::from(constants::DEFAULT_CONFIG_PATH)"
+    )]
+    config_name: String,
 }
 
 #[tokio::main]
@@ -46,7 +50,7 @@ fn impl_chooser(config: &config::Config) -> runner::SnipeTask {
     }
 }
 
-fn get_envargs() -> (Option<String>, Option<String>) {
+fn get_envargs() -> (Option<String>, String) {
     let options: Options = argh::from_env();
     (options.username_to_snipe, options.config_name)
 }
