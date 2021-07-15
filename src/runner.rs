@@ -42,6 +42,7 @@ impl Sniper {
         };
         let requestor = Arc::new(requests::Requests::new());
         for username_to_snipe in name_list {
+            let username_to_snipe = username_to_snipe.trim();
             count += 1;
             if check_filter && !cli::username_filter_predicate(&username_to_snipe) {
                 cli::kalm_panik(
