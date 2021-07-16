@@ -23,3 +23,7 @@ argh = "0.1.5"
 tokio-util = { version = "0.6.7", features = ["codec"] }
 tokio-rustls = "0.22.0"
 webpki-roots = "0.21.0" # do not upgrade
+
+[profile.release]
+lto = true
+codegen-units = 1
