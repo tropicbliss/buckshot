@@ -13,14 +13,21 @@ pub struct Sniper {
     task: SnipeTask,
     username_to_snipe: Option<String>,
     config: config::Config,
+    giftcode: Option<String>,
 }
 
 impl Sniper {
-    pub fn new(task: SnipeTask, username_to_snipe: Option<String>, config: config::Config) -> Self {
+    pub fn new(
+        task: SnipeTask,
+        username_to_snipe: Option<String>,
+        config: config::Config,
+        giftcode: Option<String>,
+    ) -> Self {
         Self {
             task,
             username_to_snipe,
             config,
+            giftcode,
         }
     }
 
@@ -66,7 +73,11 @@ impl Sniper {
             };
             let access_token = self.setup(&requestor, task).await;
             match task {
-                SnipeTask::Giftcode => {}
+                SnipeTask::Giftcode => {
+                    if let Some(gc) = &self.giftcode {
+                        requestor.redeem_giftcode(&gc, &access_token).await;
+                    }
+                }
                 _ => {
                     requestor.check_name_change_eligibility(&access_token).await;
                 }

@@ -10,22 +10,26 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt()]
 struct Options {
-    /// an optional argument for specifying the username you want to snipe
+    /// An optional argument for specifying the username you want to snipe
     #[structopt(short, long)]
     username_to_snipe: Option<String>,
 
-    /// an optional argument for specifying the name of the config file (must be a TOML file)
+    /// An optional argument for specifying the name of the config file (must be a TOML file)
     #[structopt(short, long, default_value = "config.toml")]
     config_name: String,
+
+    /// An optional argument for specifying the giftcode if you want the sniper to redeem the giftcode for you
+    #[structopt(short, long)]
+    giftcode: Option<String>,
 }
 
 #[tokio::main]
 async fn main() {
-    let (username_to_snipe, config_name) = get_envargs();
+    let (username_to_snipe, config_name, giftcode) = get_envargs();
     cli::print_splash_screen();
     let config = config::Config::new(&config_name).await;
     let snipe_task = impl_chooser(&config);
-    let sniper = runner::Sniper::new(snipe_task, username_to_snipe, config);
+    let sniper = runner::Sniper::new(snipe_task, username_to_snipe, config, giftcode);
     sniper.run().await;
 }
 
@@ -47,7 +51,11 @@ fn impl_chooser(config: &config::Config) -> runner::SnipeTask {
     }
 }
 
-fn get_envargs() -> (Option<String>, String) {
+fn get_envargs() -> (Option<String>, String, Option<String>) {
     let options = Options::from_args();
-    (options.username_to_snipe, options.config_name)
+    (
+        options.username_to_snipe,
+        options.config_name,
+        options.giftcode,
+    )
 }
