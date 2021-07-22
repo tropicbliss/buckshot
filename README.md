@@ -24,7 +24,7 @@ No more new features are going to be added to this sniper due to my fear of sign
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/tag/v2.0.3).
+1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/latest).
 2. Use Dimension 4 on Windows for time synchronisation.
 3. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. You could also double-click the executable. I assume you use MCsniperPY so this process should be relatively straightforward.
 4. This should generate `config.toml` on the same directory in which you can edit.
