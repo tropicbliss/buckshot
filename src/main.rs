@@ -4,6 +4,7 @@ mod constants;
 mod requests;
 mod runner;
 mod sockets;
+
 use structopt::StructOpt;
 
 /// A Minecraft username sniper made in Rust. Performant and capable.
