@@ -4,21 +4,18 @@ mod constants;
 mod requests;
 mod runner;
 mod sockets;
-use argh::FromArgs;
+use structopt::StructOpt;
 
-#[derive(FromArgs)]
 /// A Minecraft username sniper made in Rust. Performant and capable.
+#[derive(StructOpt, Debug)]
+#[structopt()]
 struct Options {
     /// an optional argument for specifying the username you want to snipe
-    #[argh(option, short = 'u')]
+    #[structopt(short, long)]
     username_to_snipe: Option<String>,
 
     /// an optional argument for specifying the name of the config file (must be a TOML file)
-    #[argh(
-        option,
-        short = 'c',
-        default = "String::from(constants::DEFAULT_CONFIG_PATH)"
-    )]
+    #[structopt(short, long, default_value = "config.toml")]
     config_name: String,
 }
 
@@ -51,6 +48,6 @@ fn impl_chooser(config: &config::Config) -> runner::SnipeTask {
 }
 
 fn get_envargs() -> (Option<String>, String) {
-    let options: Options = argh::from_env();
+    let options = Options::from_args();
     (options.username_to_snipe, options.config_name)
 }

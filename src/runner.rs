@@ -41,6 +41,9 @@ impl Sniper {
             vec![cli::get_username_choice()]
         };
         let requestor = Arc::new(requests::Requests::new());
+        if let SnipeTask::Giftcode = task {
+            bunt::println!("{$red}Please remember to redeem your giftcode before sniping.{/$}");
+        }
         for username_to_snipe in name_list {
             let username_to_snipe = username_to_snipe.trim();
             count += 1;
@@ -63,12 +66,7 @@ impl Sniper {
             };
             let access_token = self.setup(&requestor, task).await;
             match task {
-                SnipeTask::Giftcode => {
-                    let giftcode = cli::get_giftcode();
-                    if let Some(gc) = giftcode {
-                        requestor.redeem_giftcode(&gc, &access_token).await;
-                    }
-                }
+                SnipeTask::Giftcode => {}
                 _ => {
                     requestor.check_name_change_eligibility(&access_token).await;
                 }

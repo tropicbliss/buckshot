@@ -45,19 +45,6 @@ pub fn username_filter_predicate(username: &str) -> bool {
             .all(|x| char::is_alphanumeric(x) || x == '_')
 }
 
-pub fn get_giftcode() -> Option<String> {
-    let mut input = String::new();
-    print!("Enter your gift code (press ENTER if you have already redeemed your gift code): ");
-    io::Write::flush(&mut io::stdout()).unwrap();
-    io::stdin().read_line(&mut input).unwrap();
-    let input = input.trim();
-    if input.is_empty() {
-        None
-    } else {
-        Some(input.to_string())
-    }
-}
-
 pub fn exit_program() {
     let mut input = String::new();
     print!("Press ENTER to quit: ");

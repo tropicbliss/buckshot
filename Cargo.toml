@@ -1,6 +1,6 @@
 [package]
 name = "buckshot"
-version = "2.0.2"
+version = "2.0.3"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -19,7 +19,7 @@ reqwest = { version = "0.11.4", default_features = false, features = ["json", "m
 tokio = { version = "1.8.1", features = ["fs", "rt-multi-thread", "macros"] }
 chrono = "0.4.19"
 bunt = "0.2.5"
-argh = "0.1.5"
+structopt = "0.3"
 tokio-util = { version = "0.6.7", features = ["codec"] }
 tokio-rustls = "0.22.0"
 webpki-roots = "0.21.0" # do not upgrade

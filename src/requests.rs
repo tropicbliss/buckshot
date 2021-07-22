@@ -277,28 +277,4 @@ impl Requests {
             Err(e) => panic!("{}", e),
         };
     }
-
-    pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) {
-        let function_id = "RedeemGiftcode";
-        let url = format!(
-            "{}/productvoucher/{}",
-            constants::MINECRAFTSERVICES_API_SERVER,
-            giftcode
-        );
-        let res = self
-            .client
-            .put(url)
-            .bearer_auth(access_token)
-            .header(reqwest::header::ACCEPT, "application/json")
-            .send()
-            .await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
-        let status = res.status().as_u16();
-        if status != 200 {
-            cli::http_not_ok_panik(function_id, status);
-        }
-    }
 }
