@@ -36,6 +36,7 @@ impl Sniper {
     }
 
     async fn execute(&self, task: &SnipeTask) {
+        let function_id = "Execute";
         let mut count = 0;
         let mut is_success = false;
         let mut check_filter = true;
@@ -56,7 +57,7 @@ impl Sniper {
             count += 1;
             if check_filter && !cli::username_filter_predicate(&username_to_snipe) {
                 cli::kalm_panik(
-                    "Main",
+                    function_id,
                     &format!("{} is an invalid username.", username_to_snipe),
                 );
                 continue;
@@ -69,7 +70,9 @@ impl Sniper {
             }
             let snipe_time = match self.get_snipe_time(&requestor, &username_to_snipe).await {
                 Some(x) => x.droptime,
-                None => continue,
+                None => {
+                    continue;
+                }
             };
             let access_token = self.setup(&requestor, task).await;
             match task {
@@ -168,29 +171,18 @@ impl Sniper {
             access_token
         };
         let namemc_data = match task {
-            SnipeTask::Giftcode => {
-                requestor
-                    .check_name_availability_time(&username_to_snipe)
-                    .await
-            }
+            SnipeTask::Giftcode => self.get_snipe_time(&requestor, &username_to_snipe).await,
             _ => {
                 let (snipe_time, _) = join!(
-                    requestor.check_name_availability_time(&username_to_snipe),
+                    self.get_snipe_time(&requestor, &username_to_snipe),
                     requestor.check_name_change_eligibility(&access_token)
                 );
                 snipe_time
             }
         };
         let searches = match namemc_data {
-            Ok(x) => x.searches,
-            Err(_) => {
-                cli::kalm_panik(
-                    function_id,
-                    &format!(
-                        "The name {} is not available or has already dropped.",
-                        username_to_snipe
-                    ),
-                );
+            Some(x) => x.searches,
+            None => {
                 return None;
             }
         };
