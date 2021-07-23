@@ -104,6 +104,7 @@ impl Sniper {
                     access_token,
                     &requestor,
                     task,
+                    count,
                 )
                 .await;
             let snipe_status = match snipe_status {
@@ -131,6 +132,7 @@ impl Sniper {
         mut access_token: String,
         requestor: &Arc<requests::Requests>,
         task: &SnipeTask,
+        attempt: usize,
     ) -> Option<bool> {
         let function_id = "Snipe";
         let droptime = droptime.to_owned();
@@ -212,9 +214,10 @@ impl Sniper {
         };
         if is_success {
             bunt::println!(
-                "{$green}Successfully sniped {} with {} searches!{/$}",
+                "{$green}Successfully sniped {} with {} searches! Snipe attempt(s): {}.{/$}",
                 username_to_snipe,
-                searches
+                searches,
+                attempt
             );
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await;
