@@ -69,7 +69,7 @@ impl Sniper {
                 println!("Moving on to next name...");
             }
             let snipe_time = match self.get_snipe_time(&requestor, &username_to_snipe).await {
-                Some(x) => x.droptime,
+                Some(x) => x,
                 None => {
                     continue;
                 }
@@ -124,6 +124,7 @@ impl Sniper {
         cli::exit_program();
     }
 
+    #[allow(clippy::too_many_arguments)] // This sniper is poorly written, shut up
     async fn snipe(
         &self,
         droptime: &DateTime<Utc>,
@@ -182,12 +183,7 @@ impl Sniper {
                 snipe_time
             }
         };
-        let searches = match namemc_data {
-            Some(x) => x.searches,
-            None => {
-                return None;
-            }
-        };
+        namemc_data?; // Ok this is the weirdest statement I have ever written in programming
         bunt::println!(
             "{$green}Signed in to {} successfully.{/$}",
             self.config.account.username
@@ -214,9 +210,8 @@ impl Sniper {
         };
         if is_success {
             bunt::println!(
-                "{$green}Successfully sniped {} with {} searches! Snipe attempt(s): {}.{/$}",
+                "{$green}Successfully sniped {}! Snipe attempt(s): {}.{/$}",
                 username_to_snipe,
-                searches,
                 attempt
             );
             if self.config.config.change_skin {
@@ -227,7 +222,6 @@ impl Sniper {
     }
 
     async fn setup(&self, requestor: &Arc<requests::Requests>, task: &SnipeTask) -> String {
-        let function_id = "Setup";
         match task {
             SnipeTask::Mojang => {
                 let access_token = requestor
@@ -247,35 +241,12 @@ impl Sniper {
                 access_token
             }
             _ => {
-                let mut count = 0;
-                loop {
-                    count += 1;
-                    match requestor
-                        .authenticate_microsoft(
-                            &self.config.account.username,
-                            &self.config.account.password,
-                        )
-                        .await
-                    {
-                        Ok(x) => break x,
-                        Err(requests::AuthenicationError::RetryableAuthenticationError) => {
-                            cli::kalm_panik(
-                                function_id,
-                                &format!(
-                                    "Authentication error. Retrying in 10 seconds. Attempt(s): {}.",
-                                    count
-                                ),
-                            );
-                            time::sleep(std::time::Duration::from_secs(10)).await;
-                            if count == 3 {
-                                cli::pretty_panik(
-                                    function_id,
-                                    "Authentication failed due to an unknown server error. Please try again later."
-                                );
-                            }
-                        }
-                    }
-                }
+                requestor
+                    .authenticate_microsoft(
+                        &self.config.account.username,
+                        &self.config.account.password,
+                    )
+                    .await
             }
         }
     }
@@ -284,7 +255,7 @@ impl Sniper {
         &self,
         requestor: &Arc<requests::Requests>,
         username_to_snipe: &str,
-    ) -> Option<requests::NameMC> {
+    ) -> Option<DateTime<Utc>> {
         let function_id = "GetSnipeTime";
         match requestor
             .check_name_availability_time(&username_to_snipe)

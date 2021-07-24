@@ -7,17 +7,8 @@ use serde_json::{json, Value};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
-pub enum AuthenicationError {
-    RetryableAuthenticationError,
-}
-
 pub enum NameAvailabilityError {
     NameNotAvailableError,
-}
-
-pub struct NameMC {
-    pub droptime: DateTime<Utc>,
-    pub searches: u32,
 }
 
 pub struct Requests {
@@ -67,11 +58,7 @@ impl Requests {
         }
     }
 
-    pub async fn authenticate_microsoft(
-        &self,
-        username: &str,
-        password: &str,
-    ) -> Result<String, AuthenicationError> {
+    pub async fn authenticate_microsoft(&self, username: &str, password: &str) -> String {
         let function_id = "AuthenticateMicrosoft";
         if username.is_empty() || password.is_empty() {
             cli::pretty_panik(function_id, "You did not provide a username or password.");
@@ -90,20 +77,16 @@ impl Requests {
             200 => {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
-                Ok(v["access_token"].as_str().unwrap().to_string())
+                v["access_token"].as_str().unwrap().to_string()
             }
             400 => {
                 let body = res.text().await.unwrap();
                 let v: Value = serde_json::from_str(&body).unwrap();
                 let err = v["error"].as_str().unwrap().to_string();
-                if err == "This API is currently overloaded. Please try again later." {
-                    Err(AuthenicationError::RetryableAuthenticationError)
-                } else {
-                    cli::pretty_panik(
-                        function_id,
-                        &format!("Authentication error. Reason: {}", err),
-                    )
-                }
+                cli::pretty_panik(
+                    function_id,
+                    &format!("Authentication error. Reason: {}", err),
+                );
             }
             status => cli::http_not_ok_panik(function_id, status),
         }
@@ -177,34 +160,27 @@ impl Requests {
     pub async fn check_name_availability_time(
         &self,
         username_to_snipe: &str,
-    ) -> Result<NameMC, NameAvailabilityError> {
+    ) -> Result<DateTime<Utc>, NameAvailabilityError> {
         let function_id = "CheckNameAvailabilityTime";
-        let url = format!("{}/droptime", constants::NAMEMC_API);
-        let res = self
-            .client
-            .get(url)
-            .header(reqwest::header::USER_AGENT, constants::NAMEMC_USER_AGENT)
-            .query(&[("name", username_to_snipe)])
-            .send()
-            .await;
+        let url = format!("{}/droptime/{}", constants::NAMEMC_API, username_to_snipe);
+        let res = self.client.get(url).send().await;
         let res = match res {
             Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
             _ => res.unwrap(),
         };
         let status = res.status().as_u16();
-        if status != 200 {
-            cli::http_not_ok_panik(function_id, status);
-        }
-        let body = res.text().await.unwrap();
-        let v: Value = serde_json::from_str(&body).unwrap();
-        match v.get("UNIX") {
-            Some(x) => {
-                let searches = v["searches"].as_i64().unwrap() as u32;
-                let epoch = x.as_i64().unwrap();
+        match status {
+            200 => {
+                let body = res.text().await.unwrap();
+                let v: Value = serde_json::from_str(&body).unwrap();
+                let epoch = v["UNIX"].as_i64().unwrap();
                 let droptime = Utc.timestamp(epoch, 0);
-                Ok(NameMC { droptime, searches })
+                Ok(droptime)
             }
-            None => Err(NameAvailabilityError::NameNotAvailableError),
+            404 => Err(NameAvailabilityError::NameNotAvailableError),
+            status => {
+                cli::http_not_ok_panik(function_id, status);
+            }
         }
     }
 
