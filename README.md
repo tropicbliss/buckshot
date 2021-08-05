@@ -6,6 +6,8 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 No more new features are going to be added to this sniper due to my fear of significant time investment spent in development and preventing feature creep. Further developments will be focused on maintaining this sniper and the authentication server. If the sniper stops working, be sure to check out for any new updates.
 
+Also doing a minor rewrite of the sniper soon to improve the code quality since my Rust skills have improved quite a bit.
+
 ## Features
 
 - Mojang account sniping
