@@ -37,7 +37,7 @@ pub fn get_username_choice() -> Result<String> {
         if username_filter_predicate(input) {
             break input.to_string();
         }
-        println!("Invalid username entered, please try again");
+        writeln!(stdout(), "Invalid username entered, please try again")?;
         continue;
     })
 }
