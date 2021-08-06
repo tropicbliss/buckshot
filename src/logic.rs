@@ -96,6 +96,7 @@ impl Sniper {
             } else {
                 self.config.config.offset
             };
+            writeln!(stdout(), "Sniping with an offset of {} ms", offset)?;
             let snipe_status = self
                 .snipe(
                     snipe_time,
@@ -132,17 +133,15 @@ impl Sniper {
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
             writeln!(stdout(), 
-                "Sniping {} with an offset of {} ms in ~{} seconds | sniping at {} (utc)",
+                "Sniping {} in ~{} seconds | sniping at {} (utc)",
                 username_to_snipe,
-                offset,
                 duration_in_sec.num_seconds(),
                 formatted_droptime
             )?;
         } else {
             writeln!(stdout(), 
-                "Sniping {} with an offset of {} ms in ~{} minutes | sniping at {} (utc)",
+                "Sniping {} in ~{} minutes | sniping at {} (utc)",
                 username_to_snipe,
-                offset,
                 duration_in_sec.num_minutes(),
                 formatted_droptime
             )?;
