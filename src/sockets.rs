@@ -1,4 +1,4 @@
-// #![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_possible_truncation)]
 
 use crate::constants;
 use chrono::{DateTime, Duration, Utc};
