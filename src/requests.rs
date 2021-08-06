@@ -5,7 +5,6 @@ use serde_json::{json, Value};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 use anyhow::{anyhow, bail, Result};
-use ansi_term::Colour::Red;
 use std::io::{stdout, Write};
 use std::time::Duration;
 
@@ -171,12 +170,7 @@ impl Requests {
     }
 
     pub async fn upload_skin(&self, config: &config::Config, access_token: &str) -> Result<()> {
-        let img_file = if let Ok(f) = File::open(&config.config.skin_filename).await {
-            f
-        } else {
-            writeln!(stdout(), "{}", Red.paint(format!("{} not found", config.config.skin_filename)))?;
-            return Ok(());
-        };
+        let img_file = File::open(&config.config.skin_filename).await?;
         let stream = FramedRead::new(img_file, BytesCodec::new());
         let stream = Body::wrap_stream(stream);
         let image_part = reqwest::multipart::Part::stream(stream);
@@ -197,7 +191,7 @@ impl Requests {
         match res.status().as_u16() {
             200 => writeln!(stdout(), "Successfully changed skin")?,
             status => {
-                writeln!(stdout(), "{}", Red.paint(format!("HTTP {}", status)))?;
+                bail!("HTTP {}", status);
             }
         }
         Ok(())
