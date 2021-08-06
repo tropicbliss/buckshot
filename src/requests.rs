@@ -5,7 +5,6 @@ use serde_json::{json, Value};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 use anyhow::{anyhow, bail, Result};
-use std::io::{stdout, Write};
 use std::time::Duration;
 
 pub struct Requests {
@@ -188,11 +187,9 @@ impl Requests {
             .multipart(form)
             .send()
             .await?;
-        match res.status().as_u16() {
-            200 => writeln!(stdout(), "Successfully changed skin")?,
-            status => {
-                bail!("HTTP {}", status);
-            }
+        let status = res.status().as_u16();
+        if status != 200 {
+            bail!("HTTP {}", status);
         }
         Ok(())
     }

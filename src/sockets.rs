@@ -28,9 +28,7 @@ pub async fn auto_offset_calculator(username_to_snipe: &str, is_gc: bool) -> Res
         format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", username_to_snipe).into_bytes()
     };
     let mut config = ClientConfig::new();
-    config
-        .root_store
-        .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+    config.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
     let connector = TlsConnector::from(Arc::new(config));
     let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com")?;
     let stream = TcpStream::connect(&addr).await.unwrap();
