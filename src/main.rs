@@ -9,7 +9,6 @@ mod sockets;
 
 use std::path::PathBuf;
 use structopt::StructOpt;
-#[cfg(not(windows))]
 use ansi_term::Colour::Red;
 use anyhow::{Context, Result};
 use std::io::{stdout, Write};
@@ -31,6 +30,8 @@ struct Args {
     giftcode: Option<String>,
 }
 
+type Task = logic::SnipeTask;
+
 impl Args {
     pub fn new() -> Self {
         Self::from_args()
@@ -48,14 +49,10 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn impl_chooser(config: &config::Config) -> Result<logic::SnipeTask> {
-    type Task = logic::SnipeTask;
+fn impl_chooser(config: &config::Config) -> Result<Task> {
     let paradigm = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
-            #[cfg(not(windows))]
             writeln!(stdout(), "{}", Red.paint("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping"))?;
-            #[cfg(windows)]
-            writeln!(stdout(), "`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping")?;
             Task::Giftcode
         } else {
             Task::Mojang

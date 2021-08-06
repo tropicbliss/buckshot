@@ -21,18 +21,9 @@ pub fn print_splash_screen() -> Result<()> {
     fn best_sniper() -> String {
         "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
     }
-    #[cfg(not(windows))]
     writeln!(stdout(), "{}", Red.paint(get_logo()))?;
-    #[cfg(not(windows))]
     writeln!(stdout(), "{}", Green.paint(get_credits()))?;
-    #[cfg(not(windows))]
     writeln!(stdout(), "{}", Green.paint(best_sniper()))?;
-    #[cfg(windows)]
-    writeln!(stdout(), get_logo())?;
-    #[cfg(windows)]
-    writeln!(stdout(), get_credits())?;
-    #[cfg(windows)]
-    writeln!(stdout(), best_sniper())?;
     Ok(())
 }
 

@@ -87,17 +87,11 @@ pub async fn snipe_executor(username_to_snipe: &str, access_token: &str, spread_
             let status = res[9..].parse::<u16>()?;
             match status {
                 200 => {
-                    #[cfg(not(windows))]
                     writeln!(stdout(), "[{}] {} @ {}", Green.paint("success"), Green.paint("200"), Cyan.paint(format!("{}", formatted_resp_time)))?;
-                    #[cfg(windows)]
-                    writeln!(stdout(), "[success] 200 @ {}", formatted_resp_time)?;
                     Ok(true)
                 }
                 status => {
-                    #[cfg(not(windows))]
                     writeln!(stdout(), "[{}] {} @ {}", Red.paint("fail"), Red.paint(format!("{}", status)), Cyan.paint(format!("{}", formatted_resp_time)))?;
-                    #[cfg(windows)]
-                    writeln!(stdout(), "[fail] {} @ {}", status, formated_resp_time)?;
                     Ok(false)
                 }
             }
