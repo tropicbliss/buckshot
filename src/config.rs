@@ -1,15 +1,17 @@
-use crate::cli::pretty_panik;
+#![allow(clippy::struct_excessive_bools)]
+
 use serde::Deserialize;
 use std::io::ErrorKind::NotFound;
 use std::path::Path;
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use anyhow::{bail, Result};
 
 #[derive(Deserialize)]
 pub struct Config {
     pub account: Account,
-    pub config: SubConfig,
+    pub config: Others,
 }
 
 #[derive(Deserialize)]
@@ -22,10 +24,10 @@ pub struct Account {
 }
 
 #[derive(Deserialize)]
-pub struct SubConfig {
-    pub offset: i32,
+pub struct Others {
+    pub offset: isize,
     pub auto_offset: bool,
-    pub spread: u32,
+    pub spread: usize,
     pub microsoft_auth: bool,
     pub gc_snipe: bool,
     pub change_skin: bool,
@@ -35,8 +37,7 @@ pub struct SubConfig {
 }
 
 impl Config {
-    pub async fn new(config_path: PathBuf) -> Self {
-        let function_id = "ConfigNew";
+    pub async fn new(config_path: PathBuf) -> Result<Self> {
         match File::open(&config_path).await {
             Ok(mut f) => {
                 let mut s = String::new();
@@ -44,43 +45,24 @@ impl Config {
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,
-                    Err(e) => pretty_panik(
-                        function_id,
-                        &format!("Error parsing {}. Reason: {}.", config_path.display(), e),
-                    ),
+                    Err(e) => {
+                        bail!("Error parsing {}. Reason: {}", config_path.display(), e);
+                    }
                 };
                 if !(config.config.skin_model.to_lowercase() == "slim"
                     || config.config.skin_model.to_lowercase() == "classic")
                 {
-                    pretty_panik(function_id, "Invalid skin type.");
+                    bail!("Invalid skin variant");
                 }
-                config
+                Ok(config)
             }
             Err(e) if e.kind() == NotFound => {
                 let path = Path::new(&config_path);
-                let mut file = match File::create(path).await {
-                    Ok(x) => x,
-                    Err(e) => pretty_panik(
-                        function_id,
-                        &format!(
-                            "File {} not found, a new config file cannot be created. Reason: {}.",
-                            config_path.display(),
-                            e
-                        ),
-                    ),
-                };
-                file.write_all(&get_default_config().into_bytes())
-                    .await
-                    .unwrap();
-                pretty_panik(
-                    function_id,
-                    &format!(
-                        "File {} not found, creating a new config file.",
-                        config_path.display()
-                    ),
-                );
+                let mut file = File::create(path).await?;
+                file.write_all(&get_default_config().into_bytes()).await?;
+                bail!("{} not found, creating a new config file", config_path.display());
             }
-            Err(e) => panic!("{}", e),
+            Err(e) => bail!(e)
         }
     }
 }

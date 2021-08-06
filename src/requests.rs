@@ -1,35 +1,30 @@
-// My error handling is terrible :(
-
-use crate::{cli, config, constants};
+use crate::{config, constants};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
 use serde_json::{json, Value};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
-
-pub enum NameAvailabilityError {
-    NameNotAvailableError,
-}
+use anyhow::{anyhow, bail, Result};
+use ansi_term::Colour::Red;
+use std::io::{stdout, Write};
 
 pub struct Requests {
     client: Client,
 }
 
 impl Requests {
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> Result<Self> {
+        Ok(Self {
             client: Client::builder()
                 .timeout(std::time::Duration::from_secs(5))
                 .use_rustls_tls()
-                .build()
-                .unwrap(),
-        }
+                .build()?
+        })
     }
 
-    pub async fn authenticate_mojang(&self, username: &str, password: &str) -> String {
-        let function_id = "AuthenticateMojang";
+    pub async fn authenticate_mojang(&self, username: &str, password: &str) -> Result<String> {
         if username.is_empty() || password.is_empty() {
-            cli::pretty_panik(function_id, "You did not provide an email or password.");
+            bail!("No email or password provided");
         }
         let post_json = json!({
             "username": username,
@@ -42,87 +37,66 @@ impl Requests {
             .json(&post_json)
             .header(reqwest::header::USER_AGENT, constants::AUTH_USER_AGENT)
             .send()
-            .await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
+            .await?;
         match res.status().as_u16() {
             200 => {
                 let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
-                let access_token = v["accessToken"].as_str().unwrap().to_string();
-                access_token
+                let access_token = v["accessToken"].as_str().ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?.to_string();
+                Ok(access_token)
             },
-            403 => cli::pretty_panik(function_id, "Authentication error. Please check if you have entered your email and password correctly."),
-            status => cli::http_not_ok_panik(function_id, status),
+            403 => bail!("Incorrect email or password"),
+            status => bail!("HTTP {}", status),
         }
     }
 
-    pub async fn authenticate_microsoft(&self, username: &str, password: &str) -> String {
-        let function_id = "AuthenticateMicrosoft";
+    pub async fn authenticate_microsoft(&self, username: &str, password: &str) -> Result<String> {
         if username.is_empty() || password.is_empty() {
-            cli::pretty_panik(function_id, "You did not provide an email or password.");
+            bail!("No email or password provided");
         }
         let post_json = json!({
             "username": username,
             "password": password
         });
         let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
-        let res = self.client.post(url).json(&post_json).send().await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
+        let res = self.client.post(url).json(&post_json).send().await?;
         match res.status().as_u16() {
             200 => {
-                let body = res.text().await.unwrap();
-                let v: Value = serde_json::from_str(&body).unwrap();
-                v["access_token"].as_str().unwrap().to_string()
+                let body = res.text().await?;
+                let v: Value = serde_json::from_str(&body)?;
+                Ok(v["access_token"].as_str().ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?.to_string())
             }
             400 => {
-                let body = res.text().await.unwrap();
-                let v: Value = serde_json::from_str(&body).unwrap();
-                let err = v["error"].as_str().unwrap().to_string();
-                cli::pretty_panik(
-                    function_id,
-                    &format!("Authentication error. Reason: {}", err),
-                );
+                let body = res.text().await?;
+                let v: Value = serde_json::from_str(&body)?;
+                let err = v["error"].as_str().ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?.to_string();
+                bail!("{}", err);
             }
-            status => cli::http_not_ok_panik(function_id, status),
+            status => bail!("HTTP {}", status),
         }
     }
 
-    pub async fn get_sq_id(&self, access_token: &str) -> Option<[i64; 3]> {
-        let function_id = "GetSqId";
+    pub async fn get_sq_id(&self, access_token: &str) -> Result<Option<[i64; 3]>> {
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
-        let res = self.client.get(url).bearer_auth(access_token).send().await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
+        let res = self.client.get(url).bearer_auth(access_token).send().await?;
         let status = res.status().as_u16();
         if status != 200 {
-            cli::http_not_ok_panik(function_id, status);
+            bail!("HTTP {}", status);
         }
-        let body = res.text().await.unwrap();
+        let body = res.text().await?;
         if body == "[]" {
-            None
+            Ok(None)
         } else {
-            let v: Value = serde_json::from_str(&body).unwrap();
-            let first = v[0]["answer"]["id"].as_i64().unwrap();
-            let second = v[1]["answer"]["id"].as_i64().unwrap();
-            let third = v[2]["answer"]["id"].as_i64().unwrap();
-            Some([first, second, third])
+            let v: Value = serde_json::from_str(&body)?;
+            let first = v[0]["answer"]["id"].as_i64().ok_or_else(|| anyhow!("Unable to get index 0 from JSON array"))?;
+            let second = v[1]["answer"]["id"].as_i64().ok_or_else(|| anyhow!("Unable to get index 1 from JSON array"))?;
+            let third = v[2]["answer"]["id"].as_i64().ok_or_else(|| anyhow!("Unable to get index 2 from JSON array"))?;
+            Ok(Some([first, second, third]))
         }
     }
 
-    pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) {
-        let function_id = "SendSq";
+    pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) -> Result<()> {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
-            cli::pretty_panik(
-                function_id,
-                "Authentication error. Your account has security questions and you did not provide any answers.",
-            );
+            bail!("No answers for security questions provided");
         }
         let post_body = json!([
             {
@@ -145,29 +119,20 @@ impl Requests {
             .bearer_auth(access_token)
             .json(&post_body)
             .send()
-            .await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
+            .await?;
         match res.status().as_u16() {
-            204 => (),
-            403 => cli::pretty_panik(function_id, "Authentication error. Please check if you have entered your security questions correctly."),
-            status => cli::http_not_ok_panik(function_id, status),
+            204 => Ok(()),
+            403 => bail!("Incorrect security questions"),
+            status => bail!("HTTP {}", status),
         }
     }
 
     pub async fn check_name_availability_time(
         &self,
         username_to_snipe: &str,
-    ) -> Result<DateTime<Utc>, NameAvailabilityError> {
-        let function_id = "CheckNameAvailabilityTime";
+    ) -> Result<Option<DateTime<Utc>>> {
         let url = format!("{}/droptime/{}", constants::NAMEMC_API, username_to_snipe);
-        let res = self.client.get(url).send().await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
+        let res = self.client.get(url).send().await?;
         let status = res.status().as_u16();
         match status {
             200 => {
@@ -175,58 +140,46 @@ impl Requests {
                 let v: Value = serde_json::from_str(&body).unwrap();
                 let epoch = v["UNIX"].as_i64().unwrap();
                 let droptime = Utc.timestamp(epoch, 0);
-                Ok(droptime)
+                Ok(Some(droptime))
             }
-            404 => Err(NameAvailabilityError::NameNotAvailableError),
+            404 => Ok(None),
             status => {
-                cli::http_not_ok_panik(function_id, status);
+                bail!("HTTP {}", status);
             }
         }
     }
 
-    pub async fn check_name_change_eligibility(&self, access_token: &str) {
-        let function_id = "CheckNameChangeEligibility";
+    pub async fn check_name_change_eligibility(&self, access_token: &str) -> Result<()> {
         let url = format!(
             "{}/minecraft/profile/namechange",
             constants::MINECRAFTSERVICES_API_SERVER
         );
-        let res = self.client.get(url).bearer_auth(access_token).send().await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
+        let res = self.client.get(url).bearer_auth(access_token).send().await?;
         let status = res.status().as_u16();
         if status != 200 {
-            cli::http_not_ok_panik(function_id, status);
+            bail!("HTTP {}", status);
         }
-        let body = res.text().await.unwrap();
-        let v: Value = serde_json::from_str(&body).unwrap();
-        let is_allowed = v["nameChangeAllowed"].as_bool().unwrap();
+        let body = res.text().await?;
+        let v: Value = serde_json::from_str(&body)?;
+        let is_allowed = v["nameChangeAllowed"].as_bool().ok_or_else(|| anyhow!("Unable to parse `nameChangeAllowed` from JSON"))?;
         if !is_allowed {
-            cli::pretty_panik(
-                function_id,
-                "You cannot name change within the 30 day cooldown period.",
-            )
+            bail!("Name change not allowed within the cooldown")
         }
+        Ok(())
     }
 
-    pub async fn upload_skin(&self, config: &config::Config, access_token: &str) {
-        let function_id = "UploadSkin";
-        let img_file = match File::open(&config.config.skin_filename).await {
-            Ok(f) => f,
-            Err(_) => {
-                cli::kalm_panik(
-                    function_id,
-                    &format!("File {} not found.", config.config.skin_filename),
-                );
-                return;
-            }
+    pub async fn upload_skin(&self, config: &config::Config, access_token: &str) -> Result<()> {
+        let img_file = if let Ok(f) = File::open(&config.config.skin_filename).await {
+            f
+        } else {
+            writeln!(stdout(), "{}", Red.paint(format!("{} not found", config.config.skin_filename)))?;
+            return Ok(());
         };
         let stream = FramedRead::new(img_file, BytesCodec::new());
         let stream = Body::wrap_stream(stream);
         let image_part = reqwest::multipart::Part::stream(stream);
         let form = reqwest::multipart::Form::new()
-            .text("variant", config.config.skin_model.to_owned())
+            .text("variant", config.config.skin_model.clone())
             .part("file", image_part);
         let url = format!(
             "{}/minecraft/profile/skins",
@@ -238,24 +191,15 @@ impl Requests {
             .bearer_auth(access_token)
             .multipart(form)
             .send()
-            .await;
-        match res {
-            Err(e) if e.is_timeout() => {
-                cli::http_timeout_panik(function_id);
-            }
-            Ok(res) => match res.status().as_u16() {
-                200 => println!("Successfully changed skin."),
-                status => cli::kalm_panik(
-                    function_id,
-                    &format!("Failed to change skin. HTTP status code: {}.", status),
-                ),
-            },
-            Err(e) => panic!("{}", e),
-        };
+            .await?;
+        match res.status().as_u16() {
+            200 => writeln!(stdout(), "Successfully changed skin")?,
+            status => writeln!(stdout(), "{}", Red.paint(format!("HTTP {}", status)))?
+        }
+        Ok(())
     }
 
-    pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) {
-        let function_id = "RedeemGiftcode";
+    pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) -> Result<()> {
         let url = format!(
             "{}/productvoucher/{}",
             constants::MINECRAFTSERVICES_API_SERVER,
@@ -267,14 +211,11 @@ impl Requests {
             .bearer_auth(access_token)
             .header(reqwest::header::ACCEPT, "application/json")
             .send()
-            .await;
-        let res = match res {
-            Err(e) if e.is_timeout() => cli::http_timeout_panik(function_id),
-            _ => res.unwrap(),
-        };
+            .await?;
         let status = res.status().as_u16();
         if status != 200 {
-            cli::http_not_ok_panik(function_id, status);
+            bail!("HTTP {}", status);
         }
+        Ok(())
     }
 }

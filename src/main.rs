@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic)]
+
 mod cli;
 mod config;
 mod constants;
@@ -7,8 +9,11 @@ mod sockets;
 
 use std::path::PathBuf;
 use structopt::StructOpt;
+use ansi_term::Colour::Red;
+use anyhow::{Context, Result};
+use std::io::{stdout, Write};
 
-/// A Minecraft name sniper made in Rust. Performant and capable.
+/// A Minecraft name sniper written in Rust. Performant and capable.
 #[derive(StructOpt, Debug)]
 #[structopt()]
 struct Args {
@@ -32,22 +37,21 @@ impl Args {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     let args = Args::new();
-    cli::print_splash_screen();
-    let config = config::Config::new(args.config_name).await;
-    let snipe_task = impl_chooser(&config);
+    cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
+    let config = config::Config::new(args.config_name).await.with_context(|| "Failed to get config options")?;
+    let snipe_task = impl_chooser(&config).with_context(|| "Failed to choose implementation")?;
     let sniper = logic::Sniper::new(snipe_task, args.username_to_snipe, config, args.giftcode);
-    sniper.run().await;
+    sniper.run().await.with_context(|| "Failed to snipe name")?;
+    Ok(())
 }
 
-fn impl_chooser(config: &config::Config) -> logic::SnipeTask {
+fn impl_chooser(config: &config::Config) -> Result<logic::SnipeTask> {
     type Task = logic::SnipeTask;
-    if !config.config.microsoft_auth {
+    let paradigm = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
-            bunt::println!(
-                "{$red}`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead.{/$}"
-            );
+            writeln!(stdout(), "{}", Red.paint("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping"))?;
             Task::Giftcode
         } else {
             Task::Mojang
@@ -56,5 +60,6 @@ fn impl_chooser(config: &config::Config) -> logic::SnipeTask {
         Task::Giftcode
     } else {
         Task::Microsoft
-    }
+    };
+    Ok(paradigm)
 }

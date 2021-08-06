@@ -1,6 +1,9 @@
-use std::{io, process};
+use std::io;
+use ansi_term::Colour::{Green, Red};
+use std::io::{stdout, Write};
+use anyhow::Result;
 
-pub fn print_splash_screen() {
+pub fn print_splash_screen() -> Result<()> {
     fn get_logo() -> String {
         r#"______ _   _ _____  _   __ _____ _   _ _____ _____ 
 | ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|
@@ -13,30 +16,30 @@ pub fn print_splash_screen() {
         .to_string()
     }
     fn get_credits() -> String {
-        "Developed by @tropicbliss#0027 on Discord.".to_string()
+        "Developed by @tropicbliss#0027 on Discord".to_string()
     }
     fn best_sniper() -> String {
         "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
     }
-    bunt::println!("{$red}{}{/$}", get_logo());
-    bunt::println!("{$green}{}{/$}", get_credits());
-    bunt::println!("{$green}{}{/$}", best_sniper());
+    writeln!(stdout(), "{}", Red.paint(get_logo()))?;
+    writeln!(stdout(), "{}", Green.paint(get_credits()))?;
+    writeln!(stdout(), "{}", Green.paint(best_sniper()))?;
+    Ok(())
 }
 
-pub fn get_username_choice() -> String {
-    loop {
+pub fn get_username_choice() -> Result<String> {
+    Ok(loop {
         let mut input = String::new();
         print!("What name will you like to snipe: ");
-        io::Write::flush(&mut io::stdout()).unwrap();
-        io::stdin().read_line(&mut input).unwrap();
+        io::Write::flush(&mut io::stdout())?;
+        io::stdin().read_line(&mut input)?;
         let input = input.trim();
-        if !username_filter_predicate(input) {
-            println!("Invalid username entered, please try again.");
-            continue;
-        } else {
+        if username_filter_predicate(input) {
             break input.to_string();
         }
-    }
+        println!("Invalid username entered, please try again");
+        continue;
+    })
 }
 
 pub fn username_filter_predicate(username: &str) -> bool {
@@ -45,32 +48,4 @@ pub fn username_filter_predicate(username: &str) -> bool {
         && username
             .chars()
             .all(|x| char::is_alphanumeric(x) || x == '_')
-}
-
-pub fn exit_program() {
-    let mut input = String::new();
-    print!("Press ENTER to quit: ");
-    io::Write::flush(&mut io::stdout()).unwrap();
-    io::stdin().read_line(&mut input).unwrap();
-}
-
-pub fn pretty_panik(fid: &str, err: &str) -> ! {
-    bunt::eprintln!("{$red}Error{/$}: [{}] {}", fid, err);
-    exit_program();
-    process::exit(1);
-}
-
-pub fn http_timeout_panik(fid: &str) -> ! {
-    pretty_panik(fid, "HTTP request timeout.");
-}
-
-pub fn http_not_ok_panik(fid: &str, code: u16) -> ! {
-    pretty_panik(
-        fid,
-        &format!("HTTP status code: {}. Please try again later.", code),
-    );
-}
-
-pub fn kalm_panik(fid: &str, err: &str) {
-    bunt::eprintln!("{$red}Error{/$}: [{}] {}", fid, err);
 }
