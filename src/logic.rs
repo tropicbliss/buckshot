@@ -96,7 +96,7 @@ impl Sniper {
             } else {
                 self.config.config.offset
             };
-            writeln!(stdout(), "Sniping with an offset of {} ms", offset)?;
+            writeln!(stdout(), "Your offset is: {} ms", offset)?;
             let snipe_status = self
                 .snipe(
                     snipe_time,
