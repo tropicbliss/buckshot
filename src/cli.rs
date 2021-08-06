@@ -30,7 +30,7 @@ pub fn print_splash_screen() -> Result<()> {
 pub fn get_username_choice() -> Result<String> {
     Ok(loop {
         let mut input = String::new();
-        print!("What name will you like to snipe: ");
+        write!(stdout(), "What name will you like to snipe: ");
         io::Write::flush(&mut io::stdout())?;
         io::stdin().read_line(&mut input)?;
         let input = input.trim();
