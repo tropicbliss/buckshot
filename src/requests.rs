@@ -172,7 +172,10 @@ impl Requests {
         let img_file = if let Ok(f) = File::open(&config.config.skin_filename).await {
             f
         } else {
+            #[cfg(not(windows))]
             writeln!(stdout(), "{}", Red.paint(format!("{} not found", config.config.skin_filename)))?;
+            #[cfg(windows)]
+            writeln!(stdout(), "{} not found", config.config.skin_filename)?;
             return Ok(());
         };
         let stream = FramedRead::new(img_file, BytesCodec::new());
@@ -194,7 +197,12 @@ impl Requests {
             .await?;
         match res.status().as_u16() {
             200 => writeln!(stdout(), "Successfully changed skin")?,
-            status => writeln!(stdout(), "{}", Red.paint(format!("HTTP {}", status)))?
+            status => {
+                #[cfg(not(windows))]
+                writeln!(stdout(), "{}", Red.paint(format!("HTTP {}", status)))?;
+                #[cfg(windows)]
+                writeln!(stdout(), "HTTP {}", status)?;
+            }
         }
         Ok(())
     }

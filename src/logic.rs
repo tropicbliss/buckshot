@@ -52,13 +52,19 @@ impl Sniper {
         let requestor = Arc::new(requests::Requests::new()?);
         if let SnipeTask::Giftcode = task {
             if self.giftcode.is_none() {
+                #[cfg(not(windows))]
                 writeln!(stdout(), "{}", Red.paint("Reminder: You should redeem your giftcode before GC sniping"))?;
+                #[cfg(windows)]
+                writeln!(stdout(), "Reminder: You should redeem your giftcode before GC sniping")?;
             }
         }
         for (count, username_to_snipe) in name_list.into_iter().enumerate() {
             let username_to_snipe = username_to_snipe.trim();
             if check_filter && !cli::username_filter_predicate(username_to_snipe) {
+                #[cfg(not(windows))]
                 writeln!(stdout(), "{}", Red.paint(format!("{} is an invalid name", username_to_snipe)))?;
+                #[cfg(windows)]
+                writeln!(stdout(), "{} is an invalid name", username_to_snipe)?;
                 continue;
             }
             let requestor = Arc::clone(&requestor);
