@@ -7,6 +7,7 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 use anyhow::{anyhow, bail, Result};
 use ansi_term::Colour::Red;
 use std::io::{stdout, Write};
+use std::time::Duration;
 
 pub struct Requests {
     client: Client,
@@ -16,7 +17,8 @@ impl Requests {
     pub fn new() -> Result<Self> {
         Ok(Self {
             client: Client::builder()
-                .timeout(std::time::Duration::from_secs(5))
+                .timeout(Duration::from_secs(5))
+                .tcp_keepalive(Some(Duration::from_secs(5)))
                 .use_rustls_tls()
                 .build()?
         })
