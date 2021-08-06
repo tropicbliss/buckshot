@@ -129,7 +129,7 @@ impl Sniper {
         &self,
         droptime: DateTime<Utc>,
         username_to_snipe: &str,
-        offset: isize,
+        offset: i64,
         mut access_token: String,
         requestor: &Arc<requests::Requests>,
         task: &SnipeTask,
@@ -153,7 +153,7 @@ impl Sniper {
                 formatted_droptime
             )?;
         }
-        let snipe_time = droptime - Duration::milliseconds(offset as i64);
+        let snipe_time = droptime - Duration::milliseconds(offset);
         let setup_time = snipe_time - Duration::minutes(3);
         access_token = if Utc::now() < setup_time {
             let sleep_duration = match (setup_time - Utc::now()).to_std() {

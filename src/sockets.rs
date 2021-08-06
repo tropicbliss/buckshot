@@ -1,4 +1,4 @@
-#![allow(clippy::cast_possible_wrap)]
+// #![allow(clippy::cast_possible_truncation)]
 
 use crate::constants;
 use chrono::{DateTime, Duration, Utc};
@@ -14,7 +14,7 @@ use ansi_term::Colour::{Cyan, Green, Red};
 use anyhow::{anyhow, Result};
 use std::io::{stdout, Write};
 
-pub async fn auto_offset_calculator(username_to_snipe: &str, is_gc: bool) -> Result<isize> {
+pub async fn auto_offset_calculator(username_to_snipe: &str, is_gc: bool) -> Result<i64> {
     writeln!(stdout(), "Measuring offset...")?;
     let mut buf = [0; 12];
     let addr = "api.minecraftservices.com:443"
@@ -40,7 +40,7 @@ pub async fn auto_offset_calculator(username_to_snipe: &str, is_gc: bool) -> Res
     stream.write_all(b"\r\n").await?;
     stream.read_exact(&mut buf).await?;
     let after = Instant::now();
-    Ok((((after - before).as_millis() - constants::SERVER_RESPONSE_TIME) / 2) as isize)
+    Ok(((after - before).as_millis() as i64 - constants::SERVER_RESPONSE_TIME) / 2)
 }
 
 pub async fn snipe_executor(username_to_snipe: &str, access_token: &str, spread_offset: usize, snipe_time: DateTime<Utc>, is_gc: bool) -> Result<bool> {

@@ -25,7 +25,7 @@ pub struct Account {
 
 #[derive(Deserialize)]
 pub struct Others {
-    pub offset: isize,
+    pub offset: i64,
     pub auto_offset: bool,
     pub spread: usize,
     pub microsoft_auth: bool,
