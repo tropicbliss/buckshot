@@ -172,7 +172,7 @@ impl Sniper {
         if stub_time.is_none() {
             return Ok(None);
         }
-        writeln!(stdout(), "{}", Green.paint(format!("Signed in to {}", self.config.account.email)))?;
+        writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
         writeln!(stdout(), "Setup complete")?;
         let is_success = match task {
             SnipeTask::Giftcode => {
@@ -186,7 +186,7 @@ impl Sniper {
             writeln!(stdout(), "{}", Green.paint(format!("Successfully sniped {}!", username_to_snipe)))?;
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await?;
-                writeln!(stdout(), "Successfully changed skin")?;
+                writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
             }
         } else {
             writeln!(stdout(), "Failed to snipe {}", username_to_snipe)?;
