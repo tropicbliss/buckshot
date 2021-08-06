@@ -1,6 +1,6 @@
 use std::io;
 use ansi_term::Colour::{Green, Red};
-use std::io::{stdout, Write};
+use std::io::{stdin, stdout, Write};
 use anyhow::Result;
 
 pub fn print_splash_screen() -> Result<()> {
@@ -31,8 +31,8 @@ pub fn get_username_choice() -> Result<String> {
     Ok(loop {
         let mut input = String::new();
         write!(stdout(), "What name will you like to snipe: ")?;
-        io::Write::flush(&mut io::stdout())?;
-        io::stdin().read_line(&mut input)?;
+        Write::flush(&mut io::stdout())?;
+        stdin().read_line(&mut input)?;
         let input = input.trim();
         if username_filter_predicate(input) {
             break input.to_string();
