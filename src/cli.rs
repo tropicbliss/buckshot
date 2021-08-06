@@ -16,7 +16,7 @@ pub fn print_splash_screen() -> Result<()> {
         .to_string()
     }
     fn get_credits() -> String {
-        "Developed by @tropicbliss#0027 on Discord".to_string()
+        "Developed by @tropicbliss#0408 on Discord".to_string()
     }
     fn best_sniper() -> String {
         "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
