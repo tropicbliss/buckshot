@@ -4,10 +4,6 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 A successor to NodeSniper, this sniper promises to be noob-friendly and straight-forward. If you are not wary of downloading random .exe files from the internet, operating this sniper is as simple as double-clicking the executable. If you are wary however, this readme also shows you how to compile this sniper on your own computer [here](https://github.com/chronicallyunfunny/buckshot#compiling-from-source) (from source code to an executable) and you can even run it off on relatively less supported hardware like a Raspberry Pi if you wish to do so.
 
-No more new features are going to be added to this sniper due to my fear of significant time investment spent in development and preventing feature creep. Further developments will be focused on maintaining this sniper and the authentication server. If the sniper stops working, be sure to check out for any new updates.
-
-Also doing a minor rewrite of the sniper soon to improve the code quality since my Rust skills have improved quite a bit.
-
 ## Features
 
 - Mojang account sniping
@@ -20,22 +16,18 @@ Also doing a minor rewrite of the sniper soon to improve the code quality since 
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks arceus-sniper for yoinking your feature list phrasing)
 
-## Credits ❤️
-
-- Peet for the drop-time caching API
-
 ## Setup
 
 1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/latest).
 2. Use Dimension 4 on Windows for time synchronisation.
-3. For macOS and Linux users open up the terminal and navigate to the working directory and run `./buckshot`. You could also double-click the executable. I assume you use MCsniperPY so this process should be relatively straightforward.
+3. Open up the terminal and navigate to the working directory and run `./buckshot` (try to use Powershell for Windows users). I assume you use MCsniperPY so this process should be relatively straightforward.
 4. This should generate `config.toml` on the same directory in which you can edit.
 5. Read the errors. I've spent a large amount of time making the errors easy to read. If you encounter HTTP errors, something might be wrong with the internet or the servers on the other end.
 
 ## Moar tips for sniping
 
 - Snipe with a VPS close to `api.minecraftservices.com` origin server (in N. Virginia) as it will minimise ping fluctuations.
-- Even though this sniper is asynchronous and it is possible to snipe a name with one thread, using 2 threads will be the most ideal for non-GC snipes (and 6 threads for GC snipes).
+- Even though this sniper is asynchronous and it is possible to snipe a name with one thread, using a multi-threaded processor can improve performance.
 
 ## Command line arguments
 
