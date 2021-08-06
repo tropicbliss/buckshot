@@ -35,7 +35,6 @@ impl Requests {
             .client
             .post(url)
             .json(&post_json)
-            .header(reqwest::header::USER_AGENT, constants::AUTH_USER_AGENT)
             .send()
             .await?;
         match res.status().as_u16() {
