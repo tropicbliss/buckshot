@@ -60,7 +60,7 @@ pub async fn snipe_executor(
         constants::REGULAR_SNIPE_REQS
     };
     let mut status_vec = Vec::with_capacity(req_count);
-    let mut handle_vec: Vec<tokio::task::JoinHandle<Result<bool, anyhow::Error>>> =
+    let mut handle_vec: Vec<tokio::task::JoinHandle<Result<_, anyhow::Error>>> =
         Vec::with_capacity(req_count);
     let mut spread = 0;
     let addr = "api.minecraftservices.com:443"
