@@ -1,8 +1,9 @@
-use crate::{config, constants};
+use crate::constants;
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
 use serde_json::{json, Value};
+use std::path::PathBuf;
 use std::time::Duration;
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -111,8 +112,8 @@ impl Requests {
     pub async fn send_sq(
         &self,
         access_token: &str,
-        id: &[i64; 3],
-        answer: &[&String; 3],
+        id: [i64; 3],
+        answer: [&String; 3],
     ) -> Result<()> {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             bail!("No answers for security questions provided");
@@ -196,13 +197,18 @@ impl Requests {
         Ok(())
     }
 
-    pub async fn upload_skin(&self, config: &config::Config, access_token: &str) -> Result<()> {
-        let img_file = File::open(&config.config.skin_filename).await?;
+    pub async fn upload_skin(
+        &self,
+        path: PathBuf,
+        skin_model: String,
+        access_token: &str,
+    ) -> Result<()> {
+        let img_file = File::open(path).await?;
         let stream = FramedRead::new(img_file, BytesCodec::new());
         let stream = Body::wrap_stream(stream);
         let image_part = reqwest::multipart::Part::stream(stream);
         let form = reqwest::multipart::Form::new()
-            .text("variant", config.config.skin_model.clone())
+            .text("variant", skin_model)
             .part("file", image_part);
         let url = format!(
             "{}/minecraft/profile/skins",

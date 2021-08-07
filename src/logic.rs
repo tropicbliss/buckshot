@@ -3,7 +3,8 @@ use ansi_term::Colour::{Green, Red};
 use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use std::io::{stdout, Write};
-use std::sync::Arc;
+use std::path::PathBuf;
+use std::rc::Rc;
 use tokio::{join, time};
 
 #[derive(PartialEq)]
@@ -50,7 +51,7 @@ impl Sniper {
         } else {
             self.config.config.name_queue.clone()
         };
-        let requestor = Arc::new(requests::Requests::new()?);
+        let requestor = Rc::new(requests::Requests::new()?);
         if task == &SnipeTask::Giftcode && self.giftcode.is_none() {
             writeln!(
                 stdout(),
@@ -68,7 +69,7 @@ impl Sniper {
                 )?;
                 continue;
             }
-            let requestor = Arc::clone(&requestor);
+            let requestor = Rc::clone(&requestor);
             if count == 0 {
                 writeln!(stdout(), "Initialising...")?;
             } else {
@@ -135,7 +136,7 @@ impl Sniper {
         username_to_snipe: &str,
         offset: i64,
         mut access_token: String,
-        requestor: &Arc<requests::Requests>,
+        requestor: &Rc<requests::Requests>,
         task: &SnipeTask,
     ) -> Result<Option<bool>> {
         let formatted_droptime = droptime.format("%F %T");
@@ -209,7 +210,12 @@ impl Sniper {
                 Green.paint(format!("Successfully sniped {}!", username_to_snipe))
             )?;
             if self.config.config.change_skin {
-                requestor.upload_skin(&self.config, &access_token).await?;
+                let mut skin_path = PathBuf::new();
+                skin_path.push(&self.config.config.skin_filename);
+                let skin_model = self.config.config.skin_model.clone();
+                requestor
+                    .upload_skin(skin_path, skin_model, &access_token)
+                    .await?;
                 writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
             }
         } else {
@@ -218,7 +224,7 @@ impl Sniper {
         Ok(Some(is_success))
     }
 
-    async fn setup(&self, requestor: &Arc<requests::Requests>, task: &SnipeTask) -> Result<String> {
+    async fn setup(&self, requestor: &Rc<requests::Requests>, task: &SnipeTask) -> Result<String> {
         if task == &SnipeTask::Mojang {
             let access_token = requestor
                 .authenticate_mojang(&self.config.account.email, &self.config.account.password)
@@ -229,7 +235,7 @@ impl Sniper {
                     &self.config.account.sq2,
                     &self.config.account.sq3,
                 ];
-                requestor.send_sq(&access_token, &sq_id, &answer).await?;
+                requestor.send_sq(&access_token, sq_id, answer).await?;
             }
             Ok(access_token)
         } else {

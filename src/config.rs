@@ -3,10 +3,8 @@
 use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::io::ErrorKind::NotFound;
-use std::path::Path;
 use std::path::PathBuf;
-use tokio::fs::File;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::fs::{read_to_string, write};
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -38,10 +36,8 @@ pub struct Others {
 
 impl Config {
     pub async fn new(config_path: PathBuf) -> Result<Self> {
-        match File::open(&config_path).await {
-            Ok(mut f) => {
-                let mut s = String::new();
-                f.read_to_string(&mut s).await?;
+        match read_to_string(&config_path).await {
+            Ok(s) => {
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,
@@ -57,9 +53,7 @@ impl Config {
                 Ok(config)
             }
             Err(e) if e.kind() == NotFound => {
-                let path = Path::new(&config_path);
-                let mut file = File::create(path).await?;
-                file.write_all(&get_default_config().into_bytes()).await?;
+                write(&config_path, get_default_config().as_bytes()).await?;
                 bail!(
                     "{} not found, creating a new config file",
                     config_path.display()
