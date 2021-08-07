@@ -2,9 +2,9 @@
 
 use anyhow::{bail, Result};
 use serde::Deserialize;
+use std::fs::{read_to_string, write};
 use std::io::ErrorKind::NotFound;
 use std::path::PathBuf;
-use tokio::fs::{read_to_string, write};
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -35,8 +35,8 @@ pub struct Others {
 }
 
 impl Config {
-    pub async fn new(config_path: PathBuf) -> Result<Self> {
-        match read_to_string(&config_path).await {
+    pub fn new(config_path: PathBuf) -> Result<Self> {
+        match read_to_string(&config_path) {
             Ok(s) => {
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
@@ -53,7 +53,7 @@ impl Config {
                 Ok(config)
             }
             Err(e) if e.kind() == NotFound => {
-                write(&config_path, get_default_config().as_bytes()).await?;
+                write(&config_path, get_default_config().as_bytes())?;
                 bail!(
                     "{} not found, creating a new config file",
                     config_path.display()
