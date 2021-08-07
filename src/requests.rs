@@ -1,11 +1,11 @@
 use crate::{config, constants};
+use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
 use serde_json::{json, Value};
+use std::time::Duration;
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
-use anyhow::{anyhow, bail, Result};
-use std::time::Duration;
 
 pub struct Requests {
     client: Client,
@@ -18,7 +18,7 @@ impl Requests {
                 .timeout(Duration::from_secs(5))
                 .tcp_keepalive(Some(Duration::from_secs(5)))
                 .use_rustls_tls()
-                .build()?
+                .build()?,
         })
     }
 
@@ -31,18 +31,16 @@ impl Requests {
             "password": password
         });
         let url = format!("{}/authenticate", constants::YGGDRASIL_ORIGIN_SERVER);
-        let res = self
-            .client
-            .post(url)
-            .json(&post_json)
-            .send()
-            .await?;
+        let res = self.client.post(url).json(&post_json).send().await?;
         match res.status().as_u16() {
             200 => {
                 let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
-                let access_token = v["accessToken"].as_str().ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?.to_string();
+                let access_token = v["accessToken"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
+                    .to_string();
                 Ok(access_token)
-            },
+            }
             403 => bail!("Incorrect email or password"),
             status => bail!("HTTP {}", status),
         }
@@ -62,12 +60,18 @@ impl Requests {
             200 => {
                 let body = res.text().await?;
                 let v: Value = serde_json::from_str(&body)?;
-                Ok(v["access_token"].as_str().ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?.to_string())
+                Ok(v["access_token"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?
+                    .to_string())
             }
             400 => {
                 let body = res.text().await?;
                 let v: Value = serde_json::from_str(&body)?;
-                let err = v["error"].as_str().ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?.to_string();
+                let err = v["error"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?
+                    .to_string();
                 bail!("{}", err);
             }
             status => bail!("HTTP {}", status),
@@ -76,7 +80,12 @@ impl Requests {
 
     pub async fn get_sq_id(&self, access_token: &str) -> Result<Option<[i64; 3]>> {
         let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
-        let res = self.client.get(url).bearer_auth(access_token).send().await?;
+        let res = self
+            .client
+            .get(url)
+            .bearer_auth(access_token)
+            .send()
+            .await?;
         let status = res.status().as_u16();
         if status != 200 {
             bail!("HTTP {}", status);
@@ -86,14 +95,25 @@ impl Requests {
             Ok(None)
         } else {
             let v: Value = serde_json::from_str(&body)?;
-            let first = v[0]["answer"]["id"].as_i64().ok_or_else(|| anyhow!("Unable to get index 0 from JSON array"))?;
-            let second = v[1]["answer"]["id"].as_i64().ok_or_else(|| anyhow!("Unable to get index 1 from JSON array"))?;
-            let third = v[2]["answer"]["id"].as_i64().ok_or_else(|| anyhow!("Unable to get index 2 from JSON array"))?;
+            let first = v[0]["answer"]["id"]
+                .as_i64()
+                .ok_or_else(|| anyhow!("Unable to get index 0 from JSON array"))?;
+            let second = v[1]["answer"]["id"]
+                .as_i64()
+                .ok_or_else(|| anyhow!("Unable to get index 1 from JSON array"))?;
+            let third = v[2]["answer"]["id"]
+                .as_i64()
+                .ok_or_else(|| anyhow!("Unable to get index 2 from JSON array"))?;
             Ok(Some([first, second, third]))
         }
     }
 
-    pub async fn send_sq(&self, access_token: &str, id: &[i64; 3], answer: &[&String; 3]) -> Result<()> {
+    pub async fn send_sq(
+        &self,
+        access_token: &str,
+        id: &[i64; 3],
+        answer: &[&String; 3],
+    ) -> Result<()> {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             bail!("No answers for security questions provided");
         }
@@ -153,14 +173,21 @@ impl Requests {
             "{}/minecraft/profile/namechange",
             constants::MINECRAFTSERVICES_API_SERVER
         );
-        let res = self.client.get(url).bearer_auth(access_token).send().await?;
+        let res = self
+            .client
+            .get(url)
+            .bearer_auth(access_token)
+            .send()
+            .await?;
         let status = res.status().as_u16();
         if status != 200 {
             bail!("HTTP {}", status);
         }
         let body = res.text().await?;
         let v: Value = serde_json::from_str(&body)?;
-        let is_allowed = v["nameChangeAllowed"].as_bool().ok_or_else(|| anyhow!("Unable to parse `nameChangeAllowed` from JSON"))?;
+        let is_allowed = v["nameChangeAllowed"]
+            .as_bool()
+            .ok_or_else(|| anyhow!("Unable to parse `nameChangeAllowed` from JSON"))?;
         if !is_allowed {
             bail!("Name change not allowed within the cooldown")
         }

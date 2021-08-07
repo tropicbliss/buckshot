@@ -1,12 +1,12 @@
 #![allow(clippy::struct_excessive_bools)]
 
+use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::io::ErrorKind::NotFound;
 use std::path::Path;
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use anyhow::{bail, Result};
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -60,9 +60,12 @@ impl Config {
                 let path = Path::new(&config_path);
                 let mut file = File::create(path).await?;
                 file.write_all(&get_default_config().into_bytes()).await?;
-                bail!("{} not found, creating a new config file", config_path.display());
+                bail!(
+                    "{} not found, creating a new config file",
+                    config_path.display()
+                );
             }
-            Err(e) => bail!(e)
+            Err(e) => bail!(e),
         }
     }
 }

@@ -7,11 +7,11 @@ mod logic;
 mod requests;
 mod sockets;
 
-use std::path::PathBuf;
-use structopt::StructOpt;
 use ansi_term::Colour::Red;
 use anyhow::{Context, Result};
 use std::io::{stdout, Write};
+use std::path::PathBuf;
+use structopt::StructOpt;
 
 /// A Minecraft name sniper written in Rust. Performant and capable.
 #[derive(StructOpt, Debug)]
@@ -42,7 +42,9 @@ impl Args {
 async fn main() -> Result<()> {
     let args = Args::new();
     cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
-    let config = config::Config::new(args.config_name).await.with_context(|| "Failed to get config options")?;
+    let config = config::Config::new(args.config_name)
+        .await
+        .with_context(|| "Failed to get config options")?;
     let snipe_task = impl_chooser(&config).with_context(|| "Failed to choose implementation")?;
     let sniper = logic::Sniper::new(snipe_task, args.username_to_snipe, config, args.giftcode);
     sniper.run().await.with_context(|| "Failed to snipe name")?;

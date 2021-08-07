@@ -1,10 +1,10 @@
 use crate::{cli, config, requests, sockets};
-use chrono::{DateTime, Duration, Utc};
-use std::sync::Arc;
-use tokio::{join, time};
 use ansi_term::Colour::{Green, Red};
 use anyhow::Result;
+use chrono::{DateTime, Duration, Utc};
 use std::io::{stdout, Write};
+use std::sync::Arc;
+use tokio::{join, time};
 
 pub enum SnipeTask {
     Mojang,
@@ -52,13 +52,21 @@ impl Sniper {
         let requestor = Arc::new(requests::Requests::new()?);
         if let SnipeTask::Giftcode = task {
             if self.giftcode.is_none() {
-                writeln!(stdout(), "{}", Red.paint("Reminder: You should redeem your giftcode before GC sniping"))?;
+                writeln!(
+                    stdout(),
+                    "{}",
+                    Red.paint("Reminder: You should redeem your giftcode before GC sniping")
+                )?;
             }
         }
         for (count, username_to_snipe) in name_list.into_iter().enumerate() {
             let username_to_snipe = username_to_snipe.trim();
             if check_filter && !cli::username_filter_predicate(username_to_snipe) {
-                writeln!(stdout(), "{}", Red.paint(format!("{} is an invalid name", username_to_snipe)))?;
+                writeln!(
+                    stdout(),
+                    "{}",
+                    Red.paint(format!("{} is an invalid name", username_to_snipe))
+                )?;
                 continue;
             }
             let requestor = Arc::clone(&requestor);
@@ -69,7 +77,10 @@ impl Sniper {
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
                 time::sleep(std::time::Duration::from_secs(20)).await;
             }
-            let snipe_time = match requestor.check_name_availability_time(username_to_snipe).await? {
+            let snipe_time = match requestor
+                .check_name_availability_time(username_to_snipe)
+                .await?
+            {
                 Some(x) => x,
                 None => {
                     continue;
@@ -83,7 +94,9 @@ impl Sniper {
                     }
                 }
                 _ => {
-                    requestor.check_name_change_eligibility(&access_token).await?;
+                    requestor
+                        .check_name_change_eligibility(&access_token)
+                        .await?;
                 }
             }
             let offset = if self.config.config.auto_offset {
@@ -132,14 +145,16 @@ impl Sniper {
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
-            writeln!(stdout(), 
+            writeln!(
+                stdout(),
                 "Sniping {} in ~{} seconds | sniping at {} (utc)",
                 username_to_snipe,
                 duration_in_sec.num_seconds(),
                 formatted_droptime
             )?;
         } else {
-            writeln!(stdout(), 
+            writeln!(
+                stdout(),
                 "Sniping {} in ~{} minutes | sniping at {} (utc)",
                 username_to_snipe,
                 duration_in_sec.num_minutes(),
@@ -160,7 +175,9 @@ impl Sniper {
             access_token
         };
         let stub_time = if let SnipeTask::Giftcode = task {
-            requestor.check_name_availability_time(username_to_snipe).await?
+            requestor
+                .check_name_availability_time(username_to_snipe)
+                .await?
         } else {
             let (snipe_time, _) = join!(
                 requestor.check_name_availability_time(username_to_snipe),
@@ -175,14 +192,32 @@ impl Sniper {
         writeln!(stdout(), "Setup complete")?;
         let is_success = match task {
             SnipeTask::Giftcode => {
-                sockets::snipe_executor(username_to_snipe, &access_token, self.config.config.spread, snipe_time, true).await?
+                sockets::snipe_executor(
+                    username_to_snipe,
+                    &access_token,
+                    self.config.config.spread,
+                    snipe_time,
+                    true,
+                )
+                .await?
             }
             _ => {
-                sockets::snipe_executor(username_to_snipe, &access_token, self.config.config.spread, snipe_time, false).await?
+                sockets::snipe_executor(
+                    username_to_snipe,
+                    &access_token,
+                    self.config.config.spread,
+                    snipe_time,
+                    false,
+                )
+                .await?
             }
         };
         if is_success {
-            writeln!(stdout(), "{}", Green.paint(format!("Successfully sniped {}!", username_to_snipe)))?;
+            writeln!(
+                stdout(),
+                "{}",
+                Green.paint(format!("Successfully sniped {}!", username_to_snipe))
+            )?;
             if self.config.config.change_skin {
                 requestor.upload_skin(&self.config, &access_token).await?;
                 writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;

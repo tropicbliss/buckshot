@@ -1,7 +1,7 @@
-use std::io;
 use ansi_term::Colour::{Green, Red};
-use std::io::{stdin, stdout, Write};
 use anyhow::Result;
+use std::io;
+use std::io::{stdin, stdout, Write};
 
 pub fn print_splash_screen() -> Result<()> {
     fn get_logo() -> String {
