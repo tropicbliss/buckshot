@@ -20,7 +20,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 
 1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/latest).
 2. Use Dimension 4 on Windows for time synchronisation.
-3. Open up the terminal and navigate to the working directory and run `./buckshot` (if you're on Windows, do yourself a favor and use Windows Terminal instead of cmd.exe). I assume you use MCsniperPY so this process should be relatively straightforward.
+3. Open up the terminal and navigate to the working directory and run `./buckshot` (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`). I assume you use MCsniperPY so this process should be relatively straightforward.
 4. This should generate `config.toml` on the same directory in which you can edit.
 5. Read the errors. I've spent a large amount of time making the errors easy to read. If you encounter HTTP errors, something might be wrong with the internet or the servers on the other end.
 
