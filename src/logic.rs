@@ -3,7 +3,6 @@ use ansi_term::Colour::{Green, Red};
 use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use std::io::{stdout, Write};
-use std::path::Path;
 use std::rc::Rc;
 use tokio::{join, time};
 
@@ -210,10 +209,12 @@ impl Sniper {
                 Green.paint(format!("Successfully sniped {}!", username_to_snipe))
             )?;
             if self.config.config.change_skin {
-                let skin_path = Path::new(&self.config.config.skin_filename);
-                let skin_model = self.config.config.skin_model.clone();
                 requestor
-                    .upload_skin(skin_path, skin_model, &access_token)
+                    .upload_skin(
+                        &self.config.config.skin_filename,
+                        self.config.config.skin_model.clone(),
+                        &access_token,
+                    )
                     .await?;
                 writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
             }

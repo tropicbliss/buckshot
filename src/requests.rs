@@ -3,7 +3,6 @@ use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
 use serde_json::{json, Value};
-use std::path::Path;
 use std::time::Duration;
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -199,7 +198,7 @@ impl Requests {
 
     pub async fn upload_skin(
         &self,
-        path: &Path,
+        path: &str,
         skin_model: String,
         access_token: &str,
     ) -> Result<()> {
