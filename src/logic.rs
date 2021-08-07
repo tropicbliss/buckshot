@@ -96,6 +96,7 @@ impl Sniper {
                     .await?;
             }
             let offset = if self.config.config.auto_offset {
+                writeln!(stdout(), "Measuring offset...")?;
                 if task == &SnipeTask::Giftcode {
                     sockets::auto_offset_calculator(username_to_snipe, true).await?
                 } else {

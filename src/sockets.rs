@@ -14,7 +14,6 @@ use tokio::time::sleep;
 use tokio_rustls::{rustls::ClientConfig, webpki::DNSNameRef, TlsConnector};
 
 pub async fn auto_offset_calculator(username_to_snipe: &str, is_gc: bool) -> Result<i64> {
-    writeln!(stdout(), "Measuring offset...")?;
     let mut buf = [0; 12];
     let addr = "api.minecraftservices.com:443"
         .to_socket_addrs()?
