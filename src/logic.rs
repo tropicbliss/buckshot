@@ -69,7 +69,7 @@ impl Sniper {
                 continue;
             }
             let requestor = Arc::clone(&requestor);
-            if count == 1 {
+            if count == 0 {
                 writeln!(stdout(), "Initialising...")?;
             } else {
                 writeln!(stdout(), "Moving on to next name...")?;
