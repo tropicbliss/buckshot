@@ -6,6 +6,7 @@ use std::io::{stdout, Write};
 use std::sync::Arc;
 use tokio::{join, time};
 
+#[derive(PartialEq)]
 pub enum SnipeTask {
     Mojang,
     Microsoft,
@@ -50,14 +51,12 @@ impl Sniper {
             self.config.config.name_queue.clone()
         };
         let requestor = Arc::new(requests::Requests::new()?);
-        if let SnipeTask::Giftcode = task {
-            if self.giftcode.is_none() {
-                writeln!(
-                    stdout(),
-                    "{}",
-                    Red.paint("Reminder: You should redeem your giftcode before GC sniping")
-                )?;
-            }
+        if task == &SnipeTask::Giftcode && self.giftcode.is_none() {
+            writeln!(
+                stdout(),
+                "{}",
+                Red.paint("Reminder: You should redeem your giftcode before GC sniping")
+            )?;
         }
         for (count, username_to_snipe) in name_list.into_iter().enumerate() {
             let username_to_snipe = username_to_snipe.trim();
@@ -87,24 +86,20 @@ impl Sniper {
                 }
             };
             let access_token = self.setup(&requestor, task).await?;
-            match task {
-                SnipeTask::Giftcode => {
-                    if let Some(gc) = &self.giftcode {
-                        requestor.redeem_giftcode(gc, &access_token).await?;
-                    }
+            if task == &SnipeTask::Giftcode {
+                if let Some(gc) = &self.giftcode {
+                    requestor.redeem_giftcode(gc, &access_token).await?;
                 }
-                _ => {
-                    requestor
-                        .check_name_change_eligibility(&access_token)
-                        .await?;
-                }
+            } else {
+                requestor
+                    .check_name_change_eligibility(&access_token)
+                    .await?;
             }
             let offset = if self.config.config.auto_offset {
-                match task {
-                    SnipeTask::Giftcode => {
-                        sockets::auto_offset_calculator(username_to_snipe, true).await?
-                    }
-                    _ => sockets::auto_offset_calculator(username_to_snipe, false).await?,
+                if task == &SnipeTask::Giftcode {
+                    sockets::auto_offset_calculator(username_to_snipe, true).await?
+                } else {
+                    sockets::auto_offset_calculator(username_to_snipe, false).await?
                 }
             } else {
                 self.config.config.offset
@@ -174,7 +169,7 @@ impl Sniper {
         } else {
             access_token
         };
-        let stub_time = if let SnipeTask::Giftcode = task {
+        let stub_time = if task == &SnipeTask::Giftcode {
             requestor
                 .check_name_availability_time(username_to_snipe)
                 .await?
@@ -190,27 +185,24 @@ impl Sniper {
         }
         writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
         writeln!(stdout(), "Setup complete")?;
-        let is_success = match task {
-            SnipeTask::Giftcode => {
-                sockets::snipe_executor(
-                    username_to_snipe,
-                    &access_token,
-                    self.config.config.spread,
-                    snipe_time,
-                    true,
-                )
-                .await?
-            }
-            _ => {
-                sockets::snipe_executor(
-                    username_to_snipe,
-                    &access_token,
-                    self.config.config.spread,
-                    snipe_time,
-                    false,
-                )
-                .await?
-            }
+        let is_success = if task == &SnipeTask::Giftcode {
+            sockets::snipe_executor(
+                username_to_snipe,
+                &access_token,
+                self.config.config.spread,
+                snipe_time,
+                true,
+            )
+            .await?
+        } else {
+            sockets::snipe_executor(
+                username_to_snipe,
+                &access_token,
+                self.config.config.spread,
+                snipe_time,
+                false,
+            )
+            .await?
         };
         if is_success {
             writeln!(
@@ -229,29 +221,23 @@ impl Sniper {
     }
 
     async fn setup(&self, requestor: &Arc<requests::Requests>, task: &SnipeTask) -> Result<String> {
-        match task {
-            SnipeTask::Mojang => {
-                let access_token = requestor
-                    .authenticate_mojang(&self.config.account.email, &self.config.account.password)
-                    .await?;
-                if let Some(sq_id) = requestor.get_sq_id(&access_token).await? {
-                    let answer = [
-                        &self.config.account.sq1,
-                        &self.config.account.sq2,
-                        &self.config.account.sq3,
-                    ];
-                    requestor.send_sq(&access_token, &sq_id, &answer).await?;
-                }
-                Ok(access_token)
+        if task == &SnipeTask::Mojang {
+            let access_token = requestor
+                .authenticate_mojang(&self.config.account.email, &self.config.account.password)
+                .await?;
+            if let Some(sq_id) = requestor.get_sq_id(&access_token).await? {
+                let answer = [
+                    &self.config.account.sq1,
+                    &self.config.account.sq2,
+                    &self.config.account.sq3,
+                ];
+                requestor.send_sq(&access_token, &sq_id, &answer).await?;
             }
-            _ => {
-                requestor
-                    .authenticate_microsoft(
-                        &self.config.account.email,
-                        &self.config.account.password,
-                    )
-                    .await
-            }
+            Ok(access_token)
+        } else {
+            requestor
+                .authenticate_microsoft(&self.config.account.email, &self.config.account.password)
+                .await
         }
     }
 }
