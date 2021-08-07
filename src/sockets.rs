@@ -1,10 +1,9 @@
-#![allow(clippy::cast_possible_truncation)]
-
 use crate::constants;
 use ansi_term::Colour::{Cyan, Green, Red};
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
 use serde_json::json;
+use std::convert::TryFrom;
 use std::io::{stdout, Write};
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
@@ -40,7 +39,7 @@ pub async fn auto_offset_calculator(username_to_snipe: &str, is_gc: bool) -> Res
     stream.write_all(b"\r\n").await?;
     stream.read_exact(&mut buf).await?;
     let after = Instant::now();
-    Ok(((after - before).as_millis() as i64 - constants::SERVER_RESPONSE_TIME) / 2)
+    Ok((i64::try_from((after - before).as_millis())? - constants::SERVER_RESPONSE_TIME) / 2)
 }
 
 pub async fn snipe_executor(
