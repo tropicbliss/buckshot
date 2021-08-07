@@ -158,17 +158,14 @@ impl Sniper {
         }
         let snipe_time = droptime - Duration::milliseconds(offset);
         let setup_time = snipe_time - Duration::minutes(3);
-        access_token = if Utc::now() < setup_time {
+        if Utc::now() < setup_time {
             let sleep_duration = match (setup_time - Utc::now()).to_std() {
                 Ok(x) => x,
                 Err(_) => std::time::Duration::ZERO,
             };
             time::sleep(sleep_duration).await;
-            let access_token = self.setup(requestor, task).await?;
-            access_token
-        } else {
-            access_token
-        };
+            access_token = self.setup(requestor, task).await?;
+        }
         let stub_time = if task == &SnipeTask::Giftcode {
             requestor
                 .check_name_availability_time(username_to_snipe)
