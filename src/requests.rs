@@ -191,7 +191,7 @@ impl Requests {
             .as_bool()
             .ok_or_else(|| anyhow!("Unable to parse `nameChangeAllowed` from JSON"))?;
         if !is_allowed {
-            bail!("Name change not allowed within the cooldown")
+            bail!("Name change not allowed within the cooldown period")
         }
         Ok(())
     }
