@@ -4,7 +4,7 @@ use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::fs::{read_to_string, write};
 use std::io::ErrorKind::NotFound;
-use std::path::PathBuf;
+use std::path::Path;
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -35,7 +35,7 @@ pub struct Others {
 }
 
 impl Config {
-    pub fn new(config_path: PathBuf) -> Result<Self> {
+    pub fn new(config_path: &Path) -> Result<Self> {
         match read_to_string(&config_path) {
             Ok(s) => {
                 let config: Result<Self, _> = toml::from_str(&s);

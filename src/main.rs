@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     let args = Args::new();
     cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
     let config =
-        config::Config::new(args.config_name).with_context(|| "Failed to get config options")?;
+        config::Config::new(&args.config_name).with_context(|| "Failed to get config options")?;
     let snipe_task = impl_chooser(&config).with_context(|| "Failed to choose implementation")?;
     let sniper = logic::Sniper::new(snipe_task, args.username_to_snipe, config, args.giftcode);
     sniper.run().await.with_context(|| "Failed to snipe name")?;
