@@ -41,7 +41,7 @@ impl Config {
         match File::open(&config_path).await {
             Ok(mut f) => {
                 let mut s = String::new();
-                f.read_to_string(&mut s).await.unwrap();
+                f.read_to_string(&mut s).await?;
                 let config: Result<Self, _> = toml::from_str(&s);
                 let config = match config {
                     Ok(c) => c,

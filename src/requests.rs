@@ -34,7 +34,7 @@ impl Requests {
         let res = self.client.post(url).json(&post_json).send().await?;
         match res.status().as_u16() {
             200 => {
-                let v: Value = serde_json::from_str(&res.text().await.unwrap()).unwrap();
+                let v: Value = serde_json::from_str(&res.text().await?)?;
                 let access_token = v["accessToken"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
@@ -155,9 +155,11 @@ impl Requests {
         let status = res.status().as_u16();
         match status {
             200 => {
-                let body = res.text().await.unwrap();
-                let v: Value = serde_json::from_str(&body).unwrap();
-                let epoch = v["UNIX"].as_i64().unwrap();
+                let body = res.text().await?;
+                let v: Value = serde_json::from_str(&body)?;
+                let epoch = v["UNIX"]
+                    .as_i64()
+                    .ok_or_else(|| anyhow!("Unable to parse `UNIX` from JSON"))?;
                 let droptime = Utc.timestamp(epoch, 0);
                 Ok(Some(droptime))
             }

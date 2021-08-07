@@ -33,7 +33,7 @@ pub async fn auto_offset_calculator(username_to_snipe: &str, is_gc: bool) -> Res
         .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
     let connector = TlsConnector::from(Arc::new(config));
     let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com")?;
-    let stream = TcpStream::connect(&addr).await.unwrap();
+    let stream = TcpStream::connect(&addr).await?;
     let mut stream = connector.connect(domain, stream).await?;
     stream.write_all(&payload).await?;
     let before = Instant::now();
