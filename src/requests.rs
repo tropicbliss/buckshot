@@ -102,7 +102,7 @@ impl Requests {
             for item in sq_array {
                 let id = item["answer"]["id"]
                     .as_i64()
-                    .ok_or_else(|| anyhow!("Unable to parse `answer` or `id` in JSON"))?;
+                    .ok_or_else(|| anyhow!("Unable to parse `answer` or `id` from JSON"))?;
                 sqid_array.push(id);
             }
             let sqid_array = sqid_array
