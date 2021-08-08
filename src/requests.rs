@@ -54,8 +54,12 @@ impl Requests {
             "username": username,
             "password": password
         });
-        let url = format!("{}/simpleauth", constants::BUCKSHOT_API_SERVER);
-        let res = self.client.post(url).json(&post_json).send().await?;
+        let res = self
+            .client
+            .post(constants::BUCKSHOT_API_SERVER)
+            .json(&post_json)
+            .send()
+            .await?;
         match res.status().as_u16() {
             200 => {
                 let body = res.text().await?;
