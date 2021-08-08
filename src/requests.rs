@@ -72,9 +72,9 @@ impl Requests {
             400 => {
                 let body = res.text().await?;
                 let v: Value = serde_json::from_str(&body)?;
-                let err = v["error"]
+                let err = v["detail"]
                     .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?
+                    .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?
                     .to_string();
                 bail!("{}", err);
             }
