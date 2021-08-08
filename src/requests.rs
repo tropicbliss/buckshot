@@ -8,26 +8,34 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub struct Requests {
     client: Client,
+    access_token: String,
+    email: String,
+    password: String,
+    sqid: [i64; 3],
 }
 
 impl Requests {
-    pub fn new() -> Result<Self> {
+    pub fn new(email: String, password: String) -> Result<Self> {
         Ok(Self {
             client: Client::builder()
                 .timeout(Duration::from_secs(5))
                 .tcp_keepalive(Some(Duration::from_secs(5)))
                 .use_rustls_tls()
                 .build()?,
+            access_token: String::new(),
+            email,
+            password,
+            sqid: [0; 3],
         })
     }
 
-    pub async fn authenticate_mojang(&self, username: &str, password: &str) -> Result<String> {
-        if username.is_empty() || password.is_empty() {
+    pub async fn authenticate_mojang(&mut self) -> Result<String> {
+        if self.email.is_empty() || self.password.is_empty() {
             bail!("No email or password provided");
         }
         let post_json = json!({
-            "username": username,
-            "password": password
+            "username": self.email,
+            "password": self.password
         });
         let res = self
             .client
@@ -42,6 +50,7 @@ impl Requests {
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
                     .to_string();
+                self.access_token = access_token.clone();
                 Ok(access_token)
             }
             403 => bail!("Incorrect email or password"),
@@ -49,13 +58,13 @@ impl Requests {
         }
     }
 
-    pub async fn authenticate_microsoft(&self, email: &str, password: &str) -> Result<String> {
-        if email.is_empty() || email.is_empty() {
+    pub async fn authenticate_microsoft(&mut self) -> Result<String> {
+        if self.email.is_empty() || self.email.is_empty() {
             bail!("No email or password provided");
         }
         let post_json = json!({
-            "email": email,
-            "password": password
+            "email": self.email,
+            "password": self.password
         });
         let res = self
             .client
@@ -67,10 +76,12 @@ impl Requests {
             200 => {
                 let body = res.text().await?;
                 let v: Value = serde_json::from_str(&body)?;
-                Ok(v["access_token"]
+                let access_token = v["access_token"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?
-                    .to_string())
+                    .to_string();
+                self.access_token = access_token.clone();
+                Ok(access_token)
             }
             400 => {
                 let body = res.text().await?;
@@ -84,11 +95,11 @@ impl Requests {
         }
     }
 
-    pub async fn get_sq_id(&self, access_token: &str) -> Result<Option<[i64; 3]>> {
+    pub async fn get_sq_id(&mut self) -> Result<bool> {
         let res = self
             .client
             .get("https://api.mojang.com/user/security/challenges")
-            .bearer_auth(access_token)
+            .bearer_auth(&self.access_token)
             .send()
             .await?;
         let status = res.status().as_u16();
@@ -97,7 +108,7 @@ impl Requests {
         }
         let body = res.text().await?;
         if body == "[]" {
-            Ok(None)
+            Ok(false)
         } else {
             let v: Value = serde_json::from_str(&body)?;
             let sq_array = v
@@ -110,40 +121,35 @@ impl Requests {
                     .ok_or_else(|| anyhow!("Unable to parse `answer` or `id` from JSON"))?;
                 sqid_array.push(id);
             }
-            let sqid_array = sqid_array
+            self.sqid = sqid_array
                 .try_into()
                 .map_err(|_| anyhow!("SQID vector is of invalid length"))?;
-            Ok(Some(sqid_array))
+            Ok(true)
         }
     }
 
-    pub async fn send_sq(
-        &self,
-        access_token: &str,
-        id: [i64; 3],
-        answer: [&String; 3],
-    ) -> Result<()> {
+    pub async fn send_sq(&self, answer: [&String; 3]) -> Result<()> {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             bail!("No answers for security questions provided");
         }
         let post_body = json!([
             {
-                "id": id[0],
+                "id": self.sqid[0],
                 "answer": answer[0],
             },
             {
-                "id": id[1],
+                "id": self.sqid[1],
                 "answer": answer[1],
             },
             {
-                "id": id[2],
+                "id": self.sqid[2],
                 "answer": answer[2]
             }
         ]);
         let res = self
             .client
             .post("https://api.mojang.com/user/security/location")
-            .bearer_auth(access_token)
+            .bearer_auth(&self.access_token)
             .json(&post_body)
             .send()
             .await?;
@@ -178,11 +184,11 @@ impl Requests {
         }
     }
 
-    pub async fn check_name_change_eligibility(&self, access_token: &str) -> Result<()> {
+    pub async fn check_name_change_eligibility(&self) -> Result<()> {
         let res = self
             .client
             .get("https://api.minecraftservices.com/minecraft/profile/namechange")
-            .bearer_auth(access_token)
+            .bearer_auth(&self.access_token)
             .send()
             .await?;
         let status = res.status().as_u16();
@@ -200,12 +206,7 @@ impl Requests {
         Ok(())
     }
 
-    pub async fn upload_skin(
-        &self,
-        path: &str,
-        skin_model: String,
-        access_token: &str,
-    ) -> Result<()> {
+    pub async fn upload_skin(&self, path: &str, skin_model: String) -> Result<()> {
         let img_file = File::open(path).await?;
         let stream = FramedRead::new(img_file, BytesCodec::new());
         let stream = Body::wrap_stream(stream);
@@ -216,7 +217,7 @@ impl Requests {
         let res = self
             .client
             .post("https://api.minecraftservices.com/minecraft/profile/skins")
-            .bearer_auth(access_token)
+            .bearer_auth(&self.access_token)
             .multipart(form)
             .send()
             .await?;
@@ -227,7 +228,7 @@ impl Requests {
         Ok(())
     }
 
-    pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) -> Result<()> {
+    pub async fn redeem_giftcode(&self, giftcode: &str) -> Result<()> {
         let url = format!(
             "https://api.minecraftservices.com/productvoucher/{}",
             giftcode
@@ -235,7 +236,7 @@ impl Requests {
         let res = self
             .client
             .put(url)
-            .bearer_auth(access_token)
+            .bearer_auth(&self.access_token)
             .header(reqwest::header::ACCEPT, "application/json")
             .send()
             .await?;

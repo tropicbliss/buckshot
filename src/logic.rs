@@ -18,8 +18,8 @@ pub struct Sniper {
     config: config::Config,
     giftcode: Option<String>,
     requestor: requests::Requests,
-    access_token: String,
     name: String,
+    access_token: String,
 }
 
 impl Sniper {
@@ -29,14 +29,16 @@ impl Sniper {
         config: config::Config,
         giftcode: Option<String>,
     ) -> Result<Self> {
+        let email = config.account.email.clone();
+        let password = config.account.password.clone();
         Ok(Self {
             task,
             username_to_snipe,
             config,
             giftcode,
-            requestor: requests::Requests::new()?,
-            access_token: String::new(),
+            requestor: requests::Requests::new(email, password)?,
             name: String::new(),
+            access_token: String::new(),
         })
     }
 
@@ -89,17 +91,13 @@ impl Sniper {
                 writeln!(stdout(), "{}", Red.paint("Failed to time snipe"))?;
                 continue;
             };
-            self.access_token = self.setup().await?;
+            self.setup().await?;
             if self.task == SnipeTask::Giftcode {
                 if let Some(gc) = &self.giftcode {
-                    self.requestor
-                        .redeem_giftcode(gc, &self.access_token)
-                        .await?;
+                    self.requestor.redeem_giftcode(gc).await?;
                 }
             } else {
-                self.requestor
-                    .check_name_change_eligibility(&self.access_token)
-                    .await?;
+                self.requestor.check_name_change_eligibility().await?;
             }
             let snipe_status = self.snipe(snipe_time).await?;
             let snipe_status = match snipe_status {
@@ -152,7 +150,7 @@ impl Sniper {
                 Err(_) => std::time::Duration::ZERO,
             };
             time::sleep(sleep_duration).await;
-            self.access_token = self.setup().await?;
+            self.setup().await?;
         }
         let stub_time = if self.task == SnipeTask::Giftcode {
             self.requestor
@@ -161,8 +159,7 @@ impl Sniper {
         } else {
             let (snipe_time, _) = join!(
                 self.requestor.check_name_availability_time(&self.name),
-                self.requestor
-                    .check_name_change_eligibility(&self.access_token)
+                self.requestor.check_name_change_eligibility()
             );
             snipe_time?
         };
@@ -185,7 +182,6 @@ impl Sniper {
                     .upload_skin(
                         &self.config.config.skin_filename,
                         self.config.config.skin_model.clone(),
-                        &self.access_token,
                     )
                     .await?;
                 writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
@@ -196,25 +192,20 @@ impl Sniper {
         Ok(Some(is_success))
     }
 
-    async fn setup(&self) -> Result<String> {
+    async fn setup(&mut self) -> Result<()> {
         if self.task == SnipeTask::Mojang {
-            let access_token = self
-                .requestor
-                .authenticate_mojang(&self.config.account.email, &self.config.account.password)
-                .await?;
-            if let Some(sq_id) = self.requestor.get_sq_id(&access_token).await? {
+            self.access_token = self.requestor.authenticate_mojang().await?;
+            if self.requestor.get_sq_id().await? {
                 let answer = [
                     &self.config.account.sq1,
                     &self.config.account.sq2,
                     &self.config.account.sq3,
                 ];
-                self.requestor.send_sq(&access_token, sq_id, answer).await?;
+                self.requestor.send_sq(answer).await?;
             }
-            Ok(access_token)
         } else {
-            self.requestor
-                .authenticate_microsoft(&self.config.account.email, &self.config.account.password)
-                .await
+            self.access_token = self.requestor.authenticate_microsoft().await?;
         }
+        Ok(())
     }
 }
