@@ -79,16 +79,15 @@ impl Sniper {
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
                 time::sleep(std::time::Duration::from_secs(20)).await;
             }
-            let snipe_time = match self
+            let snipe_time = if let Some(x) = self
                 .requestor
                 .check_name_availability_time(&self.name)
                 .await?
             {
-                Some(x) => x,
-                None => {
-                    writeln!(stdout(), "{}", Red.paint("Failed to time snipe"))?;
-                    continue;
-                }
+                x
+            } else {
+                writeln!(stdout(), "{}", Red.paint("Failed to time snipe"))?;
+                continue;
             };
             self.access_token = self.setup().await?;
             if self.task == SnipeTask::Giftcode {
