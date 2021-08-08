@@ -3,7 +3,6 @@ use ansi_term::Colour::{Green, Red};
 use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use std::io::{stdout, Write};
-use std::rc::Rc;
 use tokio::{join, time};
 
 #[derive(PartialEq)]
@@ -18,6 +17,9 @@ pub struct Sniper {
     username_to_snipe: Option<String>,
     config: config::Config,
     giftcode: Option<String>,
+    requestor: requests::Requests,
+    access_token: String,
+    name: String,
 }
 
 impl Sniper {
@@ -26,21 +28,24 @@ impl Sniper {
         username_to_snipe: Option<String>,
         config: config::Config,
         giftcode: Option<String>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self> {
+        Ok(Self {
             task,
             username_to_snipe,
             config,
             giftcode,
-        }
+            requestor: requests::Requests::new()?,
+            access_token: String::new(),
+            name: String::new(),
+        })
     }
 
-    pub async fn run(&self) -> Result<()> {
-        self.execute(&self.task).await?;
+    pub async fn run(&mut self) -> Result<()> {
+        self.execute().await?;
         Ok(())
     }
 
-    async fn execute(&self, task: &SnipeTask) -> Result<()> {
+    async fn execute(&mut self) -> Result<()> {
         let mut check_filter = true;
         let name_list = if let Some(username_to_snipe) = self.username_to_snipe.clone() {
             vec![username_to_snipe]
@@ -50,25 +55,23 @@ impl Sniper {
         } else {
             self.config.config.name_queue.clone()
         };
-        let requestor = Rc::new(requests::Requests::new()?);
-        if task == &SnipeTask::Giftcode && self.giftcode.is_none() {
+        if self.task == SnipeTask::Giftcode && self.giftcode.is_none() {
             writeln!(
                 stdout(),
                 "{}",
                 Red.paint("Reminder: You should redeem your giftcode before GC sniping")
             )?;
         }
-        for (count, username_to_snipe) in name_list.into_iter().enumerate() {
-            let username_to_snipe = username_to_snipe.trim();
-            if check_filter && !cli::username_filter_predicate(username_to_snipe) {
+        for (count, username) in name_list.into_iter().enumerate() {
+            self.name = username.trim().to_string();
+            if check_filter && !cli::username_filter_predicate(&self.name) {
                 writeln!(
                     stdout(),
                     "{}",
-                    Red.paint(format!("{} is an invalid name", username_to_snipe))
+                    Red.paint(format!("{} is an invalid name", self.name))
                 )?;
                 continue;
             }
-            let requestor = Rc::clone(&requestor);
             if count == 0 {
                 writeln!(stdout(), "Initialising...")?;
             } else {
@@ -76,8 +79,9 @@ impl Sniper {
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
                 time::sleep(std::time::Duration::from_secs(20)).await;
             }
-            let snipe_time = match requestor
-                .check_name_availability_time(username_to_snipe)
+            let snipe_time = match self
+                .requestor
+                .check_name_availability_time(&self.name)
                 .await?
             {
                 Some(x) => x,
@@ -85,37 +89,19 @@ impl Sniper {
                     continue;
                 }
             };
-            let access_token = self.setup(&requestor, task).await?;
-            if task == &SnipeTask::Giftcode {
+            self.access_token = self.setup().await?;
+            if self.task == SnipeTask::Giftcode {
                 if let Some(gc) = &self.giftcode {
-                    requestor.redeem_giftcode(gc, &access_token).await?;
+                    self.requestor
+                        .redeem_giftcode(gc, &self.access_token)
+                        .await?;
                 }
             } else {
-                requestor
-                    .check_name_change_eligibility(&access_token)
+                self.requestor
+                    .check_name_change_eligibility(&self.access_token)
                     .await?;
             }
-            let offset = if self.config.config.auto_offset {
-                writeln!(stdout(), "Measuring offset...")?;
-                if task == &SnipeTask::Giftcode {
-                    sockets::auto_offset_calculator(username_to_snipe, true).await?
-                } else {
-                    sockets::auto_offset_calculator(username_to_snipe, false).await?
-                }
-            } else {
-                self.config.config.offset
-            };
-            writeln!(stdout(), "Your offset is: {} ms", offset)?;
-            let snipe_status = self
-                .snipe(
-                    snipe_time,
-                    username_to_snipe,
-                    offset,
-                    access_token,
-                    &requestor,
-                    task,
-                )
-                .await?;
+            let snipe_status = self.snipe(snipe_time).await?;
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
@@ -129,22 +115,27 @@ impl Sniper {
         Ok(())
     }
 
-    async fn snipe(
-        &self,
-        droptime: DateTime<Utc>,
-        username_to_snipe: &str,
-        offset: i64,
-        mut access_token: String,
-        requestor: &Rc<requests::Requests>,
-        task: &SnipeTask,
-    ) -> Result<Option<bool>> {
+    async fn snipe(&mut self, droptime: DateTime<Utc>) -> Result<Option<bool>> {
+        let is_gc = self.task == SnipeTask::Giftcode;
+        let executor = sockets::Executor::new(self.name.clone(), is_gc);
+        let offset = if self.config.config.auto_offset {
+            writeln!(stdout(), "Measuring offset...")?;
+            if self.task == SnipeTask::Giftcode {
+                executor.auto_offset_calculator().await?
+            } else {
+                executor.auto_offset_calculator().await?
+            }
+        } else {
+            self.config.config.offset
+        };
+        writeln!(stdout(), "Your offset is: {} ms", offset)?;
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
             writeln!(
                 stdout(),
                 "Sniping {} in ~{} seconds | sniping at {} (utc)",
-                username_to_snipe,
+                self.name,
                 duration_in_sec.num_seconds(),
                 formatted_droptime
             )?;
@@ -152,7 +143,7 @@ impl Sniper {
             writeln!(
                 stdout(),
                 "Sniping {} in ~{} minutes | sniping at {} (utc)",
-                username_to_snipe,
+                self.name,
                 duration_in_sec.num_minutes(),
                 formatted_droptime
             )?;
@@ -165,16 +156,17 @@ impl Sniper {
                 Err(_) => std::time::Duration::ZERO,
             };
             time::sleep(sleep_duration).await;
-            access_token = self.setup(requestor, task).await?;
+            self.access_token = self.setup().await?;
         }
-        let stub_time = if task == &SnipeTask::Giftcode {
-            requestor
-                .check_name_availability_time(username_to_snipe)
+        let stub_time = if self.task == SnipeTask::Giftcode {
+            self.requestor
+                .check_name_availability_time(&self.name)
                 .await?
         } else {
             let (snipe_time, _) = join!(
-                requestor.check_name_availability_time(username_to_snipe),
-                requestor.check_name_change_eligibility(&access_token)
+                self.requestor.check_name_availability_time(&self.name),
+                self.requestor
+                    .check_name_change_eligibility(&self.access_token)
             );
             snipe_time?
         };
@@ -183,63 +175,48 @@ impl Sniper {
         }
         writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
         writeln!(stdout(), "Setup complete")?;
-        let is_success = if task == &SnipeTask::Giftcode {
-            sockets::snipe_executor(
-                username_to_snipe,
-                &access_token,
-                self.config.config.spread,
-                snipe_time,
-                true,
-            )
-            .await?
-        } else {
-            sockets::snipe_executor(
-                username_to_snipe,
-                &access_token,
-                self.config.config.spread,
-                snipe_time,
-                false,
-            )
-            .await?
-        };
+        let is_success = executor
+            .snipe_executor(&self.access_token, self.config.config.spread, snipe_time)
+            .await?;
         if is_success {
             writeln!(
                 stdout(),
                 "{}",
-                Green.paint(format!("Successfully sniped {}!", username_to_snipe))
+                Green.paint(format!("Successfully sniped {}!", self.name))
             )?;
             if self.config.config.change_skin {
-                requestor
+                self.requestor
                     .upload_skin(
                         &self.config.config.skin_filename,
                         self.config.config.skin_model.clone(),
-                        &access_token,
+                        &self.access_token,
                     )
                     .await?;
                 writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
             }
         } else {
-            writeln!(stdout(), "Failed to snipe {}", username_to_snipe)?;
+            writeln!(stdout(), "Failed to snipe {}", self.name)?;
         }
         Ok(Some(is_success))
     }
 
-    async fn setup(&self, requestor: &Rc<requests::Requests>, task: &SnipeTask) -> Result<String> {
-        if task == &SnipeTask::Mojang {
-            let access_token = requestor
+    async fn setup(&self) -> Result<String> {
+        if self.task == SnipeTask::Mojang {
+            let access_token = self
+                .requestor
                 .authenticate_mojang(&self.config.account.email, &self.config.account.password)
                 .await?;
-            if let Some(sq_id) = requestor.get_sq_id(&access_token).await? {
+            if let Some(sq_id) = self.requestor.get_sq_id(&access_token).await? {
                 let answer = [
                     &self.config.account.sq1,
                     &self.config.account.sq2,
                     &self.config.account.sq3,
                 ];
-                requestor.send_sq(&access_token, sq_id, answer).await?;
+                self.requestor.send_sq(&access_token, sq_id, answer).await?;
             }
             Ok(access_token)
         } else {
-            requestor
+            self.requestor
                 .authenticate_microsoft(&self.config.account.email, &self.config.account.password)
                 .await
         }
