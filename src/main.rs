@@ -2,7 +2,6 @@
 
 mod cli;
 mod config;
-mod constants;
 mod logic;
 mod requests;
 mod sockets;

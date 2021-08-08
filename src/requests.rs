@@ -1,4 +1,3 @@
-use crate::constants;
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
@@ -30,8 +29,12 @@ impl Requests {
             "username": username,
             "password": password
         });
-        let url = format!("{}/authenticate", constants::YGGDRASIL_ORIGIN_SERVER);
-        let res = self.client.post(url).json(&post_json).send().await?;
+        let res = self
+            .client
+            .post("https://authserver.mojang.com/authenticate")
+            .json(&post_json)
+            .send()
+            .await?;
         match res.status().as_u16() {
             200 => {
                 let v: Value = serde_json::from_str(&res.text().await?)?;
@@ -56,7 +59,7 @@ impl Requests {
         });
         let res = self
             .client
-            .post(constants::BUCKSHOT_API_SERVER)
+            .post("https://auth.buckshotrs.com")
             .json(&post_json)
             .send()
             .await?;
@@ -74,8 +77,7 @@ impl Requests {
                 let v: Value = serde_json::from_str(&body)?;
                 let err = v["detail"]
                     .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?
-                    .to_string();
+                    .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?;
                 bail!("{}", err);
             }
             status => bail!("HTTP {}", status),
@@ -83,10 +85,9 @@ impl Requests {
     }
 
     pub async fn get_sq_id(&self, access_token: &str) -> Result<Option<[i64; 3]>> {
-        let url = format!("{}/user/security/challenges", constants::MOJANG_API_SERVER);
         let res = self
             .client
-            .get(url)
+            .get("https://api.mojang.com/user/security/challenges")
             .bearer_auth(access_token)
             .send()
             .await?;
@@ -139,10 +140,9 @@ impl Requests {
                 "answer": answer[2]
             }
         ]);
-        let url = format!("{}/user/security/location", constants::MOJANG_API_SERVER);
         let res = self
             .client
-            .post(url)
+            .post("https://api.mojang.com/user/security/location")
             .bearer_auth(access_token)
             .json(&post_body)
             .send()
@@ -158,7 +158,7 @@ impl Requests {
         &self,
         username_to_snipe: &str,
     ) -> Result<Option<DateTime<Utc>>> {
-        let url = format!("{}/droptime/{}", constants::NAMEMC_API, username_to_snipe);
+        let url = format!("http://api.coolkidmacho.com/droptime/{}", username_to_snipe);
         let res = self.client.get(url).send().await?;
         let status = res.status().as_u16();
         match status {
@@ -179,13 +179,9 @@ impl Requests {
     }
 
     pub async fn check_name_change_eligibility(&self, access_token: &str) -> Result<()> {
-        let url = format!(
-            "{}/minecraft/profile/namechange",
-            constants::MINECRAFTSERVICES_API_SERVER
-        );
         let res = self
             .client
-            .get(url)
+            .get("https://api.minecraftservices.com/minecraft/profile/namechange")
             .bearer_auth(access_token)
             .send()
             .await?;
@@ -217,13 +213,9 @@ impl Requests {
         let form = reqwest::multipart::Form::new()
             .text("variant", skin_model)
             .part("file", image_part);
-        let url = format!(
-            "{}/minecraft/profile/skins",
-            constants::MINECRAFTSERVICES_API_SERVER
-        );
         let res = self
             .client
-            .post(url)
+            .post("https://api.minecraftservices.com/minecraft/profile/skins")
             .bearer_auth(access_token)
             .multipart(form)
             .send()
@@ -237,8 +229,7 @@ impl Requests {
 
     pub async fn redeem_giftcode(&self, giftcode: &str, access_token: &str) -> Result<()> {
         let url = format!(
-            "{}/productvoucher/{}",
-            constants::MINECRAFTSERVICES_API_SERVER,
+            "https://api.minecraftservices.com/productvoucher/{}",
             giftcode
         );
         let res = self

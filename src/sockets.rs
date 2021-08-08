@@ -1,4 +1,3 @@
-use crate::constants;
 use ansi_term::Colour::{Cyan, Green, Red};
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
@@ -49,7 +48,7 @@ impl Executor {
         stream.write_all(b"\r\n").await?;
         stream.read_exact(&mut buf).await?;
         let after = Instant::now();
-        Ok((i64::try_from((after - before).as_millis())? - constants::SERVER_RESPONSE_TIME) / 2)
+        Ok((i64::try_from((after - before).as_millis())? - 40) / 2)
     }
 
     pub async fn snipe_executor(
@@ -64,11 +63,7 @@ impl Executor {
         } else {
             format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", self.name, access_token).into_bytes()
         };
-        let req_count = if self.is_gc {
-            constants::GC_SNIPE_REQS
-        } else {
-            constants::REGULAR_SNIPE_REQS
-        };
+        let req_count = if self.is_gc { 6 } else { 3 };
         let mut status_vec = Vec::with_capacity(req_count);
         let mut handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> =
             Vec::with_capacity(req_count);
