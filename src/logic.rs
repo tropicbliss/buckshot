@@ -120,11 +120,7 @@ impl Sniper {
         let executor = sockets::Executor::new(self.name.clone(), is_gc);
         let offset = if self.config.config.auto_offset {
             writeln!(stdout(), "Measuring offset...")?;
-            if self.task == SnipeTask::Giftcode {
-                executor.auto_offset_calculator().await?
-            } else {
-                executor.auto_offset_calculator().await?
-            }
+            executor.auto_offset_calculator().await?
         } else {
             self.config.config.offset
         };
