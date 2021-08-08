@@ -64,10 +64,10 @@ impl Executor {
         } else {
             format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", self.name, access_token).into_bytes()
         };
-        let request_count = if self.is_gc { 6 } else { 3 };
-        let mut status_vec = Vec::with_capacity(request_count);
+        let req_count = if self.is_gc { 6 } else { 3 };
+        let mut status_vec = Vec::with_capacity(req_count);
         let mut handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> =
-            Vec::with_capacity(request_count);
+            Vec::with_capacity(req_count);
         let mut spread = 0;
         let addr = "api.minecraftservices.com:443"
             .to_socket_addrs()?
@@ -80,7 +80,7 @@ impl Executor {
             .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
         let connector = Arc::new(TlsConnector::from(Arc::new(config)));
         let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com")?;
-        for _ in 0..request_count {
+        for _ in 0..req_count {
             let connector = Arc::clone(&connector);
             let data = Arc::clone(&data);
             let handle = tokio::task::spawn(async move {
