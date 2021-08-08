@@ -48,7 +48,8 @@ impl Executor {
         stream.write_all(b"\r\n").await?;
         stream.read_exact(&mut buf).await?;
         let after = Instant::now();
-        Ok((i64::try_from((after - before).as_millis())? - 40) / 2)
+        let server_res_time = 40;
+        Ok((i64::try_from((after - before).as_millis())? - server_res_time) / 2)
     }
 
     pub async fn snipe_executor(
