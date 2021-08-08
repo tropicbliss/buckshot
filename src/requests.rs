@@ -3,7 +3,7 @@ use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{Body, Client};
 use serde_json::{json, Value};
-use std::time::Duration;
+use std::{convert::TryInto, time::Duration};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -95,16 +95,20 @@ impl Requests {
             Ok(None)
         } else {
             let v: Value = serde_json::from_str(&body)?;
-            let first = v[0]["answer"]["id"]
-                .as_i64()
-                .ok_or_else(|| anyhow!("Unable to get index 0 from JSON array"))?;
-            let second = v[1]["answer"]["id"]
-                .as_i64()
-                .ok_or_else(|| anyhow!("Unable to get index 1 from JSON array"))?;
-            let third = v[2]["answer"]["id"]
-                .as_i64()
-                .ok_or_else(|| anyhow!("Unable to get index 2 from JSON array"))?;
-            Ok(Some([first, second, third]))
+            let sq_array = v
+                .as_array()
+                .ok_or_else(|| anyhow!("Unable to parse JSON array"))?;
+            let mut sqid_array = Vec::new();
+            for item in sq_array {
+                let id = item["answer"]["id"]
+                    .as_i64()
+                    .ok_or_else(|| anyhow!("Unable to parse `answer` or `id` in JSON"))?;
+                sqid_array.push(id);
+            }
+            let sqid_array = sqid_array
+                .try_into()
+                .map_err(|_| anyhow!("SQID vector is of invalid length"))?;
+            Ok(Some(sqid_array))
         }
     }
 
