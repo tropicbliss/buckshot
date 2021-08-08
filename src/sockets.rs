@@ -24,6 +24,7 @@ impl Executor {
     }
 
     pub async fn auto_offset_calculator(&self) -> Result<i64> {
+        const SERVER_RESPONSE_TIME: i64 = 40;
         let mut buf = [0; 12];
         let addr = "api.minecraftservices.com:443"
             .to_socket_addrs()?
@@ -48,8 +49,7 @@ impl Executor {
         stream.write_all(b"\r\n").await?;
         stream.read_exact(&mut buf).await?;
         let after = Instant::now();
-        let server_res_time = 40;
-        Ok((i64::try_from((after - before).as_millis())? - server_res_time) / 2)
+        Ok((i64::try_from((after - before).as_millis())? - SERVER_RESPONSE_TIME) / 2)
     }
 
     pub async fn snipe_executor(
