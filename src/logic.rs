@@ -86,6 +86,7 @@ impl Sniper {
             {
                 Some(x) => x,
                 None => {
+                    writeln!(stdout(), "{}", Red.paint("Failed to time snipe"))?;
                     continue;
                 }
             };
