@@ -46,12 +46,12 @@ impl Requests {
         }
     }
 
-    pub async fn authenticate_microsoft(&self, username: &str, password: &str) -> Result<String> {
-        if username.is_empty() || password.is_empty() {
+    pub async fn authenticate_microsoft(&self, email: &str, password: &str) -> Result<String> {
+        if email.is_empty() || email.is_empty() {
             bail!("No email or password provided");
         }
         let post_json = json!({
-            "username": username,
+            "email": email,
             "password": password
         });
         let res = self
