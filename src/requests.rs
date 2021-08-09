@@ -1,8 +1,13 @@
+use ansi_term::Colour::Red;
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{header::ACCEPT, Body, Client};
 use serde_json::{json, Value};
-use std::{convert::TryInto, time::Duration};
+use std::{
+    convert::TryInto,
+    io::{stdout, Write},
+    time::Duration,
+};
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -19,6 +24,7 @@ impl Requests {
         Ok(Self {
             client: Client::builder()
                 .timeout(Duration::from_secs(5))
+                .user_agent("Sniper")
                 .tcp_keepalive(Some(Duration::from_secs(5)))
                 .use_rustls_tls()
                 .build()?,
@@ -164,20 +170,27 @@ impl Requests {
         &self,
         username_to_snipe: &str,
     ) -> Result<Option<DateTime<Utc>>> {
-        let url = format!("http://api.coolkidmacho.com/droptime/{}", username_to_snipe);
+        let url = format!("https://api.star.shopping/droptime/{}", username_to_snipe);
         let res = self.client.get(url).send().await?;
         let status = res.status().as_u16();
+        let body = res.text().await?;
         match status {
             200 => {
-                let body = res.text().await?;
                 let v: Value = serde_json::from_str(&body)?;
-                let epoch = v["UNIX"]
+                let epoch = v["unix"]
                     .as_i64()
-                    .ok_or_else(|| anyhow!("Unable to parse `UNIX` from JSON"))?;
+                    .ok_or_else(|| anyhow!("Unable to parse `unix` from JSON"))?;
                 let droptime = Utc.timestamp(epoch, 0);
                 Ok(Some(droptime))
             }
-            404 => Ok(None),
+            400 => {
+                writeln!(
+                    stdout(),
+                    "{}",
+                    Red.paint(format!("Failed to time snipe. Reason: {}", body))
+                )?;
+                Ok(None)
+            }
             status => {
                 bail!("HTTP {}", status);
             }

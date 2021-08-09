@@ -86,7 +86,6 @@ impl Sniper {
             {
                 x
             } else {
-                writeln!(stdout(), "{}", Red.paint("Failed to time snipe"))?;
                 continue;
             };
             self.setup().await?;
