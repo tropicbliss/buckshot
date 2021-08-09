@@ -2,8 +2,11 @@ use crate::{cli, config, requests, sockets};
 use ansi_term::Colour::{Green, Red};
 use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
-use std::io::{stdout, Write};
-use tokio::{join, time};
+use std::{
+    io::{stdout, Write},
+    thread::sleep,
+};
+use tokio::join;
 
 #[derive(PartialEq)]
 pub enum SnipeTask {
@@ -77,7 +80,7 @@ impl Sniper {
             } else {
                 writeln!(stdout(), "Moving on to next name...")?;
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
-                time::sleep(std::time::Duration::from_secs(20)).await;
+                sleep(std::time::Duration::from_secs(20));
             }
             let snipe_time = if let Some(x) = self
                 .requestor
@@ -151,7 +154,7 @@ impl Sniper {
                 Ok(x) => x,
                 Err(_) => std::time::Duration::ZERO,
             };
-            time::sleep(sleep_duration).await;
+            sleep(sleep_duration);
             self.setup().await?;
         }
         let stub_time = if self.task == SnipeTask::Giftcode {
