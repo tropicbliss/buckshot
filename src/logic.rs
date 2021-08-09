@@ -90,9 +90,14 @@ impl Sniper {
                 continue;
             };
             self.setup().await?;
-            if self.task == SnipeTask::Giftcode {
+            if self.task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &self.giftcode {
                     self.requestor.redeem_giftcode(gc).await?;
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        Green.paint("Successfully redeemed giftcode")
+                    )?;
                 }
             } else {
                 self.requestor.check_name_change_eligibility().await?;
