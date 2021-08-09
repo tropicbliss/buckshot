@@ -168,7 +168,7 @@ impl Sniper {
         writeln!(stdout(), "Setup complete")?;
         let is_success = executor
             .snipe_executor(
-                &self.requestor.access_token,
+                &self.requestor.bearer_token,
                 self.config.config.spread,
                 snipe_time,
             )

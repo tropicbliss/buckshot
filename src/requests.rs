@@ -8,7 +8,7 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub struct Requests {
     client: Client,
-    pub access_token: String,
+    pub bearer_token: String,
     email: String,
     password: String,
     sqid: [i64; 3],
@@ -22,7 +22,7 @@ impl Requests {
                 .tcp_keepalive(Some(Duration::from_secs(5)))
                 .use_rustls_tls()
                 .build()?,
-            access_token: String::new(),
+            bearer_token: String::new(),
             email,
             password,
             sqid: [0; 3],
@@ -46,11 +46,11 @@ impl Requests {
         match res.status().as_u16() {
             200 => {
                 let v: Value = serde_json::from_str(&res.text().await?)?;
-                let access_token = v["accessToken"]
+                let bearer_token = v["accessToken"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
                     .to_string();
-                self.access_token = access_token;
+                self.bearer_token = bearer_token;
             }
             403 => bail!("Incorrect email or password"),
             status => bail!("HTTP {}", status),
@@ -76,11 +76,11 @@ impl Requests {
             200 => {
                 let body = res.text().await?;
                 let v: Value = serde_json::from_str(&body)?;
-                let access_token = v["access_token"]
+                let bearer_token = v["bearer_token"]
                     .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?
+                    .ok_or_else(|| anyhow!("Unable to parse `bearer_token` from JSON"))?
                     .to_string();
-                self.access_token = access_token;
+                self.bearer_token = bearer_token;
             }
             400 => {
                 let body = res.text().await?;
@@ -99,7 +99,7 @@ impl Requests {
         let res = self
             .client
             .get("https://api.mojang.com/user/security/challenges")
-            .bearer_auth(&self.access_token)
+            .bearer_auth(&self.bearer_token)
             .send()
             .await?;
         let status = res.status().as_u16();
@@ -149,7 +149,7 @@ impl Requests {
         let res = self
             .client
             .post("https://api.mojang.com/user/security/location")
-            .bearer_auth(&self.access_token)
+            .bearer_auth(&self.bearer_token)
             .json(&post_body)
             .send()
             .await?;
@@ -188,7 +188,7 @@ impl Requests {
         let res = self
             .client
             .get("https://api.minecraftservices.com/minecraft/profile/namechange")
-            .bearer_auth(&self.access_token)
+            .bearer_auth(&self.bearer_token)
             .send()
             .await?;
         let status = res.status().as_u16();
@@ -217,7 +217,7 @@ impl Requests {
         let res = self
             .client
             .post("https://api.minecraftservices.com/minecraft/profile/skins")
-            .bearer_auth(&self.access_token)
+            .bearer_auth(&self.bearer_token)
             .multipart(form)
             .send()
             .await?;
@@ -236,7 +236,7 @@ impl Requests {
         let res = self
             .client
             .put(url)
-            .bearer_auth(&self.access_token)
+            .bearer_auth(&self.bearer_token)
             .header(reqwest::header::ACCEPT, "application/json")
             .send()
             .await?;

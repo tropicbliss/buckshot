@@ -54,15 +54,15 @@ impl Executor {
 
     pub async fn snipe_executor(
         &self,
-        access_token: &str,
+        bearer_token: &str,
         spread_offset: usize,
         snipe_time: DateTime<Utc>,
     ) -> Result<bool> {
         let payload = if self.is_gc {
             let post_body = json!({ "profileName": self.name }).to_string();
-            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAccept: application/json\r\nAuthorization: Bearer {}\r\n\r\n{}", access_token, post_body).into_bytes()
+            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAccept: application/json\r\nAuthorization: Bearer {}\r\n\r\n{}", bearer_token, post_body).into_bytes()
         } else {
-            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", self.name, access_token).into_bytes()
+            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", self.name, bearer_token).into_bytes()
         };
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut status_vec = Vec::with_capacity(req_count);
