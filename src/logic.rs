@@ -19,7 +19,6 @@ pub struct Sniper {
     giftcode: Option<String>,
     requestor: requests::Requests,
     name: String,
-    access_token: String,
 }
 
 impl Sniper {
@@ -38,7 +37,6 @@ impl Sniper {
             giftcode,
             requestor: requests::Requests::new(email, password)?,
             name: String::new(),
-            access_token: String::new(),
         })
     }
 
@@ -169,7 +167,11 @@ impl Sniper {
         writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
         writeln!(stdout(), "Setup complete")?;
         let is_success = executor
-            .snipe_executor(&self.access_token, self.config.config.spread, snipe_time)
+            .snipe_executor(
+                &self.requestor.access_token,
+                self.config.config.spread,
+                snipe_time,
+            )
             .await?;
         if is_success {
             writeln!(
@@ -194,7 +196,7 @@ impl Sniper {
 
     async fn setup(&mut self) -> Result<()> {
         if self.task == SnipeTask::Mojang {
-            self.access_token = self.requestor.authenticate_mojang().await?;
+            self.requestor.authenticate_mojang().await?;
             if self.requestor.get_sq_id().await? {
                 let answer = [
                     &self.config.account.sq1,
@@ -204,7 +206,7 @@ impl Sniper {
                 self.requestor.send_sq(answer).await?;
             }
         } else {
-            self.access_token = self.requestor.authenticate_microsoft().await?;
+            self.requestor.authenticate_microsoft().await?;
         }
         Ok(())
     }

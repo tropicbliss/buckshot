@@ -8,7 +8,7 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub struct Requests {
     client: Client,
-    access_token: String,
+    pub access_token: String,
     email: String,
     password: String,
     sqid: [i64; 3],
@@ -29,7 +29,7 @@ impl Requests {
         })
     }
 
-    pub async fn authenticate_mojang(&mut self) -> Result<String> {
+    pub async fn authenticate_mojang(&mut self) -> Result<()> {
         if self.email.is_empty() || self.password.is_empty() {
             bail!("No email or password provided");
         }
@@ -50,15 +50,15 @@ impl Requests {
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
                     .to_string();
-                self.access_token = access_token.clone();
-                Ok(access_token)
+                self.access_token = access_token;
             }
             403 => bail!("Incorrect email or password"),
             status => bail!("HTTP {}", status),
         }
+        Ok(())
     }
 
-    pub async fn authenticate_microsoft(&mut self) -> Result<String> {
+    pub async fn authenticate_microsoft(&mut self) -> Result<()> {
         if self.email.is_empty() || self.email.is_empty() {
             bail!("No email or password provided");
         }
@@ -80,8 +80,7 @@ impl Requests {
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?
                     .to_string();
-                self.access_token = access_token.clone();
-                Ok(access_token)
+                self.access_token = access_token;
             }
             400 => {
                 let body = res.text().await?;
@@ -93,6 +92,7 @@ impl Requests {
             }
             status => bail!("HTTP {}", status),
         }
+        Ok(())
     }
 
     pub async fn get_sq_id(&mut self) -> Result<bool> {
