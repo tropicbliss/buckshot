@@ -174,9 +174,9 @@ impl Requests {
         let res = self.client.get(url).send().await?;
         let status = res.status().as_u16();
         let body = res.text().await?;
+        let v: Value = serde_json::from_str(&body)?;
         match status {
             200 => {
-                let v: Value = serde_json::from_str(&body)?;
                 let epoch = v["unix"]
                     .as_i64()
                     .ok_or_else(|| anyhow!("Unable to parse `unix` from JSON"))?;
@@ -184,10 +184,13 @@ impl Requests {
                 Ok(Some(droptime))
             }
             400 => {
+                let error = v["error"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
                 writeln!(
                     stdout(),
                     "{}",
-                    Red.paint(format!("Failed to time snipe. Reason: {}", body))
+                    Red.paint(format!("Failed to time snipe. Reason: {}", error))
                 )?;
                 Ok(None)
             }
