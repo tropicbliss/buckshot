@@ -1,6 +1,6 @@
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
-use reqwest::{Body, Client};
+use reqwest::{header::ACCEPT, Body, Client};
 use serde_json::{json, Value};
 use std::{convert::TryInto, time::Duration};
 use tokio::fs::File;
@@ -237,7 +237,7 @@ impl Requests {
             .client
             .put(url)
             .bearer_auth(&self.bearer_token)
-            .header(reqwest::header::ACCEPT, "application/json")
+            .header(ACCEPT, "application/json")
             .send()
             .await?;
         let status = res.status().as_u16();
