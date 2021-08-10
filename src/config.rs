@@ -48,7 +48,10 @@ impl Config {
             }
             Err(e) if e.kind() == NotFound => {
                 write(&config_path, get_default_config().as_bytes())?;
-                bail!(e);
+                bail!(
+                    "{} not found, creating a new config file",
+                    config_path.display()
+                );
             }
             Err(e) => bail!(e),
         }
