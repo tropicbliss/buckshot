@@ -16,7 +16,7 @@ chrono = "0.4"
 structopt = "0.3"
 tokio-util = { version = "0.6", features = ["codec"] }
 tokio-rustls = "0.22"
-webpki-roots = "0.21.0" # do not upgrade
+webpki-roots = "0.21" # do not upgrade
 ansi_term = "0.12"
 anyhow = "1.0"
 
