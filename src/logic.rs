@@ -91,7 +91,19 @@ impl Sniper {
             } else {
                 continue;
             };
-            self.setup().await?;
+            if self.task == SnipeTask::Mojang {
+                self.requestor.authenticate_mojang().await?;
+                if self.requestor.get_sq_id().await? {
+                    let answer = [
+                        &self.config.account.sq1,
+                        &self.config.account.sq2,
+                        &self.config.account.sq3,
+                    ];
+                    self.requestor.send_sq(answer).await?;
+                }
+            } else {
+                self.requestor.authenticate_microsoft().await?;
+            }
             if self.task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &self.giftcode {
                     self.requestor.redeem_giftcode(gc).await?;
@@ -155,7 +167,19 @@ impl Sniper {
                 Err(_) => std::time::Duration::ZERO,
             };
             sleep(sleep_duration);
-            self.setup().await?;
+            if self.task == SnipeTask::Mojang {
+                self.requestor.authenticate_mojang().await?;
+                if self.requestor.get_sq_id().await? {
+                    let answer = [
+                        &self.config.account.sq1,
+                        &self.config.account.sq2,
+                        &self.config.account.sq3,
+                    ];
+                    self.requestor.send_sq(answer).await?;
+                }
+            } else {
+                self.requestor.authenticate_microsoft().await?;
+            }
         }
         let stub_time = if self.task == SnipeTask::Giftcode {
             self.requestor
@@ -199,22 +223,5 @@ impl Sniper {
             writeln!(stdout(), "Failed to snipe {}", self.name)?;
         }
         Ok(Some(is_success))
-    }
-
-    async fn setup(&mut self) -> Result<()> {
-        if self.task == SnipeTask::Mojang {
-            self.requestor.authenticate_mojang().await?;
-            if self.requestor.get_sq_id().await? {
-                let answer = [
-                    &self.config.account.sq1,
-                    &self.config.account.sq2,
-                    &self.config.account.sq3,
-                ];
-                self.requestor.send_sq(answer).await?;
-            }
-        } else {
-            self.requestor.authenticate_microsoft().await?;
-        }
-        Ok(())
     }
 }
