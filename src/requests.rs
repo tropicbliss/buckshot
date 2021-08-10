@@ -49,17 +49,18 @@ impl Requests {
             .json(&post_json)
             .send()
             .await?;
-        match res.status().as_u16() {
-            200 => {
-                let v: Value = serde_json::from_str(&res.text().await?)?;
-                let bearer_token = v["accessToken"]
-                    .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
-                    .to_string();
-                self.bearer_token = bearer_token;
-            }
-            403 => bail!("Incorrect email or password"),
-            status => bail!("HTTP {}", status),
+        let status = res.status();
+        if status.is_success() {
+            let v: Value = serde_json::from_str(&res.text().await?)?;
+            let bearer_token = v["accessToken"]
+                .as_str()
+                .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
+                .to_string();
+            self.bearer_token = bearer_token;
+        } else if status.is_client_error() {
+            bail!("Incorrect email or password");
+        } else {
+            bail!(status);
         }
         Ok(())
     }
@@ -75,25 +76,24 @@ impl Requests {
             .json(&post_json)
             .send()
             .await?;
-        match res.status().as_u16() {
-            200 => {
-                let body = res.text().await?;
-                let v: Value = serde_json::from_str(&body)?;
-                let bearer_token = v["bearer_token"]
-                    .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `bearer_token` from JSON"))?
-                    .to_string();
-                self.bearer_token = bearer_token;
-            }
-            400 => {
-                let body = res.text().await?;
-                let v: Value = serde_json::from_str(&body)?;
-                let err = v["detail"]
-                    .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?;
-                bail!("{}", err);
-            }
-            status => bail!("HTTP {}", status),
+        let status = res.status();
+        if status.is_success() {
+            let body = res.text().await?;
+            let v: Value = serde_json::from_str(&body)?;
+            let bearer_token = v["bearer_token"]
+                .as_str()
+                .ok_or_else(|| anyhow!("Unable to parse `bearer_token` from JSON"))?
+                .to_string();
+            self.bearer_token = bearer_token;
+        } else if status.is_client_error() {
+            let body = res.text().await?;
+            let v: Value = serde_json::from_str(&body)?;
+            let err = v["detail"]
+                .as_str()
+                .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?;
+            bail!("{}", err);
+        } else {
+            bail!(status);
         }
         Ok(())
     }
@@ -105,9 +105,9 @@ impl Requests {
             .bearer_auth(&self.bearer_token)
             .send()
             .await?;
-        let status = res.status().as_u16();
-        if status != 200 {
-            bail!("HTTP {}", status);
+        let status = res.status();
+        if !status.is_success() {
+            bail!(status);
         }
         let body = res.text().await?;
         if body == "[]" {
@@ -156,10 +156,13 @@ impl Requests {
             .json(&post_body)
             .send()
             .await?;
-        match res.status().as_u16() {
-            204 => Ok(()),
-            403 => bail!("Incorrect security questions"),
-            status => bail!("HTTP {}", status),
+        let status = res.status();
+        if status.is_success() {
+            Ok(())
+        } else if status.is_client_error() {
+            bail!("Incorrect security questions");
+        } else {
+            bail!(status);
         }
     }
 
@@ -169,31 +172,27 @@ impl Requests {
     ) -> Result<Option<DateTime<Utc>>> {
         let url = format!("https://api.star.shopping/droptime/{}", username_to_snipe);
         let res = self.client.get(url).send().await?;
-        let status = res.status().as_u16();
+        let status = res.status();
         let body = res.text().await?;
         let v: Value = serde_json::from_str(&body)?;
-        match status {
-            200 => {
-                let epoch = v["unix"]
-                    .as_i64()
-                    .ok_or_else(|| anyhow!("Unable to parse `unix` from JSON"))?;
-                let droptime = Utc.timestamp(epoch, 0);
-                Ok(Some(droptime))
-            }
-            400 => {
-                let error = v["error"]
-                    .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
-                writeln!(
-                    stdout(),
-                    "{}",
-                    Red.paint(format!("Failed to time snipe. Reason: {}", error))
-                )?;
-                Ok(None)
-            }
-            status => {
-                bail!("HTTP {}", status);
-            }
+        if status.is_success() {
+            let epoch = v["unix"]
+                .as_i64()
+                .ok_or_else(|| anyhow!("Unable to parse `unix` from JSON"))?;
+            let droptime = Utc.timestamp(epoch, 0);
+            Ok(Some(droptime))
+        } else if status.is_client_error() {
+            let error = v["error"]
+                .as_str()
+                .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
+            writeln!(
+                stdout(),
+                "{}",
+                Red.paint(format!("Failed to time snipe. Reason: {}", error))
+            )?;
+            Ok(None)
+        } else {
+            bail!(status);
         }
     }
 
@@ -204,9 +203,9 @@ impl Requests {
             .bearer_auth(&self.bearer_token)
             .send()
             .await?;
-        let status = res.status().as_u16();
-        if status != 200 {
-            bail!("HTTP {}", status);
+        let status = res.status();
+        if !status.is_success() {
+            bail!(status);
         }
         let body = res.text().await?;
         let v: Value = serde_json::from_str(&body)?;
@@ -234,9 +233,9 @@ impl Requests {
             .multipart(form)
             .send()
             .await?;
-        let status = res.status().as_u16();
-        if status != 200 {
-            bail!("HTTP {}", status);
+        let status = res.status();
+        if !status.is_success() {
+            bail!(status);
         }
         Ok(())
     }
@@ -253,9 +252,9 @@ impl Requests {
             .header(ACCEPT, "application/json")
             .send()
             .await?;
-        let status = res.status().as_u16();
-        if status != 200 {
-            bail!("HTTP {}", status);
+        let status = res.status();
+        if !status.is_success() {
+            bail!(status);
         }
         Ok(())
     }

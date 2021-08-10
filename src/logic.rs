@@ -1,6 +1,6 @@
 use crate::{cli, config, requests, sockets};
 use ansi_term::Colour::{Green, Red};
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use std::{
     io::{stdout, Write},
@@ -44,7 +44,9 @@ impl Sniper {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        self.execute().await?;
+        self.execute()
+            .await
+            .with_context(|| anyhow!("Failed to execute snipe"))?;
         Ok(())
     }
 
@@ -54,7 +56,8 @@ impl Sniper {
             vec![username_to_snipe]
         } else if self.config.config.name_queue.is_empty() {
             check_filter = false;
-            vec![cli::get_username_choice()?]
+            vec![cli::get_username_choice()
+                .with_context(|| anyhow!("Failed to get username choice"))?]
         } else {
             self.config.config.name_queue.clone()
         };
@@ -85,25 +88,16 @@ impl Sniper {
             let snipe_time = if let Some(x) = self
                 .requestor
                 .check_name_availability_time(&self.name)
-                .await?
+                .await
+                .with_context(|| anyhow!("Failed to check name availability time"))?
             {
                 x
             } else {
                 continue;
             };
-            if self.task == SnipeTask::Mojang {
-                self.requestor.authenticate_mojang().await?;
-                if self.requestor.get_sq_id().await? {
-                    let answer = [
-                        &self.config.account.sq1,
-                        &self.config.account.sq2,
-                        &self.config.account.sq3,
-                    ];
-                    self.requestor.send_sq(answer).await?;
-                }
-            } else {
-                self.requestor.authenticate_microsoft().await?;
-            }
+            self.setup()
+                .await
+                .with_context(|| anyhow!("Failed to set up authenticator"))?;
             if self.task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &self.giftcode {
                     self.requestor.redeem_giftcode(gc).await?;
@@ -114,9 +108,15 @@ impl Sniper {
                     )?;
                 }
             } else {
-                self.requestor.check_name_change_eligibility().await?;
+                self.requestor
+                    .check_name_change_eligibility()
+                    .await
+                    .with_context(|| anyhow!("Failed to check name change eligibility"))?;
             }
-            let snipe_status = self.snipe(snipe_time).await?;
+            let snipe_status = self
+                .snipe(snipe_time)
+                .await
+                .with_context(|| anyhow!("Failed to snipe name"))?;
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
@@ -135,7 +135,10 @@ impl Sniper {
         let executor = sockets::Executor::new(self.name.clone(), is_gc);
         let offset = if self.config.config.auto_offset {
             writeln!(stdout(), "Measuring offset...")?;
-            executor.auto_offset_calculator().await?
+            executor
+                .auto_offset_calculator()
+                .await
+                .with_context(|| anyhow!("Failed to calculate offset"))?
         } else {
             self.config.config.offset
         };
@@ -167,30 +170,21 @@ impl Sniper {
                 Err(_) => std::time::Duration::ZERO,
             };
             sleep(sleep_duration);
-            if self.task == SnipeTask::Mojang {
-                self.requestor.authenticate_mojang().await?;
-                if self.requestor.get_sq_id().await? {
-                    let answer = [
-                        &self.config.account.sq1,
-                        &self.config.account.sq2,
-                        &self.config.account.sq3,
-                    ];
-                    self.requestor.send_sq(answer).await?;
-                }
-            } else {
-                self.requestor.authenticate_microsoft().await?;
-            }
+            self.setup()
+                .await
+                .with_context(|| anyhow!("Failed to set up authenticator"))?;
         }
         let stub_time = if self.task == SnipeTask::Giftcode {
             self.requestor
                 .check_name_availability_time(&self.name)
-                .await?
+                .await
+                .with_context(|| anyhow!("Failed to check name availability time"))?
         } else {
             let (snipe_time, _) = join!(
                 self.requestor.check_name_availability_time(&self.name),
                 self.requestor.check_name_change_eligibility()
             );
-            snipe_time?
+            snipe_time.with_context(|| anyhow!("Failed to either check name availability time or check name change eligibility"))?
         };
         if stub_time.is_none() {
             return Ok(None);
@@ -203,7 +197,8 @@ impl Sniper {
                 self.config.config.spread,
                 snipe_time,
             )
-            .await?;
+            .await
+            .with_context(|| anyhow!("Failed to execute snipe"))?;
         if is_success {
             writeln!(
                 stdout(),
@@ -216,12 +211,44 @@ impl Sniper {
                         &self.config.config.skin_filename,
                         self.config.config.skin_model.clone(),
                     )
-                    .await?;
+                    .await
+                    .with_context(|| anyhow!("Failed to upload skin"))?;
                 writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
             }
         } else {
             writeln!(stdout(), "Failed to snipe {}", self.name)?;
         }
         Ok(Some(is_success))
+    }
+
+    async fn setup(&mut self) -> Result<()> {
+        if self.task == SnipeTask::Mojang {
+            self.requestor
+                .authenticate_mojang()
+                .await
+                .with_context(|| anyhow!("Failed to authenticate Mojang account"))?;
+            if self
+                .requestor
+                .get_sq_id()
+                .await
+                .with_context(|| anyhow!("Failed to get SQID"))?
+            {
+                let answer = [
+                    &self.config.account.sq1,
+                    &self.config.account.sq2,
+                    &self.config.account.sq3,
+                ];
+                self.requestor
+                    .send_sq(answer)
+                    .await
+                    .with_context(|| anyhow!("Failed to send SQ response"))?;
+            }
+        } else {
+            self.requestor
+                .authenticate_microsoft()
+                .await
+                .with_context(|| anyhow!("Failed to authenticate Microsoft account"))?;
+        }
+        Ok(())
     }
 }

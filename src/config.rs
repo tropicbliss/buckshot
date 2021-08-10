@@ -38,13 +38,7 @@ impl Config {
     pub fn new(config_path: &Path) -> Result<Self> {
         match read_to_string(&config_path) {
             Ok(s) => {
-                let config: Result<Self, _> = toml::from_str(&s);
-                let config = match config {
-                    Ok(c) => c,
-                    Err(e) => {
-                        bail!("Error parsing {}. Reason: {}", config_path.display(), e);
-                    }
-                };
+                let config: Self = toml::from_str(&s)?;
                 if !(config.config.skin_model.to_lowercase() == "slim"
                     || config.config.skin_model.to_lowercase() == "classic")
                 {
