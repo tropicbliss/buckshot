@@ -188,7 +188,7 @@ impl Requests {
             let reason = if error == "username is not dropping" {
                 format!("{} is taken", username_to_snipe)
             } else if error == "username not dropping" {
-                format!("{} is freely available", username_to_snipe)
+                format!("{} is available", username_to_snipe)
             } else {
                 error.to_string()
             };
