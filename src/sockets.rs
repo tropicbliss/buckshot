@@ -29,7 +29,7 @@ impl Executor {
         let addr = "api.minecraftservices.com:443"
             .to_socket_addrs()?
             .next()
-            .ok_or_else(|| anyhow!("Invalid SocketAddr used"))?;
+            .ok_or_else(|| anyhow!("Invalid socket address"))?;
         let payload = if self.is_gc {
             let post_body = json!({ "profileName": self.name }).to_string();
             format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}", post_body).into_bytes()
@@ -70,7 +70,7 @@ impl Executor {
         let addr = "api.minecraftservices.com:443"
             .to_socket_addrs()?
             .next()
-            .ok_or_else(|| anyhow!("Invalid SocketAddr used"))?;
+            .ok_or_else(|| anyhow!("Invalid socket address"))?;
         let data = Arc::new(payload);
         let mut config = ClientConfig::new();
         config
