@@ -21,6 +21,9 @@ pub struct Requests {
 
 impl Requests {
     pub fn new(email: String, password: String) -> Result<Self> {
+        if email.is_empty() || password.is_empty() {
+            bail!("No email or password provided");
+        }
         Ok(Self {
             client: Client::builder()
                 .timeout(Duration::from_secs(5))
@@ -36,9 +39,6 @@ impl Requests {
     }
 
     pub async fn authenticate_mojang(&mut self) -> Result<()> {
-        if self.email.is_empty() || self.password.is_empty() {
-            bail!("No email or password provided");
-        }
         let post_json = json!({
             "username": self.email,
             "password": self.password
@@ -65,9 +65,6 @@ impl Requests {
     }
 
     pub async fn authenticate_microsoft(&mut self) -> Result<()> {
-        if self.email.is_empty() || self.email.is_empty() {
-            bail!("No email or password provided");
-        }
         let post_json = json!({
             "email": self.email,
             "password": self.password
