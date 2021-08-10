@@ -50,17 +50,21 @@ impl Requests {
             .send()
             .await?;
         let status = res.status();
-        if status.is_success() {
-            let v: Value = serde_json::from_str(&res.text().await?)?;
-            let bearer_token = v["accessToken"]
-                .as_str()
-                .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
-                .to_string();
-            self.bearer_token = bearer_token;
-        } else if status.is_client_error() {
-            bail!("Incorrect email or password");
-        } else {
-            bail!(status);
+        match status.as_u16() {
+            200 => {
+                let v: Value = serde_json::from_str(&res.text().await?)?;
+                let bearer_token = v["accessToken"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
+                    .to_string();
+                self.bearer_token = bearer_token;
+            }
+            403 => {
+                bail!("Incorrect email or password");
+            }
+            _ => {
+                bail!(status);
+            }
         }
         Ok(())
     }
@@ -77,23 +81,27 @@ impl Requests {
             .send()
             .await?;
         let status = res.status();
-        if status.is_success() {
-            let body = res.text().await?;
-            let v: Value = serde_json::from_str(&body)?;
-            let bearer_token = v["bearer_token"]
-                .as_str()
-                .ok_or_else(|| anyhow!("Unable to parse `bearer_token` from JSON"))?
-                .to_string();
-            self.bearer_token = bearer_token;
-        } else if status.is_client_error() {
-            let body = res.text().await?;
-            let v: Value = serde_json::from_str(&body)?;
-            let err = v["detail"]
-                .as_str()
-                .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?;
-            bail!("{}", err);
-        } else {
-            bail!(status);
+        match status.as_u16() {
+            200 => {
+                let body = res.text().await?;
+                let v: Value = serde_json::from_str(&body)?;
+                let bearer_token = v["bearer_token"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `bearer_token` from JSON"))?
+                    .to_string();
+                self.bearer_token = bearer_token;
+            }
+            400 => {
+                let body = res.text().await?;
+                let v: Value = serde_json::from_str(&body)?;
+                let err = v["detail"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?;
+                bail!("{}", err);
+            }
+            _ => {
+                bail!(status);
+            }
         }
         Ok(())
     }
@@ -106,7 +114,7 @@ impl Requests {
             .send()
             .await?;
         let status = res.status();
-        if !status.is_success() {
+        if status.as_u16() != 200 {
             bail!(status);
         }
         let body = res.text().await?;
@@ -157,12 +165,10 @@ impl Requests {
             .send()
             .await?;
         let status = res.status();
-        if status.is_success() {
-            Ok(())
-        } else if status.is_client_error() {
-            bail!("Incorrect security questions");
-        } else {
-            bail!(status);
+        match status.as_u16() {
+            200 => Ok(()),
+            403 => bail!("Incorrect security questions"),
+            _ => bail!(status),
         }
     }
 
@@ -175,31 +181,33 @@ impl Requests {
         let status = res.status();
         let body = res.text().await?;
         let v: Value = serde_json::from_str(&body)?;
-        if status.is_success() {
-            let epoch = v["unix"]
-                .as_i64()
-                .ok_or_else(|| anyhow!("Unable to parse `unix` from JSON"))?;
-            let droptime = Utc.timestamp(epoch, 0);
-            Ok(Some(droptime))
-        } else if status.is_client_error() {
-            let error = v["error"]
-                .as_str()
-                .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
-            let reason = if error == "username is not dropping" {
-                format!("{} is taken", username_to_snipe)
-            } else if error == "username not dropping" {
-                format!("{} is available", username_to_snipe)
-            } else {
-                error.to_string()
-            };
-            writeln!(
-                stdout(),
-                "{}",
-                Red.paint(format!("Failed to time snipe. Reason: {}", reason))
-            )?;
-            Ok(None)
-        } else {
-            bail!(status);
+        match status.as_u16() {
+            200 => {
+                let epoch = v["unix"]
+                    .as_i64()
+                    .ok_or_else(|| anyhow!("Unable to parse `unix` from JSON"))?;
+                let droptime = Utc.timestamp(epoch, 0);
+                Ok(Some(droptime))
+            }
+            400 => {
+                let error = v["error"]
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
+                let reason = if error == "username is not dropping" {
+                    format!("{} is taken", username_to_snipe)
+                } else if error == "username not dropping" {
+                    format!("{} is available", username_to_snipe)
+                } else {
+                    error.to_string()
+                };
+                writeln!(
+                    stdout(),
+                    "{}",
+                    Red.paint(format!("Failed to time snipe. Reason: {}", reason))
+                )?;
+                Ok(None)
+            }
+            _ => bail!(status),
         }
     }
 
@@ -211,7 +219,7 @@ impl Requests {
             .send()
             .await?;
         let status = res.status();
-        if !status.is_success() {
+        if status.as_u16() != 200 {
             bail!(status);
         }
         let body = res.text().await?;
@@ -241,7 +249,7 @@ impl Requests {
             .send()
             .await?;
         let status = res.status();
-        if !status.is_success() {
+        if status.as_u16() != 200 {
             bail!(status);
         }
         Ok(())
@@ -260,7 +268,7 @@ impl Requests {
             .send()
             .await?;
         let status = res.status();
-        if !status.is_success() {
+        if status.as_u16() != 200 {
             bail!(status);
         }
         Ok(())
