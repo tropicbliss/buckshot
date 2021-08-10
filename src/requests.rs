@@ -63,7 +63,7 @@ impl Requests {
                 bail!("Incorrect email or password");
             }
             _ => {
-                bail!(status);
+                bail!("HTTP {}", status);
             }
         }
         Ok(())
@@ -100,7 +100,7 @@ impl Requests {
                 bail!("{}", err);
             }
             _ => {
-                bail!(status);
+                bail!("HTTP {}", status);
             }
         }
         Ok(())
@@ -115,7 +115,7 @@ impl Requests {
             .await?;
         let status = res.status();
         if status.as_u16() != 200 {
-            bail!(status);
+            bail!("HTTP {}", status);
         }
         let body = res.text().await?;
         if body == "[]" {
@@ -168,7 +168,7 @@ impl Requests {
         match status.as_u16() {
             200 => Ok(()),
             403 => bail!("Incorrect security questions"),
-            _ => bail!(status),
+            _ => bail!("HTTP {}", status),
         }
     }
 
@@ -207,7 +207,7 @@ impl Requests {
                 )?;
                 Ok(None)
             }
-            _ => bail!(status),
+            _ => bail!("HTTP {}", status),
         }
     }
 
@@ -220,7 +220,7 @@ impl Requests {
             .await?;
         let status = res.status();
         if status.as_u16() != 200 {
-            bail!(status);
+            bail!("HTTP {}", status);
         }
         let body = res.text().await?;
         let v: Value = serde_json::from_str(&body)?;
@@ -250,7 +250,7 @@ impl Requests {
             .await?;
         let status = res.status();
         if status.as_u16() != 200 {
-            bail!(status);
+            bail!("HTTP {}", status);
         }
         Ok(())
     }
@@ -269,7 +269,7 @@ impl Requests {
             .await?;
         let status = res.status();
         if status.as_u16() != 200 {
-            bail!(status);
+            bail!("HTTP {}", status);
         }
         Ok(())
     }
