@@ -46,7 +46,7 @@ impl Sniper {
     pub async fn run(&mut self) -> Result<()> {
         self.execute()
             .await
-            .with_context(|| anyhow!("Failed to execute snipe"))?;
+            .with_context(|| anyhow!("Failed to snipe snipe"))?;
         Ok(())
     }
 
