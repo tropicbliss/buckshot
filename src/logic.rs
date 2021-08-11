@@ -46,7 +46,7 @@ impl Sniper {
     pub async fn run(&mut self) -> Result<()> {
         self.execute()
             .await
-            .with_context(|| anyhow!("Failed to snipe snipe"))?;
+            .with_context(|| anyhow!("Failed to execute sniping subroutine"))?;
         Ok(())
     }
 
@@ -115,7 +115,7 @@ impl Sniper {
             let snipe_status = self
                 .snipe(snipe_time)
                 .await
-                .with_context(|| anyhow!("Failed to snipe name"))?;
+                .with_context(|| anyhow!("Failed to execute pre-snipe subroutine"))?;
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
