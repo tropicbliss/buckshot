@@ -94,7 +94,11 @@ impl Executor {
                     let stream = TcpStream::connect(&addr).await?;
                     let mut stream = connector.connect(domain, stream).await?;
                     stream.write_all(&data).await?;
-                    sleep((snipe_time - Utc::now()).to_std()?).await;
+                    let sleep_duration = match (handshake_time - Utc::now()).to_std() {
+                        Ok(x) => x,
+                        Err(_) => std::time::Duration::ZERO,
+                    };
+                    sleep(sleep_duration).await;
                     stream.write_all(b"\r\n").await?;
                     stream.read_exact(&mut buf).await?;
                     let formatted_resp_time = Utc::now().format("%F %T%.6f");
