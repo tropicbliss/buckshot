@@ -61,13 +61,6 @@ impl Sniper {
         } else {
             self.config.config.name_queue.clone()
         };
-        if self.task == SnipeTask::Giftcode && self.giftcode.is_none() {
-            writeln!(
-                stdout(),
-                "{}",
-                Red.paint("Reminder: You should redeem your giftcode before GC sniping")
-            )?;
-        }
         for (count, username) in name_list.into_iter().enumerate() {
             self.name = username.trim().to_string();
             if check_filter && !cli::username_filter_predicate(&self.name) {
@@ -105,6 +98,12 @@ impl Sniper {
                         stdout(),
                         "{}",
                         Green.paint("Successfully redeemed giftcode")
+                    )?;
+                } else {
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        Red.paint("Reminder: You should redeem your giftcode before GC sniping")
                     )?;
                 }
             } else {
