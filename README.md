@@ -16,6 +16,10 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks arceus-sniper for yoinking your feature list phrasing)
 
+## Credits
+
+- Huge thanks to MCsniperPY. A lot of the logic behind this sniper uses the same logic as MCsniperPY cuz I can never decide on how I want to approach a problem.
+
 ## Setup
 
 1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/latest).

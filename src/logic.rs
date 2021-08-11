@@ -162,7 +162,7 @@ impl Sniper {
             )?;
         }
         let snipe_time = droptime - Duration::milliseconds(offset);
-        let setup_time = snipe_time - Duration::minutes(3);
+        let setup_time = snipe_time - Duration::minutes(720);
         if Utc::now() < setup_time {
             let sleep_duration = match (setup_time - Utc::now()).to_std() {
                 Ok(x) => x,
