@@ -46,7 +46,7 @@ impl Sniper {
     pub async fn run(&mut self) -> Result<()> {
         self.execute()
             .await
-            .with_context(|| anyhow!("Failed to run `execute` method"))?;
+            .with_context(|| anyhow!("Failed stage 1 of sniping"))?;
         Ok(())
     }
 
@@ -115,7 +115,7 @@ impl Sniper {
             let snipe_status = self
                 .snipe(snipe_time)
                 .await
-                .with_context(|| anyhow!("Failed to run `snipe` method"))?;
+                .with_context(|| anyhow!("Failed stage 2 of sniping"))?;
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
