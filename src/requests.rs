@@ -134,14 +134,14 @@ impl Requests {
             }
             self.sqid = sqid_array
                 .try_into()
-                .map_err(|_| anyhow!("SQID vector is of invalid length"))?;
+                .map_err(|_| anyhow!("Security questions ID vector is of invalid length"))?;
             Ok(true)
         }
     }
 
     pub async fn send_sq(&self, answer: [&String; 3]) -> Result<()> {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
-            bail!("No answers for security questions provided");
+            bail!("One or more answers to security questions not provided");
         }
         let post_body = json!([
             {
