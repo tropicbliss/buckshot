@@ -203,7 +203,7 @@ impl Requests {
                 writeln!(
                     stdout(),
                     "{}",
-                    Red.paint(format!("Failed to time snipe: {}", reason))
+                    Red.paint(format!("Failed to get droptime: {}", reason))
                 )?;
                 Ok(None)
             }
