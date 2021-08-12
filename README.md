@@ -10,7 +10,7 @@ A successor to NodeSniper, this sniper promises to be noob-friendly and straight
 - Microsoft account sniping
 - GC sniping
 - Spread (delay between asynchronous sniping requests)
-- Auto offset (never rely on this feature for reliable sniping, it should only be used to gauge the delay for first time snipers, adjust upon that offset for subsequent snipes)
+- Auto offset (this is actually a baller feature, every name I've sniped (600+ searches) uses auto offset, highly recommend)
 - Change skin on snipe
 - Name queueing
 - Low latency by opening the TCP connections before sending requests
