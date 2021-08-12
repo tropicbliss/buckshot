@@ -82,7 +82,7 @@ impl Sniper {
                 .requestor
                 .check_name_availability_time(&self.name)
                 .await
-                .with_context(|| anyhow!("Failed to check name availability time"))?
+                .with_context(|| anyhow!("Failed to check droptime"))?
             {
                 x
             } else {
@@ -110,7 +110,7 @@ impl Sniper {
                 self.requestor
                     .check_name_change_eligibility()
                     .await
-                    .with_context(|| anyhow!("Failed to check name change eligibility"))?;
+                    .with_context(|| anyhow!("Failed to check droptime"))?;
             }
             let snipe_status = self
                 .snipe(snipe_time)
@@ -177,13 +177,13 @@ impl Sniper {
             self.requestor
                 .check_name_availability_time(&self.name)
                 .await
-                .with_context(|| anyhow!("Failed to check name availability time"))?
+                .with_context(|| anyhow!("Failed to check droptime"))?
         } else {
             let (snipe_time, _) = join!(
                 self.requestor.check_name_availability_time(&self.name),
                 self.requestor.check_name_change_eligibility()
             );
-            snipe_time.with_context(|| anyhow!("Failed to either check name availability time or check name change eligibility"))?
+            snipe_time.with_context(|| anyhow!("Failed to either check droptime or name change eligibility"))?
         };
         if stub_time.is_none() {
             return Ok(None);
@@ -230,7 +230,7 @@ impl Sniper {
                 .requestor
                 .get_sq_id()
                 .await
-                .with_context(|| anyhow!("Failed to get security question IDs"))?
+                .with_context(|| anyhow!("Failed to get IDs of security questions"))?
             {
                 let answer = [
                     &self.config.account.sq1,
@@ -240,7 +240,7 @@ impl Sniper {
                 self.requestor
                     .send_sq(answer)
                     .await
-                    .with_context(|| anyhow!("Failed to send security question response"))?;
+                    .with_context(|| anyhow!("Failed to send answers for security questions"))?;
             }
         } else {
             self.requestor
