@@ -18,15 +18,15 @@ pub fn print_splash_screen() -> Result<()> {
     fn get_credits() -> String {
         "Developed by @tropicbliss#0408 on Discord".to_string()
     }
-    fn best_sniper() -> String {
+    fn free_sniper() -> String {
         "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
     }
     writeln!(stdout(), "{}", Red.paint(get_logo()))
         .with_context(|| anyhow!("Failed to print logo"))?;
     writeln!(stdout(), "{}", Green.paint(get_credits()))
         .with_context(|| anyhow!("Failed to print credits"))?;
-    writeln!(stdout(), "{}", Green.paint(best_sniper()))
-        .with_context(|| anyhow!("Failed to print best sniper prompt"))?;
+    writeln!(stdout(), "{}", Green.paint(free_sniper()))
+        .with_context(|| anyhow!("Failed to print free sniper prompt"))?;
     Ok(())
 }
 
