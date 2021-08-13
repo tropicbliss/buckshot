@@ -70,7 +70,7 @@ sq3 = "Baz"
 [config]
 offset = 0
 auto_offset = false
-# Spread (if you are unsure, leave this as it is)
+# Spread (if you are unsure, leave it as it is)
 spread = 0
 microsoft_auth = false
 gc_snipe = false
@@ -78,7 +78,7 @@ change_skin = false
 skin_model = "slim"
 skin_filename = "example.png"
 # Name queueing (allows you to snipe multiple names sequentially)
-# Note: This is an optional feature, leave it as it is if you only want to snipe one name at a time
+# Note: This is an optional feature, leave it as it is if you only want to snipe one name
 # Example:
 # name_queue = ["Marc", "Dream"]
 name_queue = []
