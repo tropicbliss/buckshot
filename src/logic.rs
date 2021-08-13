@@ -82,7 +82,7 @@ impl Sniper {
                 .requestor
                 .check_name_availability_time(&self.name)
                 .await
-                .with_context(|| anyhow!("Failed to check droptime"))?
+                .with_context(|| anyhow!("Failed to get droptime"))?
             {
                 x
             } else {
@@ -110,7 +110,7 @@ impl Sniper {
                 self.requestor
                     .check_name_change_eligibility()
                     .await
-                    .with_context(|| anyhow!("Failed to check droptime"))?;
+                    .with_context(|| anyhow!("Failed to get droptime"))?;
             }
             let snipe_status = self
                 .snipe(snipe_time)
@@ -177,7 +177,7 @@ impl Sniper {
             self.requestor
                 .check_name_availability_time(&self.name)
                 .await
-                .with_context(|| anyhow!("Failed to check droptime"))?
+                .with_context(|| anyhow!("Failed to get droptime"))?
         } else {
             let (snipe_time, _) = join!(
                 self.requestor.check_name_availability_time(&self.name),
