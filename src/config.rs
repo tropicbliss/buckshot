@@ -70,7 +70,7 @@ sq3 = "Baz"
 [config]
 offset = 0
 auto_offset = false
-# Spread (if you are unsure, leave it as it is)
+# Spread (if you are unsure leave it as it is)
 spread = 0
 microsoft_auth = false
 gc_snipe = false
