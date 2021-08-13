@@ -43,9 +43,9 @@ async fn main() -> Result<()> {
     cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
     let config =
         config::Config::new(&args.config_name).with_context(|| "Failed to get config options")?;
-    let snipe_task = impl_chooser(&config).with_context(|| "Failed to choose implementation")?;
+    let snipe_task = impl_chooser(&config).with_context(|| "Failed to choose sniping task")?;
     let mut sniper = logic::Sniper::new(snipe_task, args.username_to_snipe, config, args.giftcode)
-        .with_context(|| "Failed to generate sniper instance")?;
+        .with_context(|| "Failed to run sniper instance")?;
     sniper.run().await.with_context(|| "Failed to snipe name")?;
     Ok(())
 }
@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
 fn impl_chooser(config: &config::Config) -> Result<Task> {
     let paradigm = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
-            writeln!(stdout(), "{}", Red.paint("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping"))?;
+            writeln!(stdout(), "{}", Red.paint("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead"))?;
             Task::Giftcode
         } else {
             Task::Mojang
