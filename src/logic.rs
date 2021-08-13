@@ -230,7 +230,7 @@ impl Sniper {
                 .requestor
                 .get_sq_id()
                 .await
-                .with_context(|| anyhow!("Failed to get IDs of security questions"))?
+                .with_context(|| anyhow!("Failed to get SQ IDs."))?
             {
                 let answer = [
                     &self.config.account.sq1,
@@ -240,7 +240,7 @@ impl Sniper {
                 self.requestor
                     .send_sq(answer)
                     .await
-                    .with_context(|| anyhow!("Failed to send answers for security questions"))?;
+                    .with_context(|| anyhow!("Failed to send SQ answers"))?;
             }
         } else {
             self.requestor
