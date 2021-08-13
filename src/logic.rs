@@ -75,7 +75,7 @@ impl Sniper {
                 writeln!(stdout(), "Initialising...")?;
             } else {
                 writeln!(stdout(), "Moving on to next name...")?;
-                writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
+                writeln!(stdout(), "Waiting 20 seconds to prevent rate limit...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
                 sleep(std::time::Duration::from_secs(20));
             }
             let snipe_time = if let Some(x) = self
