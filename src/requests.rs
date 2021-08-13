@@ -134,7 +134,7 @@ impl Requests {
             }
             self.sqid = sqid_array
                 .try_into()
-                .map_err(|_| anyhow!("JSON has an incorrect number of security questions"))?;
+                .map_err(|_| anyhow!("Incorrect number of security questions in JSON"))?;
             Ok(true)
         }
     }
