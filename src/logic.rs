@@ -46,7 +46,7 @@ impl Sniper {
     pub async fn run(&mut self) -> Result<()> {
         self.execute()
             .await
-            .with_context(|| anyhow!("Failed stage 1 of pre-snipe setup"))?;
+            .with_context(|| anyhow!("Failed stage 1 of pre-sniping setup"))?;
         Ok(())
     }
 
@@ -75,7 +75,7 @@ impl Sniper {
                 writeln!(stdout(), "Initialising...")?;
             } else {
                 writeln!(stdout(), "Moving on to next name...")?;
-                writeln!(stdout(), "Waiting 20 seconds to prevent rate limit...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
+                writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
                 sleep(std::time::Duration::from_secs(20));
             }
             let snipe_time = if let Some(x) = self
@@ -115,7 +115,7 @@ impl Sniper {
             let snipe_status = self
                 .snipe(snipe_time)
                 .await
-                .with_context(|| anyhow!("Failed stage 2 of pre-snipe setup"))?;
+                .with_context(|| anyhow!("Failed stage 2 of pre-sniping setup"))?;
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
