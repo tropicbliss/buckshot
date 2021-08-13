@@ -12,7 +12,7 @@ use std::io::{stdout, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-/// A Minecraft name sniper written in Rust. Performant and capable
+/// A performant and capable Minecraft name sniper
 #[derive(StructOpt, Debug)]
 #[structopt()]
 struct Args {
@@ -20,7 +20,7 @@ struct Args {
     #[structopt(short, long)]
     username_to_snipe: Option<String>,
 
-    /// An optional argument for specifying the name of the config file (must be a TOML file)
+    /// Name of config file (must be a TOML file)
     #[structopt(short, long, default_value = "config.toml")]
     config_name: PathBuf,
 
