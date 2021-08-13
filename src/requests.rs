@@ -134,14 +134,14 @@ impl Requests {
             }
             self.sqid = sqid_array
                 .try_into()
-                .map_err(|_| anyhow!("Incorrect number of security questions in JSON"))?;
+                .map_err(|_| anyhow!("Incorrect number of SQ in JSON"))?;
             Ok(true)
         }
     }
 
     pub async fn send_sq(&self, answer: [&String; 3]) -> Result<()> {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
-            bail!("One or more answers to security questions not provided");
+            bail!("One or more SQ answers not provided");
         }
         let post_body = json!([
             {
