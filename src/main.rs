@@ -12,7 +12,7 @@ use std::io::{stdout, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-/// Minecraft name sniper
+/// A Minecraft name sniper written in Rust. Performant and capable.
 #[derive(StructOpt, Debug)]
 #[structopt()]
 struct Args {
