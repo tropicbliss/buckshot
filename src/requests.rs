@@ -134,7 +134,7 @@ impl Requests {
             }
             self.sqid = sqid_array
                 .try_into()
-                .map_err(|_| anyhow!("Security question ID vector is of invalid length"))?;
+                .map_err(|_| anyhow!("JSON has an incorrect number of security questions"))?;
             Ok(true)
         }
     }
