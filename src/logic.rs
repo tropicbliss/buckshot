@@ -183,7 +183,7 @@ impl Sniper {
                 self.requestor.check_name_availability_time(&self.name),
                 self.requestor.check_name_change_eligibility()
             );
-            snipe_time.with_context(|| anyhow!("Failed to either check droptime or name change eligibility"))?
+            snipe_time.with_context(|| anyhow!("Failed to check either droptime or name change eligibility"))?
         };
         if stub_time.is_none() {
             return Ok(None);
