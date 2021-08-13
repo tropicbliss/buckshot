@@ -90,7 +90,7 @@ impl Sniper {
             };
             self.setup()
                 .await
-                .with_context(|| anyhow!("Failed to set up authenticator"))?;
+                .with_context(|| anyhow!("Failed to run authenticator"))?;
             if self.task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &self.giftcode {
                     self.requestor.redeem_giftcode(gc).await?;
@@ -171,7 +171,7 @@ impl Sniper {
             sleep(sleep_duration);
             self.setup()
                 .await
-                .with_context(|| anyhow!("Failed to set up authenticator"))?;
+                .with_context(|| anyhow!("Failed to run authenticator"))?;
         }
         let stub_time = if self.task == SnipeTask::Giftcode {
             self.requestor
