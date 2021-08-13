@@ -76,7 +76,7 @@ impl Requests {
         });
         let res = self
             .client
-            .post("https://auth.buckshotrs.com")
+            .post("https://buckshot.tropicbliss.net/api/auth")
             .json(&post_json)
             .send()
             .await?;
