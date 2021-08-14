@@ -4,7 +4,6 @@ use chrono::{DateTime, TimeZone, Utc};
 use reqwest::{header::ACCEPT, Body, Client};
 use serde_json::{json, Value};
 use std::{
-    convert::TryInto,
     io::{stdout, Write},
     time::Duration,
 };
@@ -122,19 +121,16 @@ impl Requests {
             Ok(false)
         } else {
             let v: Value = serde_json::from_str(&body)?;
-            let sq_array = v
-                .as_array()
-                .ok_or_else(|| anyhow!("Unable to parse JSON array"))?;
-            let mut sqid_array = Vec::new();
-            for item in sq_array {
-                let id = item["answer"]["id"]
-                    .as_i64()
-                    .ok_or_else(|| anyhow!("Unable to parse `answer` or `id` from JSON"))?;
-                sqid_array.push(id);
+            let mut sqid_array = [0; 3];
+            for idx in 0..2 {
+                sqid_array[idx] = v[idx]["answer"]["id"].as_i64().ok_or_else(|| {
+                    anyhow!(
+                        "Unable to parse `answer` or `id` from index {} of JSON array",
+                        idx
+                    )
+                })?;
             }
-            self.sqid = sqid_array
-                .try_into()
-                .map_err(|_| anyhow!("Incorrect number of SQ in JSON"))?;
+            self.sqid = sqid_array;
             Ok(true)
         }
     }
