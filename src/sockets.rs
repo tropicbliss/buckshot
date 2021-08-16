@@ -102,8 +102,8 @@ impl Executor {
                     stream.write_all(b"\r\n").await?;
                     stream.read_exact(&mut buf).await?;
                     let formatted_resp_time = Utc::now().format("%F %T%.6f");
-                    let res = String::from_utf8_lossy(&buf);
-                    let status = res[9..].parse::<u16>()?;
+                    let res = String::from_utf8_lossy(&buf[..]);
+                    let status: u16 = res[9..].parse()?;
                     match status {
                         200 => {
                             writeln!(
