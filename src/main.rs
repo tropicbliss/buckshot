@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
 }
 
 fn impl_chooser(config: &config::Config) -> Result<Task> {
-    let paradigm = if !config.config.microsoft_auth {
+    let snipe_task = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
             writeln!(stdout(), "{}", Red.paint("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead"))?;
             Task::Giftcode
@@ -63,5 +63,5 @@ fn impl_chooser(config: &config::Config) -> Result<Task> {
     } else {
         Task::Microsoft
     };
-    Ok(paradigm)
+    Ok(snipe_task)
 }
