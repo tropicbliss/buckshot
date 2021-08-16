@@ -101,7 +101,7 @@ impl Executor {
                     sleep(sleep_duration).await;
                     stream.write_all(b"\r\n").await?;
                     stream.read_exact(&mut buf).await?;
-                    let formatted_resp_time = Utc::now().format("%F %T%.6f");
+                    let formatted_res_time = Utc::now().format("%F %T%.6f");
                     let res = String::from_utf8_lossy(&buf[..]);
                     let status: u16 = res[9..].parse()?;
                     match status {
@@ -111,7 +111,7 @@ impl Executor {
                                 "[{}] {} @ {}",
                                 Green.paint("success"),
                                 Green.paint("200"),
-                                Cyan.paint(format!("{}", formatted_resp_time))
+                                Cyan.paint(format!("{}", formatted_res_time))
                             )?;
                             Ok(true)
                         }
@@ -121,7 +121,7 @@ impl Executor {
                                 "[{}] {} @ {}",
                                 Red.paint("fail"),
                                 Red.paint(format!("{}", status)),
-                                Cyan.paint(format!("{}", formatted_resp_time))
+                                Cyan.paint(format!("{}", formatted_res_time))
                             )?;
                             Ok(false)
                         }
