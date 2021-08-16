@@ -6,7 +6,6 @@ use std::{
     io::{stdout, Write},
     thread::sleep,
 };
-use tokio::join;
 
 #[derive(PartialEq)]
 pub enum SnipeTask {
@@ -81,7 +80,6 @@ impl Sniper {
             let snipe_time = if let Some(x) = self
                 .requestor
                 .check_name_availability_time(&self.name)
-                .await
                 .with_context(|| anyhow!("Failed to get droptime"))?
             {
                 x
@@ -89,11 +87,10 @@ impl Sniper {
                 continue;
             };
             self.setup()
-                .await
                 .with_context(|| anyhow!("Failed to run authenticator"))?;
             if self.task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &self.giftcode {
-                    self.requestor.redeem_giftcode(gc).await?;
+                    self.requestor.redeem_giftcode(gc)?;
                     writeln!(
                         stdout(),
                         "{}",
@@ -109,7 +106,6 @@ impl Sniper {
             } else {
                 self.requestor
                     .check_name_change_eligibility()
-                    .await
                     .with_context(|| anyhow!("Failed to check name change eligibility"))?;
             }
             let snipe_status = self
@@ -170,27 +166,22 @@ impl Sniper {
             };
             sleep(sleep_duration);
             self.setup()
-                .await
                 .with_context(|| anyhow!("Failed to run authenticator"))?;
         }
-        let stub_time = if self.task == SnipeTask::Giftcode {
-            self.requestor
-                .check_name_availability_time(&self.name)
-                .await
-                .with_context(|| anyhow!("Failed to get droptime"))?
-        } else {
-            let (snipe_time, _) = join!(
-                self.requestor.check_name_availability_time(&self.name),
-                self.requestor.check_name_change_eligibility()
-            );
-            snipe_time.with_context(|| {
-                anyhow!("Failed to check either droptime or name change eligibility")
-            })?
-        };
-        if stub_time.is_none() {
+        writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
+        if self
+            .requestor
+            .check_name_availability_time(&self.name)
+            .with_context(|| anyhow!("Failed to get droptime"))?
+            .is_none()
+        {
             return Ok(None);
         }
-        writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
+        if self.task != SnipeTask::Giftcode {
+            self.requestor
+                .check_name_change_eligibility()
+                .with_context(|| anyhow!("Failed to check name change eligibility"))?;
+        };
         writeln!(stdout(), "Setup complete")?;
         let is_success = executor
             .snipe_executor(
@@ -212,7 +203,6 @@ impl Sniper {
                         &self.config.config.skin_filename,
                         self.config.config.skin_model.clone(),
                     )
-                    .await
                     .with_context(|| anyhow!("Failed to upload skin"))?;
                 writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
             }
@@ -222,16 +212,14 @@ impl Sniper {
         Ok(Some(is_success))
     }
 
-    async fn setup(&mut self) -> Result<()> {
+    fn setup(&mut self) -> Result<()> {
         if self.task == SnipeTask::Mojang {
             self.requestor
                 .authenticate_mojang()
-                .await
                 .with_context(|| anyhow!("Failed to authenticate Mojang account"))?;
             if self
                 .requestor
                 .get_sq_id()
-                .await
                 .with_context(|| anyhow!("Failed to get SQ IDs."))?
             {
                 let answer = [
@@ -241,13 +229,11 @@ impl Sniper {
                 ];
                 self.requestor
                     .send_sq(answer)
-                    .await
                     .with_context(|| anyhow!("Failed to send SQ answers"))?;
             }
         } else {
             self.requestor
                 .authenticate_microsoft()
-                .await
                 .with_context(|| anyhow!("Failed to authenticate Microsoft account"))?;
         }
         Ok(())

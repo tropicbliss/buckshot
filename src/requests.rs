@@ -1,14 +1,15 @@
 use ansi_term::Colour::Red;
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
-use reqwest::{header::ACCEPT, Body, Client};
+use reqwest::{
+    blocking::{multipart::Form, Client},
+    header::ACCEPT,
+};
 use serde_json::{json, Value};
 use std::{
     io::{stdout, Write},
     time::Duration,
 };
-use tokio::fs::File;
-use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub struct Requests {
     client: Client,
@@ -37,7 +38,7 @@ impl Requests {
         })
     }
 
-    pub async fn authenticate_mojang(&mut self) -> Result<()> {
+    pub fn authenticate_mojang(&mut self) -> Result<()> {
         let post_json = json!({
             "username": self.email,
             "password": self.password
@@ -46,12 +47,11 @@ impl Requests {
             .client
             .post("https://authserver.mojang.com/authenticate")
             .json(&post_json)
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         match status.as_u16() {
             200 => {
-                let v: Value = serde_json::from_str(&res.text().await?)?;
+                let v: Value = serde_json::from_str(&res.text()?)?;
                 let bearer_token = v["accessToken"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
@@ -68,7 +68,7 @@ impl Requests {
         Ok(())
     }
 
-    pub async fn authenticate_microsoft(&mut self) -> Result<()> {
+    pub fn authenticate_microsoft(&mut self) -> Result<()> {
         let post_json = json!({
             "email": self.email,
             "password": self.password
@@ -77,12 +77,11 @@ impl Requests {
             .client
             .post("https://buckshot.tropicbliss.net/api/auth")
             .json(&post_json)
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         match status.as_u16() {
             200 => {
-                let body = res.text().await?;
+                let body = res.text()?;
                 let v: Value = serde_json::from_str(&body)?;
                 let bearer_token = v["bearer_token"]
                     .as_str()
@@ -91,7 +90,7 @@ impl Requests {
                 self.bearer_token = bearer_token;
             }
             400 => {
-                let body = res.text().await?;
+                let body = res.text()?;
                 let v: Value = serde_json::from_str(&body)?;
                 let err = v["detail"]
                     .as_str()
@@ -105,18 +104,17 @@ impl Requests {
         Ok(())
     }
 
-    pub async fn get_sq_id(&mut self) -> Result<bool> {
+    pub fn get_sq_id(&mut self) -> Result<bool> {
         let res = self
             .client
             .get("https://api.mojang.com/user/security/challenges")
             .bearer_auth(&self.bearer_token)
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         if status.as_u16() != 200 {
             bail!("HTTP {}", status);
         }
-        let body = res.text().await?;
+        let body = res.text()?;
         if body == "[]" {
             Ok(false)
         } else {
@@ -135,7 +133,7 @@ impl Requests {
         }
     }
 
-    pub async fn send_sq(&self, answer: [&String; 3]) -> Result<()> {
+    pub fn send_sq(&self, answer: [&String; 3]) -> Result<()> {
         if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
             bail!("One or more SQ answers not provided");
         }
@@ -158,8 +156,7 @@ impl Requests {
             .post("https://api.mojang.com/user/security/location")
             .bearer_auth(&self.bearer_token)
             .json(&post_body)
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         match status.as_u16() {
             200 => Ok(()),
@@ -168,14 +165,14 @@ impl Requests {
         }
     }
 
-    pub async fn check_name_availability_time(
+    pub fn check_name_availability_time(
         &self,
         username_to_snipe: &str,
     ) -> Result<Option<DateTime<Utc>>> {
         let url = format!("https://api.star.shopping/droptime/{}", username_to_snipe);
-        let res = self.client.get(url).send().await?;
+        let res = self.client.get(url).send()?;
         let status = res.status();
-        let body = res.text().await?;
+        let body = res.text()?;
         let v: Value = serde_json::from_str(&body)?;
         match status.as_u16() {
             200 => {
@@ -207,18 +204,17 @@ impl Requests {
         }
     }
 
-    pub async fn check_name_change_eligibility(&self) -> Result<()> {
+    pub fn check_name_change_eligibility(&self) -> Result<()> {
         let res = self
             .client
             .get("https://api.minecraftservices.com/minecraft/profile/namechange")
             .bearer_auth(&self.bearer_token)
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         if status.as_u16() != 200 {
             bail!("HTTP {}", status);
         }
-        let body = res.text().await?;
+        let body = res.text()?;
         let v: Value = serde_json::from_str(&body)?;
         let is_allowed = v["nameChangeAllowed"]
             .as_bool()
@@ -229,21 +225,14 @@ impl Requests {
         Ok(())
     }
 
-    pub async fn upload_skin(&self, path: &str, skin_model: String) -> Result<()> {
-        let img_file = File::open(path).await?;
-        let stream = FramedRead::new(img_file, BytesCodec::new());
-        let stream = Body::wrap_stream(stream);
-        let image_part = reqwest::multipart::Part::stream(stream);
-        let form = reqwest::multipart::Form::new()
-            .text("variant", skin_model)
-            .part("file", image_part);
+    pub fn upload_skin(&self, path: &str, skin_model: String) -> Result<()> {
+        let form = Form::new().text("variant", skin_model).file("file", path)?;
         let res = self
             .client
             .post("https://api.minecraftservices.com/minecraft/profile/skins")
             .bearer_auth(&self.bearer_token)
             .multipart(form)
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         if status.as_u16() != 200 {
             bail!("HTTP {}", status);
@@ -251,7 +240,7 @@ impl Requests {
         Ok(())
     }
 
-    pub async fn redeem_giftcode(&self, giftcode: &str) -> Result<()> {
+    pub fn redeem_giftcode(&self, giftcode: &str) -> Result<()> {
         let url = format!(
             "https://api.minecraftservices.com/productvoucher/{}",
             giftcode
@@ -261,8 +250,7 @@ impl Requests {
             .put(url)
             .bearer_auth(&self.bearer_token)
             .header(ACCEPT, "application/json")
-            .send()
-            .await?;
+            .send()?;
         let status = res.status();
         if status.as_u16() != 200 {
             bail!("HTTP {}", status);
