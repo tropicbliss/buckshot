@@ -110,7 +110,7 @@ impl Sniper {
                 self.requestor
                     .check_name_change_eligibility()
                     .await
-                    .with_context(|| anyhow!("Failed to get droptime"))?;
+                    .with_context(|| anyhow!("Failed to check name change eligibility"))?;
             }
             let snipe_status = self
                 .snipe(snipe_time)
