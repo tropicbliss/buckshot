@@ -2,7 +2,7 @@ use crate::{cli, config, requests, sockets};
 use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use console::{style, Emoji};
-use indicatif::ProgressBar
+use indicatif::ProgressBar;
 use std::{
     io::{stdout, Write},
     thread::sleep,
