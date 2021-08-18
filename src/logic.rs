@@ -2,7 +2,7 @@ use crate::{cli, config, requests, sockets};
 use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use console::{style, Emoji};
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::ProgressBar
 use std::{
     io::{stdout, Write},
     thread::sleep,
@@ -79,8 +79,6 @@ impl Sniper {
             }
             writeln!(stdout(), "{}Initialising...", HOURGLASS)?;
             let progress_bar = ProgressBar::new(100);
-            let progress_bar_style = ProgressStyle::default_bar().progress_chars("= ");
-            progress_bar.set_style(progress_bar_style);
             let snipe_time = if let Some(x) = self
                 .requestor
                 .check_name_availability_time(&self.name)
