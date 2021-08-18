@@ -67,18 +67,16 @@ async fn main() -> Result<()> {
     let email = config.account.email.clone();
     let password = config.account.password.clone();
     let requestor = requests::Requests::new(email, password)?;
-    let mut check_filter = true;
     let name_list = if let Some(username_to_snipe) = args.username_to_snipe {
         vec![username_to_snipe]
     } else if config.config.name_queue.is_empty() {
-        check_filter = false;
         vec![cli::get_username_choice().with_context(|| "Failed to get username choice")?]
     } else {
         config.config.name_queue.clone()
     };
     for (count, username) in name_list.into_iter().enumerate() {
         let name = username.trim().to_string();
-        if check_filter && !cli::username_filter_predicate(&name) {
+        if !cli::username_filter_predicate(&name) {
             writeln!(
                 stdout(),
                 "{}",
