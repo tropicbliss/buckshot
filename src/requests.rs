@@ -34,7 +34,7 @@ impl Requests {
         })
     }
 
-    pub fn authenticate_mojang(&mut self) -> Result<String> {
+    pub fn authenticate_mojang(&self) -> Result<String> {
         let post_json = json!({
             "username": self.email,
             "password": self.password
@@ -63,7 +63,7 @@ impl Requests {
         }
     }
 
-    pub fn authenticate_microsoft(&mut self) -> Result<String> {
+    pub fn authenticate_microsoft(&self) -> Result<String> {
         let post_json = json!({
             "email": self.email,
             "password": self.password
@@ -98,7 +98,7 @@ impl Requests {
         }
     }
 
-    pub fn get_questions(&mut self, bearer_token: &str) -> Result<Option<[i64; 3]>> {
+    pub fn get_questions(&self, bearer_token: &str) -> Result<Option<[i64; 3]>> {
         let res = self
             .client
             .get("https://api.mojang.com/user/security/challenges")

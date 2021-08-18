@@ -66,7 +66,7 @@ async fn main() -> Result<()> {
     };
     let email = config.account.email.clone();
     let password = config.account.password.clone();
-    let mut requestor = requests::Requests::new(email, password)?;
+    let requestor = requests::Requests::new(email, password)?;
     let mut check_filter = true;
     let name_list = if let Some(username_to_snipe) = args.username_to_snipe {
         vec![username_to_snipe]
@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
         check_filter = false;
         vec![cli::get_username_choice().with_context(|| "Failed to get username choice")?]
     } else {
-        config.config.name_queue
+        config.config.name_queue.clone()
     };
     for (count, username) in name_list.into_iter().enumerate() {
         let name = username.trim().to_string();
@@ -107,29 +107,7 @@ async fn main() -> Result<()> {
             progress_bar.abandon();
             continue;
         };
-        let mut bearer_token = if task == SnipeTask::Mojang {
-            let bearer_token = requestor
-                .authenticate_mojang()
-                .with_context(|| "Failed to authenticate Mojang account")?;
-            if let Some(questions) = requestor
-                .get_questions(&bearer_token)
-                .with_context(|| "Failed to get SQ IDs.")?
-            {
-                let answers = [
-                    &config.account.sq1,
-                    &config.account.sq2,
-                    &config.account.sq3,
-                ];
-                requestor
-                    .send_answers(&bearer_token, questions, answers)
-                    .with_context(|| "Failed to send SQ answers")?;
-            }
-            bearer_token
-        } else {
-            requestor
-                .authenticate_microsoft()
-                .with_context(|| "Failed to authenticate Microsoft account")?
-        };
+        let mut bearer_token = authenticate(&config, &requestor, &task)?;
         progress_bar.inc(25);
         if task == SnipeTask::Giftcode && count == 0 {
             if let Some(gc) = &args.giftcode {
@@ -197,29 +175,7 @@ async fn main() -> Result<()> {
                 Err(_) => std::time::Duration::ZERO,
             };
             sleep(sleep_duration);
-            bearer_token = if task == SnipeTask::Mojang {
-                let bearer_token = requestor
-                    .authenticate_mojang()
-                    .with_context(|| "Failed to authenticate Mojang account")?;
-                if let Some(questions) = requestor
-                    .get_questions(&bearer_token)
-                    .with_context(|| "Failed to get SQ IDs.")?
-                {
-                    let answers = [
-                        &config.account.sq1,
-                        &config.account.sq2,
-                        &config.account.sq3,
-                    ];
-                    requestor
-                        .send_answers(&bearer_token, questions, answers)
-                        .with_context(|| "Failed to send SQ answers")?;
-                }
-                bearer_token
-            } else {
-                requestor
-                    .authenticate_microsoft()
-                    .with_context(|| "Failed to authenticate Microsoft account")?
-            };
+            bearer_token = authenticate(&config, &requestor, &task)?;
         }
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         if requestor
@@ -263,4 +219,34 @@ async fn main() -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn authenticate(
+    config: &config::Config,
+    requestor: &requests::Requests,
+    task: &SnipeTask,
+) -> Result<String> {
+    if task == &SnipeTask::Mojang {
+        let bearer_token = requestor
+            .authenticate_mojang()
+            .with_context(|| "Failed to authenticate Mojang account")?;
+        if let Some(questions) = requestor
+            .get_questions(&bearer_token)
+            .with_context(|| "Failed to get SQ IDs.")?
+        {
+            let answers = [
+                &config.account.sq1,
+                &config.account.sq2,
+                &config.account.sq3,
+            ];
+            requestor
+                .send_answers(&bearer_token, questions, answers)
+                .with_context(|| "Failed to send SQ answers")?;
+        }
+        Ok(bearer_token)
+    } else {
+        requestor
+            .authenticate_microsoft()
+            .with_context(|| "Failed to authenticate Microsoft account")
+    }
 }
