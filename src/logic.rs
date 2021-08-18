@@ -49,7 +49,7 @@ impl Sniper {
 
     pub async fn run(&mut self) -> Result<()> {
         static HOURGLASS: Emoji<'_, '_> = Emoji("\u{231b} ", "");
-        static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-)");
+        static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-) ");
         let mut check_filter = true;
         let name_list = if let Some(username_to_snipe) = self.username_to_snipe.clone() {
             vec![username_to_snipe]
