@@ -125,14 +125,10 @@ impl Sniper {
                     .with_context(|| anyhow!("Failed to check name change eligibility"))?;
             }
             progress_bar.inc(25);
-            self.offset = if self.config.config.auto_offset {
-                self.executor
-                    .auto_offset_calculator()
-                    .await
-                    .with_context(|| anyhow!("Failed to calculate offset"))?
-            } else {
-                self.config.config.offset
-            };
+            self.get_offset()
+                .await
+                .with_context(|| anyhow!("Failed to get offset"))?;
+            progress_bar.inc(25);
             progress_bar.finish();
             writeln!(
                 stdout(),
@@ -257,6 +253,18 @@ impl Sniper {
                 .authenticate_microsoft()
                 .with_context(|| anyhow!("Failed to authenticate Microsoft account"))?;
         }
+        Ok(())
+    }
+
+    async fn get_offset(&mut self) -> Result<()> {
+        self.offset = if self.config.config.auto_offset {
+            self.executor
+                .auto_offset_calculator()
+                .await
+                .with_context(|| anyhow!("Failed to calculate offset"))?
+        } else {
+            self.config.config.offset
+        };
         Ok(())
     }
 }
