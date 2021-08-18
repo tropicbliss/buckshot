@@ -22,6 +22,8 @@ pub struct Sniper {
     giftcode: Option<String>,
     requestor: requests::Requests,
     name: String,
+    offset: i64,
+    executor: sockets::Executor,
 }
 
 impl Sniper {
@@ -40,6 +42,8 @@ impl Sniper {
             giftcode,
             requestor: requests::Requests::new(email, password)?,
             name: String::new(),
+            offset: 0,
+            executor: sockets::Executor::new(String::new(), false),
         })
     }
 
@@ -52,6 +56,7 @@ impl Sniper {
 
     async fn execute(&mut self) -> Result<()> {
         static HOURGLASS: Emoji<'_, '_> = Emoji("\u{231b} ", "");
+        static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-)");
         let mut check_filter = true;
         let name_list = if let Some(username_to_snipe) = self.username_to_snipe.clone() {
             vec![username_to_snipe]
@@ -64,6 +69,8 @@ impl Sniper {
         };
         for (count, username) in name_list.into_iter().enumerate() {
             self.name = username.trim().to_string();
+            let is_gc = self.task == SnipeTask::Giftcode;
+            self.executor = sockets::Executor::new(self.name.clone(), is_gc);
             if check_filter && !cli::username_filter_predicate(&self.name) {
                 writeln!(
                     stdout(),
@@ -88,7 +95,7 @@ impl Sniper {
                 .check_name_availability_time(&self.name)
                 .with_context(|| anyhow!("Failed to get droptime"))?
             {
-                progress_bar.inc(33);
+                progress_bar.inc(25);
                 x
             } else {
                 progress_bar.abandon();
@@ -96,7 +103,7 @@ impl Sniper {
             };
             self.setup()
                 .with_context(|| anyhow!("Failed to run authenticator"))?;
-            progress_bar.inc(33);
+            progress_bar.inc(25);
             if self.task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &self.giftcode {
                     self.requestor.redeem_giftcode(gc)?;
@@ -117,7 +124,17 @@ impl Sniper {
                     .check_name_change_eligibility()
                     .with_context(|| anyhow!("Failed to check name change eligibility"))?;
             }
+            progress_bar.inc(25);
+            self.offset = if self.config.config.auto_offset {
+                self.executor
+                    .auto_offset_calculator()
+                    .await
+                    .with_context(|| anyhow!("Failed to calculate offset"))?
+            } else {
+                self.config.config.offset
+            };
             progress_bar.finish();
+            writeln!(stdout(), "{}Your offset is: {} ms", SPARKLE, self.offset)?;
             let snipe_status = self
                 .snipe(snipe_time)
                 .await
@@ -136,27 +153,6 @@ impl Sniper {
     }
 
     async fn snipe(&mut self, droptime: DateTime<Utc>) -> Result<Option<bool>> {
-        const SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-)");
-        let is_gc = self.task == SnipeTask::Giftcode;
-        let executor = sockets::Executor::new(self.name.clone(), is_gc);
-        let offset = if self.config.config.auto_offset {
-            static STOPWATCH: Emoji<'_, '_> = Emoji("\u{23f1}\u{fe0f}  ", "");
-            writeln!(stdout(), "{}Measuring offset...", STOPWATCH)?;
-            let progress_bar = ProgressBar::new(100);
-            let progress_bar_style = ProgressStyle::default_bar()
-                .template("{wide_bar}")
-                .progress_chars("\u{2588} ");
-            progress_bar.set_style(progress_bar_style);
-            let offset = executor
-                .auto_offset_calculator()
-                .await
-                .with_context(|| anyhow!("Failed to calculate offset"))?;
-            progress_bar.finish();
-            offset
-        } else {
-            self.config.config.offset
-        };
-        writeln!(stdout(), "{}Your offset is: {} ms", SPARKLE, offset)?;
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
@@ -176,7 +172,7 @@ impl Sniper {
                 formatted_droptime
             )?;
         }
-        let snipe_time = droptime - Duration::milliseconds(offset);
+        let snipe_time = droptime - Duration::milliseconds(self.offset);
         let setup_time = snipe_time - Duration::minutes(720);
         if Utc::now() < setup_time {
             let sleep_duration = match (setup_time - Utc::now()).to_std() {
@@ -202,7 +198,8 @@ impl Sniper {
                 .with_context(|| anyhow!("Failed to check name change eligibility"))?;
         };
         writeln!(stdout(), "Setup complete")?;
-        let is_success = executor
+        let is_success = self
+            .executor
             .snipe_executor(
                 &self.requestor.bearer_token,
                 self.config.config.spread,
