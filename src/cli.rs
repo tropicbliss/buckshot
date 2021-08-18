@@ -4,23 +4,6 @@ use std::io;
 use std::io::{stdin, stdout, Write};
 
 pub fn print_splash_screen() -> Result<()> {
-    fn get_logo() -> String {
-        r#"______ _   _ _____  _   __ _____ _   _ _____ _____ 
-| ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|
-| |_/ / | | | /  \/| |/ / \ `--.| |_| | | | | | |  
-| ___ \ | | | |    |    \  `--. \  _  | | | | | |  
-| |_/ / |_| | \__/\| |\  \/\__/ / | | \ \_/ / | |  
-\____/ \___/ \____/\_| \_/\____/\_| |_/\___/  \_/  
-                                                   
-                                                   "#
-        .to_string()
-    }
-    fn get_credits() -> String {
-        "Developed by @tropicbliss#0408 on Discord".to_string()
-    }
-    fn free_sniper() -> String {
-        "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
-    }
     writeln!(stdout(), "{}", style(get_logo()).red())
         .with_context(|| anyhow!("Failed to print logo"))?;
     writeln!(stdout(), "{}", style(get_credits()).green())
@@ -51,4 +34,22 @@ pub fn username_filter_predicate(username: &str) -> bool {
         && username
             .chars()
             .all(|x| char::is_alphanumeric(x) || x == '_')
+}
+
+fn get_logo() -> String {
+    r#"______ _   _ _____  _   __ _____ _   _ _____ _____ 
+| ___ \ | | /  __ \| | / //  ___| | | |  _  |_   _|
+| |_/ / | | | /  \/| |/ / \ `--.| |_| | | | | | |  
+| ___ \ | | | |    |    \  `--. \  _  | | | | | |  
+| |_/ / |_| | \__/\| |\  \/\__/ / | | \ \_/ / | |  
+\____/ \___/ \____/\_| \_/\____/\_| |_/\___/  \_/  
+                                                   
+                                                   "#
+    .to_string()
+}
+fn get_credits() -> String {
+    "Developed by @tropicbliss#0408 on Discord".to_string()
+}
+fn free_sniper() -> String {
+    "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
 }
