@@ -1,6 +1,3 @@
-#![warn(clippy::pedantic)]
-#![allow(clippy::too_many_lines)]
-
 mod cli;
 mod config;
 mod requests;
