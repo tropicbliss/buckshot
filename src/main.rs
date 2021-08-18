@@ -43,14 +43,6 @@ async fn main() -> Result<()> {
     cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
     let config =
         config::Config::new(&args.config_name).with_context(|| "Failed to get config options")?;
-    let snipe_task = impl_chooser(&config).with_context(|| "Failed to choose sniping task")?;
-    logic::run(snipe_task, args.username_to_snipe, config, args.giftcode)
-        .await
-        .with_context(|| "Failed to snipe name")?;
-    Ok(())
-}
-
-fn impl_chooser(config: &config::Config) -> Result<Task> {
     let snipe_task = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
             writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
@@ -63,5 +55,8 @@ fn impl_chooser(config: &config::Config) -> Result<Task> {
     } else {
         Task::Microsoft
     };
-    Ok(snipe_task)
+    logic::run(snipe_task, args.username_to_snipe, config, args.giftcode)
+        .await
+        .with_context(|| "Failed to snipe name")?;
+    Ok(())
 }
