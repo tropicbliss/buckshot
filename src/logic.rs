@@ -48,13 +48,6 @@ impl Sniper {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        self.execute()
-            .await
-            .with_context(|| anyhow!("Failed stage 1 of pre-sniping setup"))?;
-        Ok(())
-    }
-
-    async fn execute(&mut self) -> Result<()> {
         static HOURGLASS: Emoji<'_, '_> = Emoji("\u{231b} ", "");
         static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-)");
         let mut check_filter = true;
@@ -86,9 +79,7 @@ impl Sniper {
             }
             writeln!(stdout(), "{}Initialising...", HOURGLASS)?;
             let progress_bar = ProgressBar::new(100);
-            let progress_bar_style = ProgressStyle::default_bar()
-                .template("{wide_bar}")
-                .progress_chars("\u{2588} ");
+            let progress_bar_style = ProgressStyle::default_bar().progress_chars("\u{2588} ");
             progress_bar.set_style(progress_bar_style);
             let snipe_time = if let Some(x) = self
                 .requestor
@@ -139,7 +130,7 @@ impl Sniper {
             let snipe_status = self
                 .snipe(snipe_time)
                 .await
-                .with_context(|| anyhow!("Failed stage 2 of pre-sniping setup"))?;
+                .with_context(|| anyhow!("Failed to snipe name"))?;
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
