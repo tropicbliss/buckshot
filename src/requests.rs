@@ -13,10 +13,8 @@ use std::{
 
 pub struct Requests {
     client: Client,
-    pub bearer_token: String,
     email: String,
     password: String,
-    sqid: [i64; 3],
 }
 
 impl Requests {
@@ -31,14 +29,12 @@ impl Requests {
                 .tcp_keepalive(Some(Duration::from_secs(5)))
                 .use_rustls_tls()
                 .build()?,
-            bearer_token: String::new(),
             email,
             password,
-            sqid: [0; 3],
         })
     }
 
-    pub fn authenticate_mojang(&mut self) -> Result<()> {
+    pub fn authenticate_mojang(&mut self) -> Result<String> {
         let post_json = json!({
             "username": self.email,
             "password": self.password
@@ -56,7 +52,7 @@ impl Requests {
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `accessToken` from JSON"))?
                     .to_string();
-                self.bearer_token = bearer_token;
+                Ok(bearer_token)
             }
             403 => {
                 bail!("Incorrect email or password");
@@ -65,10 +61,9 @@ impl Requests {
                 bail!("HTTP {}", status);
             }
         }
-        Ok(())
     }
 
-    pub fn authenticate_microsoft(&mut self) -> Result<()> {
+    pub fn authenticate_microsoft(&mut self) -> Result<String> {
         let post_json = json!({
             "email": self.email,
             "password": self.password
@@ -87,7 +82,7 @@ impl Requests {
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `bearer_token` from JSON"))?
                     .to_string();
-                self.bearer_token = bearer_token;
+                Ok(bearer_token)
             }
             400 => {
                 let body = res.text()?;
@@ -101,14 +96,13 @@ impl Requests {
                 bail!("HTTP {}", status);
             }
         }
-        Ok(())
     }
 
-    pub fn get_sq_id(&mut self) -> Result<bool> {
+    pub fn get_questions(&mut self, bearer_token: &str) -> Result<Option<[i64; 3]>> {
         let res = self
             .client
             .get("https://api.mojang.com/user/security/challenges")
-            .bearer_auth(&self.bearer_token)
+            .bearer_auth(bearer_token)
             .send()?;
         let status = res.status();
         if status.as_u16() != 200 {
@@ -116,7 +110,7 @@ impl Requests {
         }
         let body = res.text()?;
         if body == "[]" {
-            Ok(false)
+            Ok(None)
         } else {
             let v: Value = serde_json::from_str(&body)?;
             let mut sqid_array = [0; 3];
@@ -128,33 +122,37 @@ impl Requests {
                     )
                 })?;
             }
-            self.sqid = sqid_array;
-            Ok(true)
+            Ok(Some(sqid_array))
         }
     }
 
-    pub fn send_sq(&self, answer: [&String; 3]) -> Result<()> {
-        if answer[0].is_empty() || answer[1].is_empty() || answer[2].is_empty() {
+    pub fn send_answers(
+        &self,
+        bearer_token: &str,
+        questions: [i64; 3],
+        answers: [&String; 3],
+    ) -> Result<()> {
+        if answers[0].is_empty() || answers[1].is_empty() || answers[2].is_empty() {
             bail!("One or more SQ answers not provided");
         }
         let post_body = json!([
             {
-                "id": self.sqid[0],
-                "answer": answer[0],
+                "id": questions[0],
+                "answer": answers[0],
             },
             {
-                "id": self.sqid[1],
-                "answer": answer[1],
+                "id": questions[1],
+                "answer": answers[1],
             },
             {
-                "id": self.sqid[2],
-                "answer": answer[2]
+                "id": questions[2],
+                "answer": answers[2]
             }
         ]);
         let res = self
             .client
             .post("https://api.mojang.com/user/security/location")
-            .bearer_auth(&self.bearer_token)
+            .bearer_auth(bearer_token)
             .json(&post_body)
             .send()?;
         let status = res.status();
@@ -204,11 +202,11 @@ impl Requests {
         }
     }
 
-    pub fn check_name_change_eligibility(&self) -> Result<()> {
+    pub fn check_name_change_eligibility(&self, bearer_token: &str) -> Result<()> {
         let res = self
             .client
             .get("https://api.minecraftservices.com/minecraft/profile/namechange")
-            .bearer_auth(&self.bearer_token)
+            .bearer_auth(bearer_token)
             .send()?;
         let status = res.status();
         if status.as_u16() != 200 {
@@ -225,12 +223,12 @@ impl Requests {
         Ok(())
     }
 
-    pub fn upload_skin(&self, path: &str, skin_model: String) -> Result<()> {
+    pub fn upload_skin(&self, bearer_token: &str, path: &str, skin_model: String) -> Result<()> {
         let form = Form::new().text("variant", skin_model).file("file", path)?;
         let res = self
             .client
             .post("https://api.minecraftservices.com/minecraft/profile/skins")
-            .bearer_auth(&self.bearer_token)
+            .bearer_auth(bearer_token)
             .multipart(form)
             .send()?;
         let status = res.status();
@@ -240,7 +238,7 @@ impl Requests {
         Ok(())
     }
 
-    pub fn redeem_giftcode(&self, giftcode: &str) -> Result<()> {
+    pub fn redeem_giftcode(&self, bearer_token: &str, giftcode: &str) -> Result<()> {
         let url = format!(
             "https://api.minecraftservices.com/productvoucher/{}",
             giftcode
@@ -248,7 +246,7 @@ impl Requests {
         let res = self
             .client
             .put(url)
-            .bearer_auth(&self.bearer_token)
+            .bearer_auth(bearer_token)
             .header(ACCEPT, "application/json")
             .send()?;
         let status = res.status();

@@ -44,9 +44,9 @@ async fn main() -> Result<()> {
     let config =
         config::Config::new(&args.config_name).with_context(|| "Failed to get config options")?;
     let snipe_task = impl_chooser(&config).with_context(|| "Failed to choose sniping task")?;
-    let mut sniper = logic::Sniper::new(snipe_task, args.username_to_snipe, config, args.giftcode)
-        .with_context(|| "Failed to run sniper instance")?;
-    sniper.run().await.with_context(|| "Failed to snipe name")?;
+    logic::run(snipe_task, args.username_to_snipe, config, args.giftcode)
+        .await
+        .with_context(|| "Failed to snipe name")?;
     Ok(())
 }
 
