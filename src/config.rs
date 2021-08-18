@@ -1,5 +1,3 @@
-#![allow(clippy::struct_excessive_bools)]
-
 use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::fs::{read_to_string, write};
