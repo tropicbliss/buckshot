@@ -79,7 +79,9 @@ impl Sniper {
             }
             writeln!(stdout(), "{}Initialising...", HOURGLASS)?;
             let progress_bar = ProgressBar::new(100);
-            let progress_bar_style = ProgressStyle::default_bar().progress_chars("#>-");
+            let progress_bar_style = ProgressStyle::default_bar()
+                .progress_chars("= ")
+                .template("{wide_bar} {percent}%");
             progress_bar.set_style(progress_bar_style);
             let snipe_time = if let Some(x) = self
                 .requestor
