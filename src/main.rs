@@ -93,7 +93,7 @@ async fn main() -> Result<()> {
         let progress_bar = ProgressBar::new(100);
         let progress_bar_style = ProgressStyle::default_bar()
             .progress_chars("= ")
-            .template("{wide_bar} {percent}%");
+            .template("{bar:40} {percent}%");
         progress_bar.set_style(progress_bar_style);
         let droptime = if let Some(x) = requestor
             .check_name_availability_time(&name)
