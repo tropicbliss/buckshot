@@ -1,7 +1,8 @@
 use crate::{cli, config, requests, sockets};
-use ansi_term::Colour::{Green, Red};
 use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, Duration, Utc};
+use console::{style, Emoji};
+use indicatif::{ProgressBar, ProgressStyle};
 use std::{
     io::{stdout, Write},
     thread::sleep,
@@ -50,6 +51,7 @@ impl Sniper {
     }
 
     async fn execute(&mut self) -> Result<()> {
+        static HOURGLASS: Emoji<'_, '_> = Emoji("\u{231b} ", "");
         let mut check_filter = true;
         let name_list = if let Some(username_to_snipe) = self.username_to_snipe.clone() {
             vec![username_to_snipe]
@@ -66,41 +68,48 @@ impl Sniper {
                 writeln!(
                     stdout(),
                     "{}",
-                    Red.paint(format!("{} is an invalid name", self.name))
+                    style(format!("{} is an invalid name", self.name)).red()
                 )?;
                 continue;
             }
-            if count == 0 {
-                writeln!(stdout(), "Initialising...")?;
-            } else {
+            if count != 0 {
                 writeln!(stdout(), "Moving on to next name...")?;
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
                 sleep(std::time::Duration::from_secs(20));
             }
+            writeln!(stdout(), "{}Initialising...", HOURGLASS)?;
+            let progress_bar = ProgressBar::new(100);
+            let progress_bar_style = ProgressStyle::default_bar()
+                .template("{wide_bar}")
+                .progress_chars("\u{2588} ");
+            progress_bar.set_style(progress_bar_style);
             let snipe_time = if let Some(x) = self
                 .requestor
                 .check_name_availability_time(&self.name)
                 .with_context(|| anyhow!("Failed to get droptime"))?
             {
+                progress_bar.inc(33);
                 x
             } else {
+                progress_bar.abandon();
                 continue;
             };
             self.setup()
                 .with_context(|| anyhow!("Failed to run authenticator"))?;
+            progress_bar.inc(33);
             if self.task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &self.giftcode {
                     self.requestor.redeem_giftcode(gc)?;
                     writeln!(
                         stdout(),
                         "{}",
-                        Green.paint("Successfully redeemed giftcode")
+                        style("Successfully redeemed giftcode").green()
                     )?;
                 } else {
                     writeln!(
                         stdout(),
                         "{}",
-                        Red.paint("Reminder: You should redeem your giftcode before GC sniping")
+                        style("Reminder: You should redeem your giftcode before GC sniping").red()
                     )?;
                 }
             } else {
@@ -108,6 +117,7 @@ impl Sniper {
                     .check_name_change_eligibility()
                     .with_context(|| anyhow!("Failed to check name change eligibility"))?;
             }
+            progress_bar.finish();
             let snipe_status = self
                 .snipe(snipe_time)
                 .await
@@ -126,18 +136,27 @@ impl Sniper {
     }
 
     async fn snipe(&mut self, droptime: DateTime<Utc>) -> Result<Option<bool>> {
+        const SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-)");
         let is_gc = self.task == SnipeTask::Giftcode;
         let executor = sockets::Executor::new(self.name.clone(), is_gc);
         let offset = if self.config.config.auto_offset {
-            writeln!(stdout(), "Measuring offset...")?;
-            executor
+            static STOPWATCH: Emoji<'_, '_> = Emoji("\u{23f1}\u{fe0f}  ", "");
+            writeln!(stdout(), "{}Measuring offset...", STOPWATCH)?;
+            let progress_bar = ProgressBar::new(100);
+            let progress_bar_style = ProgressStyle::default_bar()
+                .template("{wide_bar}")
+                .progress_chars("\u{2588} ");
+            progress_bar.set_style(progress_bar_style);
+            let offset = executor
                 .auto_offset_calculator()
                 .await
-                .with_context(|| anyhow!("Failed to calculate offset"))?
+                .with_context(|| anyhow!("Failed to calculate offset"))?;
+            progress_bar.finish();
+            offset
         } else {
             self.config.config.offset
         };
-        writeln!(stdout(), "Your offset is: {} ms", offset)?;
+        writeln!(stdout(), "{}Your offset is: {} ms", SPARKLE, offset)?;
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
@@ -168,7 +187,7 @@ impl Sniper {
             self.setup()
                 .with_context(|| anyhow!("Failed to run authenticator"))?;
         }
-        writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
+        writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         if self
             .requestor
             .check_name_availability_time(&self.name)
@@ -195,7 +214,7 @@ impl Sniper {
             writeln!(
                 stdout(),
                 "{}",
-                Green.paint(format!("Successfully sniped {}!", self.name))
+                style(format!("Successfully sniped {}!", self.name)).green()
             )?;
             if self.config.config.change_skin {
                 self.requestor
@@ -204,7 +223,7 @@ impl Sniper {
                         self.config.config.skin_model.clone(),
                     )
                     .with_context(|| anyhow!("Failed to upload skin"))?;
-                writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
+                writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
             }
         } else {
             writeln!(stdout(), "Failed to snipe {}", self.name)?;

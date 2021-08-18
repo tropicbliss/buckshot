@@ -1,5 +1,5 @@
-use ansi_term::Colour::{Green, Red};
 use anyhow::{anyhow, Context, Result};
+use console::style;
 use std::io;
 use std::io::{stdin, stdout, Write};
 
@@ -21,11 +21,11 @@ pub fn print_splash_screen() -> Result<()> {
     fn free_sniper() -> String {
         "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
     }
-    writeln!(stdout(), "{}", Red.paint(get_logo()))
+    writeln!(stdout(), "{}", style(get_logo()).red())
         .with_context(|| anyhow!("Failed to print logo"))?;
-    writeln!(stdout(), "{}", Green.paint(get_credits()))
+    writeln!(stdout(), "{}", style(get_credits()).green())
         .with_context(|| anyhow!("Failed to print credits"))?;
-    writeln!(stdout(), "{}", Green.paint(free_sniper()))
+    writeln!(stdout(), "{}", style(free_sniper()).green())
         .with_context(|| anyhow!("Failed to print free sniper prompt"))?;
     Ok(())
 }

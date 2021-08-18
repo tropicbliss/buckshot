@@ -1,6 +1,6 @@
-use ansi_term::Colour::Red;
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, TimeZone, Utc};
+use console::style;
 use reqwest::{
     blocking::{multipart::Form, Client},
     header::ACCEPT,
@@ -196,7 +196,7 @@ impl Requests {
                 writeln!(
                     stdout(),
                     "{}",
-                    Red.paint(format!("Failed to get droptime: {}", reason))
+                    style(format!("Failed to get droptime: {}", reason)).red()
                 )?;
                 Ok(None)
             }

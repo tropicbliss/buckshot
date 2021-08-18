@@ -1,6 +1,6 @@
-use ansi_term::Colour::{Cyan, Green, Red};
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
+use console::style;
 use serde_json::json;
 use std::convert::TryFrom;
 use std::io::{stdout, Write};
@@ -109,9 +109,9 @@ impl Executor {
                             writeln!(
                                 stdout(),
                                 "[{}] {} @ {}",
-                                Green.paint("success"),
-                                Green.paint("200"),
-                                Cyan.paint(format!("{}", formatted_res_time))
+                                style("success").green(),
+                                style("200").green(),
+                                style(format!("{}", formatted_res_time)).cyan()
                             )?;
                             Ok(true)
                         }
@@ -119,9 +119,9 @@ impl Executor {
                             writeln!(
                                 stdout(),
                                 "[{}] {} @ {}",
-                                Red.paint("fail"),
-                                Red.paint(format!("{}", status)),
-                                Cyan.paint(format!("{}", formatted_res_time))
+                                style("fail").red(),
+                                style(format!("{}", status)).red(),
+                                style(format!("{}", formatted_res_time)).cyan()
                             )?;
                             Ok(false)
                         }

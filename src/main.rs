@@ -6,8 +6,8 @@ mod logic;
 mod requests;
 mod sockets;
 
-use ansi_term::Colour::Red;
 use anyhow::{Context, Result};
+use console::style;
 use std::io::{stdout, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
 fn impl_chooser(config: &config::Config) -> Result<Task> {
     let snipe_task = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
-            writeln!(stdout(), "{}", Red.paint("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead"))?;
+            writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
             Task::Giftcode
         } else {
             Task::Mojang
