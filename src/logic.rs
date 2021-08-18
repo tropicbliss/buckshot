@@ -134,7 +134,12 @@ impl Sniper {
                 self.config.config.offset
             };
             progress_bar.finish();
-            writeln!(stdout(), "{}Your offset is: {} ms", SPARKLE, self.offset)?;
+            writeln!(
+                stdout(),
+                "{}Initialisation complete. Your offset is: {} ms",
+                SPARKLE,
+                self.offset
+            )?;
             let snipe_status = self
                 .snipe(snipe_time)
                 .await
