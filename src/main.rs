@@ -1,5 +1,5 @@
-#![warn(clippy::pedantic)]
 #![allow(clippy::too_many_lines)]
+#![warn(clippy::pedantic)]
 
 mod cli;
 mod config;
