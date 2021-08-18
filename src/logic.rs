@@ -18,11 +18,22 @@ pub enum SnipeTask {
 }
 
 pub async fn run(
-    task: SnipeTask,
     username_to_snipe: Option<String>,
     config: config::Config,
     giftcode: Option<String>,
 ) -> Result<()> {
+    let task = if !config.config.microsoft_auth {
+        if config.config.gc_snipe {
+            writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
+            SnipeTask::Giftcode
+        } else {
+            SnipeTask::Mojang
+        }
+    } else if config.config.gc_snipe {
+        SnipeTask::Giftcode
+    } else {
+        SnipeTask::Microsoft
+    };
     static HOURGLASS: Emoji<'_, '_> = Emoji("\u{231b} ", "");
     static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-) ");
     let email = config.account.email.clone();

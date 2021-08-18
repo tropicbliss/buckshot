@@ -7,8 +7,6 @@ mod requests;
 mod sockets;
 
 use anyhow::{Context, Result};
-use console::style;
-use std::io::{stdout, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -29,8 +27,6 @@ struct Args {
     giftcode: Option<String>,
 }
 
-type Task = logic::SnipeTask;
-
 impl Args {
     pub fn new() -> Self {
         Self::from_args()
@@ -43,19 +39,7 @@ async fn main() -> Result<()> {
     cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
     let config =
         config::Config::new(&args.config_name).with_context(|| "Failed to get config options")?;
-    let snipe_task = if !config.config.microsoft_auth {
-        if config.config.gc_snipe {
-            writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
-            Task::Giftcode
-        } else {
-            Task::Mojang
-        }
-    } else if config.config.gc_snipe {
-        Task::Giftcode
-    } else {
-        Task::Microsoft
-    };
-    logic::run(snipe_task, args.username_to_snipe, config, args.giftcode)
+    logic::run(args.username_to_snipe, config, args.giftcode)
         .await
         .with_context(|| "Failed to snipe name")?;
     Ok(())
