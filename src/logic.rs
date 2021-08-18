@@ -127,10 +127,7 @@ impl Sniper {
                 SPARKLE,
                 self.offset
             )?;
-            let snipe_status = self
-                .snipe(snipe_time)
-                .await
-                .with_context(|| anyhow!("Failed to snipe name"))?;
+            let snipe_status = self.snipe(snipe_time).await?;
             let snipe_status = match snipe_status {
                 Some(x) => x,
                 None => {
