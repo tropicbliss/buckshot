@@ -49,9 +49,9 @@ async fn main() -> Result<()> {
     static HOURGLASS: Emoji<'_, '_> = Emoji("\u{231b} ", "");
     static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-) ");
     let args = Args::new();
-    cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
     let config =
         config::Config::new(&args.config_name).with_context(|| "Failed to get config options")?;
+    cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
     let task = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
             writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
