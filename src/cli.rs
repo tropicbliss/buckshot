@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 use console::style;
-use std::io;
-use std::io::{stdin, stdout, Write};
+use dialoguer::Input;
+use std::io::{stdout, Write};
 
 pub fn print_splash_screen() -> Result<()> {
     writeln!(stdout(), "{}", style(get_logo()).red())
@@ -15,12 +15,10 @@ pub fn print_splash_screen() -> Result<()> {
 
 pub fn get_username_choice() -> Result<String> {
     Ok(loop {
-        let mut input = String::new();
-        write!(stdout(), "What name would you like to snipe: ")?;
-        Write::flush(&mut io::stdout())?;
-        stdin().read_line(&mut input)?;
-        let input = input.trim();
-        if username_filter_predicate(input) {
+        let input: String = Input::new()
+            .with_prompt("What name would you like to snipe: ")
+            .interact_text()?;
+        if username_filter_predicate(&input) {
             break input.to_string();
         }
         writeln!(stdout(), "Invalid username entered, please try again")?;
