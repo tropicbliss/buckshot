@@ -45,9 +45,11 @@ fn get_logo() -> String {
                                                    "#
     .to_string()
 }
+
 fn get_credits() -> String {
     "Developed by @tropicbliss#0408 on Discord".to_string()
 }
+
 fn free_sniper() -> String {
     "THIS SNIPER IS 100% FREE ON GITHUB".to_string()
 }
