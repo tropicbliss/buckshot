@@ -27,8 +27,8 @@ pub fn get_username_choice() -> Result<String> {
 }
 
 pub fn username_filter_predicate(username: &str) -> bool {
-    username.len() > 2
-        && username.len() < 17
+    username.len() >= 3
+        && username.len() <= 16
         && username
             .chars()
             .all(|x| char::is_alphanumeric(x) || x == '_')
