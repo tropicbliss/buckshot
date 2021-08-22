@@ -142,7 +142,7 @@ async fn main() -> Result<()> {
             config.config.offset
         };
         progress_bar.inc(25);
-        progress_bar.finish();
+        progress_bar.finish_with_message("done");
         writeln!(
             stdout(),
             "{}Initialisation complete. Your offset is: {} ms",
@@ -176,21 +176,21 @@ async fn main() -> Result<()> {
                 Err(_) => std::time::Duration::ZERO,
             };
             sleep(sleep_duration);
+            if requestor
+                .check_name_availability_time(&name)
+                .with_context(|| "Failed to get droptime")?
+                .is_none()
+            {
+                continue;
+            }
             bearer_token = authenticate(&answers, &requestor, &task)?;
+            if task != SnipeTask::Giftcode {
+                requestor
+                    .check_name_change_eligibility(&bearer_token)
+                    .with_context(|| "Failed to check name change eligibility")?;
+            };
         }
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
-        if requestor
-            .check_name_availability_time(&name)
-            .with_context(|| "Failed to get droptime")?
-            .is_none()
-        {
-            continue;
-        }
-        if task != SnipeTask::Giftcode {
-            requestor
-                .check_name_change_eligibility(&bearer_token)
-                .with_context(|| "Failed to check name change eligibility")?;
-        };
         writeln!(stdout(), "Setup complete")?;
         let is_success = executor
             .snipe_executor(&bearer_token, config.config.spread, snipe_time)
