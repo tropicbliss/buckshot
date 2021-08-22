@@ -19,6 +19,9 @@ pub struct Requests<'a> {
 
 impl<'a> Requests<'a> {
     pub fn new(email: &'a str, password: &'a str) -> Result<Self> {
+        if email.is_empty() || password.is_empty() {
+            bail!("No email or password provided");
+        }
         Ok(Self {
             client: Client::builder()
                 .timeout(Duration::from_secs(5))
@@ -125,8 +128,11 @@ impl<'a> Requests<'a> {
         &self,
         bearer_token: &str,
         questions: [i64; 3],
-        answers: &[String; 3],
+        answers: &[&String; 3],
     ) -> Result<()> {
+        if answers[0].is_empty() || answers[1].is_empty() || answers[2].is_empty() {
+            bail!("One or more SQ answers not provided");
+        }
         let post_body = json!([
             {
                 "id": questions[0],

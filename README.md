@@ -4,12 +4,16 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 ## What it doesn't promise
 
-- Begineer-friendly (Setting up `config.toml` requires knowledge on TOML)
-- Highly configurable (this sniper is highly opinionated and will do what it thinks is best)
-- A thriving community (no Discord server and I don't feel like creating one)
-- Sniping with multiple accounts (I really can't find a way to implement this in a TOML file that I feel 100% satisfied with)
+I will try to be as honest as I can in this section as to why you shouldn't use this sniper (forgive my bluntness).
 
-## Features
+- Begineer-friendly (Setting up `config.toml` requires knowledge on TOML)
+- Highly configurable (this sniper is highly opinionated and will do what it thinks is best, mostly because it is tailored to my own personal use)
+- A thriving community (no Discord server and I don't feel like creating one)
+- Sniping with multiple accounts (I can't be bothered to add more features to this sniper)
+- Adding more features in the future (everything including this sniper's website is a learning project. I don't care if you use it or not, I make no money off off it so improving it is a waste of my time)
+- Lack of transparency when authenticating Microsoft accounts (porting over the code for authenticating a Microsoft account to this sniper is a chore, so I simply implemented an API to do this for me. For an end-user you have no idea what goes behind the scenes of my API, but I assure you I have zero interest in stealing your account's credentials. If you don't trust the process however, you probably should not use this sniper. And that is not without lack of effort. I tried to port over the [code](https://github.com/tropicbliss/xboxlive-auth) for authenticating Microsoft accounts. However, it does not work for all platforms and feels quite janky so I felt that it is not ready for production)
+
+## Features (why you should use this sniper)
 
 - Mojang account sniping
 - Microsoft account sniping
@@ -19,7 +23,7 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Change skin on snipe
 - Name queueing
 - Low latency by opening the TCP connections before sending requests
-- High requests/second by bypassing HTTP overhead (thanks arceus-sniper for yoinking your feature list phrasing)
+- High requests/second by bypassing HTTP overhead (thanks [arceus-sniper](https://github.com/aquild/arceus) for yoinking your feature list phrasing)
 
 ## Setup
 

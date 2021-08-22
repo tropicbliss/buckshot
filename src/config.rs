@@ -14,7 +14,9 @@ pub struct Config {
 pub struct Account {
     pub email: String,
     pub password: String,
-    pub sq_ans: Option<[String; 3]>,
+    pub sq1: String,
+    pub sq2: String,
+    pub sq3: String,
 }
 
 #[derive(Deserialize)]
@@ -58,8 +60,10 @@ fn get_default_config() -> String {
     r#"[account]
 email = "test@example.com"
 password = "test"
-sq_ans = ["Foo", "Bar", "Baz"]
-
+# Leave the rest empty if you do not have security questions
+sq1 = "Foo"
+sq2 = "Bar"
+sq3 = "Baz"
 [config]
 offset = 0
 auto_offset = false
@@ -72,6 +76,8 @@ skin_model = "slim"
 skin_filename = "example.png"
 # Name queueing (allows you to snipe multiple names sequentially)
 # Note: This is an optional feature, leave it as it is if you only want to snipe one name
+# Example:
+# name_queue = ["Marc", "Dream"]
 name_queue = []
 "#
     .to_string()
