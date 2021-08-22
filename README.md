@@ -7,6 +7,7 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Begineer-friendly (Setting up `config.toml` requires knowledge on TOML)
 - Highly configurable (this sniper is highly opinionated and will do what it thinks is best)
 - A thriving community (no Discord server and I don't feel like creating one)
+- Sniping with multiple accounts (I really can't find a way to implement this in a TOML file that I feel 100% satisfied with)
 
 ## Features
 
