@@ -3,7 +3,7 @@ mod config;
 mod requests;
 mod sockets;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
 use console::{style, Emoji};
 use indicatif::{ProgressBar, ProgressStyle};
@@ -103,12 +103,7 @@ async fn main() -> Result<()> {
             progress_bar.abandon();
             continue;
         };
-        let answers = [
-            &config.account.sq1,
-            &config.account.sq2,
-            &config.account.sq3,
-        ];
-        let mut bearer_token = authenticate(&answers, &requestor, &task)?;
+        let mut bearer_token = authenticate(&config.account.sq_ans, &requestor, &task)?;
         progress_bar.inc(25);
         if task == SnipeTask::Giftcode && count == 0 {
             if let Some(gc) = &args.giftcode {
@@ -183,7 +178,7 @@ async fn main() -> Result<()> {
             {
                 continue;
             }
-            bearer_token = authenticate(&answers, &requestor, &task)?;
+            bearer_token = authenticate(&config.account.sq_ans, &requestor, &task)?;
             if task != SnipeTask::Giftcode {
                 requestor
                     .check_name_change_eligibility(&bearer_token)
@@ -223,7 +218,7 @@ async fn main() -> Result<()> {
 }
 
 fn authenticate(
-    answers: &[&String; 3],
+    answers: &Option<[String; 3]>,
     requestor: &requests::Requests,
     task: &SnipeTask,
 ) -> Result<String> {
@@ -235,6 +230,10 @@ fn authenticate(
             .get_questions(&bearer_token)
             .with_context(|| "Failed to get SQ IDs.")?
         {
+            let answers = match answers {
+                Some(x) => x,
+                None => bail!("No SQ answers provided"),
+            };
             requestor
                 .send_answers(&bearer_token, questions, answers)
                 .with_context(|| "Failed to send SQ answers")?;
