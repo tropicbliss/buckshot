@@ -28,7 +28,7 @@ pub struct Others {
     pub gc_snipe: bool,
     pub change_skin: bool,
     pub skin_model: String,
-    pub skin_filename: String,
+    pub skin_path: String,
     pub name_queue: Vec<String>,
 }
 
@@ -37,11 +37,6 @@ impl Config {
         match read_to_string(&config_path) {
             Ok(s) => {
                 let config: Self = toml::from_str(&s)?;
-                if !(config.config.skin_model.to_lowercase() == "slim"
-                    || config.config.skin_model.to_lowercase() == "classic")
-                {
-                    bail!("Invalid skin variant");
-                }
                 Ok(config)
             }
             Err(e) if e.kind() == NotFound => {

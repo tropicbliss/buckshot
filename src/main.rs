@@ -24,7 +24,7 @@ struct Args {
 
     /// Name of config file (must be a TOML file)
     #[structopt(short, long, default_value = "config.toml")]
-    config_name: PathBuf,
+    config_path: PathBuf,
 
     /// An optional argument for specifying the giftcode if you want the sniper to redeem the giftcode for you
     #[structopt(short, long)]
@@ -50,7 +50,7 @@ async fn main() -> Result<()> {
     static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-) ");
     let args = Args::new();
     let config =
-        config::Config::new(&args.config_name).with_context(|| "Failed to get config options")?;
+        config::Config::new(&args.config_path).with_context(|| "Failed to get config options")?;
     cli::print_splash_screen().with_context(|| "Failed to print splash screen")?;
     let task = if !config.config.microsoft_auth {
         if config.config.gc_snipe {
@@ -206,7 +206,7 @@ async fn main() -> Result<()> {
                 requestor
                     .upload_skin(
                         &bearer_token,
-                        &config.config.skin_filename,
+                        &config.config.skin_path,
                         config.config.skin_model.clone(),
                     )
                     .with_context(|| "Failed to upload skin")?;

@@ -221,8 +221,21 @@ impl<'a> Requests<'a> {
         Ok(())
     }
 
-    pub fn upload_skin(&self, bearer_token: &str, path: &str, skin_model: String) -> Result<()> {
-        let form = Form::new().text("variant", skin_model).file("file", path)?;
+    pub fn upload_skin(
+        &self,
+        bearer_token: &str,
+        skin_path: &str,
+        skin_model: String,
+    ) -> Result<()> {
+        if !(skin_model.to_lowercase() == "slim" || skin_model.to_lowercase() == "classic") {
+            bail!("Invalid skin model");
+        }
+        if skin_path.is_empty() {
+            bail!("No skin file path provided")
+        }
+        let form = Form::new()
+            .text("variant", skin_model)
+            .file("file", skin_path)?;
         let res = self
             .client
             .post("https://api.minecraftservices.com/minecraft/profile/skins")
