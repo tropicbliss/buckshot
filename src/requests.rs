@@ -231,7 +231,7 @@ impl<'a> Requests<'a> {
             bail!("Invalid skin model");
         }
         if skin_path.is_empty() {
-            bail!("No skin file path provided")
+            bail!("No skin path provided")
         }
         let form = Form::new()
             .text("variant", skin_model)
