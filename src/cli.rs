@@ -19,7 +19,7 @@ pub fn get_username_choice() -> Result<String> {
             .with_prompt("What name would you like to snipe: ")
             .interact_text()?;
         if username_filter_predicate(&input) {
-            break input.to_string();
+            break input;
         }
         writeln!(stdout(), "Invalid username entered, please try again")?;
         continue;
