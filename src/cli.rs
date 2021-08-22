@@ -16,7 +16,7 @@ pub fn print_splash_screen() -> Result<()> {
 pub fn get_username_choice() -> Result<String> {
     Ok(loop {
         let input: String = Input::new()
-            .with_prompt("What name would you like to snipe: ")
+            .with_prompt("What name would you like to snipe")
             .interact_text()?;
         if username_filter_predicate(&input) {
             break input;

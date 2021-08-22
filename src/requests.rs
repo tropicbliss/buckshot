@@ -26,7 +26,6 @@ impl<'a> Requests<'a> {
             client: Client::builder()
                 .timeout(Duration::from_secs(5))
                 .user_agent("Sniper")
-                .tcp_keepalive(Some(Duration::from_secs(5)))
                 .build()?,
             email,
             password,
