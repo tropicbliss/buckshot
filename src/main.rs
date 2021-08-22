@@ -206,7 +206,7 @@ async fn main() -> Result<()> {
                 requestor
                     .upload_skin(
                         &bearer_token,
-                        &config.config.skin_path,
+                        &config.config.skin_filename,
                         config.config.skin_model.clone(),
                     )
                     .with_context(|| "Failed to upload skin")?;
