@@ -27,7 +27,6 @@ impl<'a> Requests<'a> {
                 .timeout(Duration::from_secs(5))
                 .user_agent("Sniper")
                 .tcp_keepalive(Some(Duration::from_secs(5)))
-                .use_rustls_tls()
                 .build()?,
             email,
             password,

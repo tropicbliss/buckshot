@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
 use console::style;
+use native_tls::TlsConnector;
 use serde_json::json;
 use std::convert::TryFrom;
 use std::io::{stdout, Write};
@@ -11,7 +12,6 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
-use tokio_rustls::{rustls::ClientConfig, webpki::DNSNameRef, TlsConnector};
 
 pub struct Executor<'a> {
     name: &'a str,
@@ -32,22 +32,18 @@ impl<'a> Executor<'a> {
             .ok_or_else(|| anyhow!("Invalid socket address"))?;
         let payload = if self.is_gc {
             let post_body = json!({ "profileName": self.name }).to_string();
-            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n\r\n{}", post_body).into_bytes()
+            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\n\r\n{}", post_body).into_bytes()
         } else {
-            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer token\r\n", self.name).into_bytes()
+            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\n", self.name).into_bytes()
         };
-        let mut config = ClientConfig::new();
-        config
-            .root_store
-            .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-        let connector = TlsConnector::from(Arc::new(config));
-        let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com")?;
-        let stream = TcpStream::connect(&addr).await?;
-        let mut stream = connector.connect(domain, stream).await?;
-        stream.write_all(&payload).await?;
+        let socket = TcpStream::connect(&addr).await?;
+        let cx = TlsConnector::builder().build()?;
+        let cx = tokio_native_tls::TlsConnector::from(cx);
+        let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
+        socket.write_all(&payload).await?;
         let before = Instant::now();
-        stream.write_all(b"\r\n").await?;
-        stream.read_exact(&mut buf).await?;
+        socket.write_all(b"\r\n").await?;
+        socket.read_exact(&mut buf).await?;
         let after = Instant::now();
         Ok((i64::try_from((after - before).as_millis())? - SERVER_RES_TIME) / 2)
     }
@@ -59,29 +55,26 @@ impl<'a> Executor<'a> {
         snipe_time: DateTime<Utc>,
     ) -> Result<bool> {
         let mut is_success = false;
-        let payload = if self.is_gc {
-            let post_body = json!({ "profileName": self.name }).to_string();
-            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAccept: application/json\r\nAuthorization: Bearer {}\r\n\r\n{}", bearer_token, post_body).into_bytes()
-        } else {
-            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nAuthorization: Bearer {}\r\n", self.name, bearer_token).into_bytes()
-        };
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut spread = 0;
+        let payload = if self.is_gc {
+            let post_body = json!({ "profileName": self.name }).to_string();
+            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAccept: application/json\r\nAuthorization: Bearer {}\r\n\r\n{}", bearer_token, post_body).into_bytes()
+        } else {
+            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\n", self.name, bearer_token).into_bytes()
+        };
+        let payload = Arc::new(payload);
         let addr = "api.minecraftservices.com:443"
             .to_socket_addrs()?
             .next()
             .ok_or_else(|| anyhow!("Invalid socket address"))?;
-        let data = Arc::new(payload);
-        let mut config = ClientConfig::new();
-        config
-            .root_store
-            .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-        let connector = Arc::new(TlsConnector::from(Arc::new(config)));
-        let domain = DNSNameRef::try_from_ascii_str("api.minecraftservices.com")?;
+        let cx = TlsConnector::builder().build()?;
+        let cx = tokio_native_tls::TlsConnector::from(cx);
+        let cx = Arc::new(cx);
         let handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> = (0..req_count)
             .map(|_| {
-                let connector = Arc::clone(&connector);
-                let data = Arc::clone(&data);
+                let cx = Arc::clone(&cx);
+                let payload = Arc::clone(&payload);
                 let handle = tokio::task::spawn(async move {
                     let mut buf = [0; 12];
                     let snipe_time = snipe_time + Duration::milliseconds(spread);
@@ -91,16 +84,16 @@ impl<'a> Executor<'a> {
                         Err(_) => std::time::Duration::ZERO,
                     };
                     sleep(sleep_duration).await;
-                    let stream = TcpStream::connect(&addr).await?;
-                    let mut stream = connector.connect(domain, stream).await?;
-                    stream.write_all(&data).await?;
+                    let socket = TcpStream::connect(&addr).await?;
+                    let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
+                    socket.write_all(&payload).await?;
                     let sleep_duration = match (handshake_time - Utc::now()).to_std() {
                         Ok(x) => x,
                         Err(_) => std::time::Duration::ZERO,
                     };
                     sleep(sleep_duration).await;
-                    stream.write_all(b"\r\n").await?;
-                    stream.read_exact(&mut buf).await?;
+                    socket.write_all(b"\r\n").await?;
+                    socket.read_exact(&mut buf).await?;
                     let formatted_res_time = Utc::now().format("%F %T%.6f");
                     let res = String::from_utf8_lossy(&buf[..]);
                     let status: u16 = res[9..].parse()?;
