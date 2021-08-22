@@ -129,7 +129,7 @@ impl<'a> Requests<'a> {
         &self,
         bearer_token: &str,
         questions: [i64; 3],
-        answers: [&String; 3],
+        answers: &[&String; 3],
     ) -> Result<()> {
         if answers[0].is_empty() || answers[1].is_empty() || answers[2].is_empty() {
             bail!("One or more SQ answers not provided");

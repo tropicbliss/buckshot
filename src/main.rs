@@ -70,7 +70,7 @@ async fn main() -> Result<()> {
     } else if config.config.name_queue.is_empty() {
         vec![cli::get_username_choice().with_context(|| "Failed to get username choice")?]
     } else {
-        config.config.name_queue.clone()
+        config.config.name_queue
     };
     for (count, username) in name_list.into_iter().enumerate() {
         let name = username.trim().to_string();
@@ -103,7 +103,12 @@ async fn main() -> Result<()> {
             progress_bar.abandon();
             continue;
         };
-        let mut bearer_token = authenticate(&config, &requestor, &task)?;
+        let answers = [
+            &config.account.sq1,
+            &config.account.sq2,
+            &config.account.sq3,
+        ];
+        let mut bearer_token = authenticate(&answers, &requestor, &task)?;
         progress_bar.inc(25);
         if task == SnipeTask::Giftcode && count == 0 {
             if let Some(gc) = &args.giftcode {
@@ -171,7 +176,7 @@ async fn main() -> Result<()> {
                 Err(_) => std::time::Duration::ZERO,
             };
             sleep(sleep_duration);
-            bearer_token = authenticate(&config, &requestor, &task)?;
+            bearer_token = authenticate(&answers, &requestor, &task)?;
         }
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         if requestor
@@ -218,7 +223,7 @@ async fn main() -> Result<()> {
 }
 
 fn authenticate(
-    config: &config::Config,
+    answers: &[&String; 3],
     requestor: &requests::Requests,
     task: &SnipeTask,
 ) -> Result<String> {
@@ -230,11 +235,6 @@ fn authenticate(
             .get_questions(&bearer_token)
             .with_context(|| "Failed to get SQ IDs.")?
         {
-            let answers = [
-                &config.account.sq1,
-                &config.account.sq2,
-                &config.account.sq3,
-            ];
             requestor
                 .send_answers(&bearer_token, questions, answers)
                 .with_context(|| "Failed to send SQ answers")?;
