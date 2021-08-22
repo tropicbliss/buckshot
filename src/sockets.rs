@@ -32,7 +32,7 @@ impl<'a> Executor<'a> {
             .ok_or_else(|| anyhow!("Invalid socket address"))?;
         let payload = if self.is_gc {
             let post_body = json!({ "profileName": self.name }).to_string();
-            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\n\r\n{}", post_body).into_bytes()
+            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAccept: application/json\r\nAuthorization: Bearer token\r\n\r\n{}", post_body).into_bytes()
         } else {
             format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\n", self.name).into_bytes()
         };
