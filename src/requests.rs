@@ -19,9 +19,6 @@ pub struct Requests<'a> {
 
 impl<'a> Requests<'a> {
     pub fn new(email: &'a str, password: &'a str) -> Result<Self> {
-        if email.is_empty() || password.is_empty() {
-            bail!("No email or password provided");
-        }
         Ok(Self {
             client: Client::builder()
                 .timeout(Duration::from_secs(5))
