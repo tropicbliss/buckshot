@@ -188,7 +188,7 @@ async fn main() -> Result<()> {
                 requestor
                     .check_name_change_eligibility(&bearer_token)
                     .with_context(|| "Failed to check name change eligibility")?;
-            };
+            }
         }
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         writeln!(stdout(), "Setup complete")?;
