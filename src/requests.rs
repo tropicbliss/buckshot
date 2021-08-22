@@ -11,14 +11,14 @@ use std::{
     time::Duration,
 };
 
-pub struct Requests {
+pub struct Requests<'a> {
     client: Client,
-    email: String,
-    password: String,
+    email: &'a str,
+    password: &'a str,
 }
 
-impl Requests {
-    pub fn new(email: String, password: String) -> Result<Self> {
+impl<'a> Requests<'a> {
+    pub fn new(email: &'a str, password: &'a str) -> Result<Self> {
         if email.is_empty() || password.is_empty() {
             bail!("No email or password provided");
         }

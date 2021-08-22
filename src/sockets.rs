@@ -13,13 +13,13 @@ use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use tokio_rustls::{rustls::ClientConfig, webpki::DNSNameRef, TlsConnector};
 
-pub struct Executor {
-    name: String,
+pub struct Executor<'a> {
+    name: &'a str,
     is_gc: bool,
 }
 
-impl Executor {
-    pub fn new(name: String, is_gc: bool) -> Self {
+impl<'a> Executor<'a> {
+    pub fn new(name: &'a str, is_gc: bool) -> Self {
         Self { name, is_gc }
     }
 

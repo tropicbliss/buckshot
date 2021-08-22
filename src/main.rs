@@ -64,9 +64,7 @@ async fn main() -> Result<()> {
     } else {
         SnipeTask::Microsoft
     };
-    let email = config.account.email.clone();
-    let password = config.account.password.clone();
-    let requestor = requests::Requests::new(email, password)?;
+    let requestor = requests::Requests::new(&config.account.email, &config.account.password)?;
     let name_list = if let Some(username_to_snipe) = args.username_to_snipe {
         vec![username_to_snipe]
     } else if config.config.name_queue.is_empty() {
@@ -129,7 +127,7 @@ async fn main() -> Result<()> {
         }
         progress_bar.inc(25);
         let is_gc = task == SnipeTask::Giftcode;
-        let executor = sockets::Executor::new(name.clone(), is_gc);
+        let executor = sockets::Executor::new(&name, is_gc);
         let offset = if config.config.auto_offset {
             executor
                 .auto_offset_calculator()
