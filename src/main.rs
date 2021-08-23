@@ -16,7 +16,7 @@ use structopt::StructOpt;
 
 /// A performant and capable Minecraft name sniper
 #[derive(StructOpt, Debug)]
-#[structopt()]
+#[structopt(author)]
 struct Args {
     /// An optional argument for specifying the name you want to snipe
     #[structopt(short, long)]
