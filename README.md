@@ -2,7 +2,7 @@
 
 An asynchronous Minecraft username sniper written in Rust, powered by the Tokio runtime. It promises to be performant, capable, and easy to use.
 
-## Features (why you should use this sniper)
+## Features
 
 - Mojang account sniping
 - Microsoft account sniping
@@ -13,6 +13,10 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Name queueing
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks [arceus-sniper](https://github.com/aquild/arceus) for yoinking your feature list phrasing)
+
+## Limitations
+
+- No multi-account support for sniping with GCs
 
 ## Setup
 
