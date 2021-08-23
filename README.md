@@ -8,7 +8,7 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Microsoft account sniping
 - GC sniping
 - Spread (delay between asynchronous sniping requests)
-- Auto offset (this is actually a baller feature, every name I've sniped (600+ searches) uses auto offset, highly recommend)
+- Auto offset
 - Change skin on snipe
 - Name queueing
 - Low latency by opening the TCP connections before sending requests
