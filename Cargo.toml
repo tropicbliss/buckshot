@@ -4,7 +4,7 @@ version = "3.0.3"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "A Minecraft username sniper written in Rust. Performant and capable."
+description = "A performant and capable Minecraft name sniper"
 
 [dependencies]
 anyhow = "1.0"
