@@ -53,27 +53,27 @@ impl Config {
 
 fn get_default_config() -> String {
     r#"[account]
-email = "test@example.com"
-password = "test"
-# Leave the rest empty if you do not have security questions
-sq1 = "Foo"
-sq2 = "Bar"
-sq3 = "Baz"
+email = ""
+password = ""
+# Leave the fields empty if you did not set any security questions for your Minecraft account
+sq1 = ""
+sq2 = ""
+sq3 = ""
+
 [config]
 offset = 0
 auto_offset = false
-# Spread (if you are unsure leave it as it is)
+# Spread (delay in milliseconds between each snipe request, not to be confused with offset which is the number of millseconds in which the sniper sends its first request before the name drops)
 spread = 0
 microsoft_auth = false
 gc_snipe = false
 change_skin = false
 skin_model = "slim"
 skin_filename = "example.png"
-# Name queueing (allows you to snipe multiple names sequentially)
-# Note: This is an optional feature, leave it as it is if you only want to snipe one name
-# Example:
-# name_queue = ["Marc", "Dream"]
+# Name queueing (allows you to queue up multiple names for sniping)
+# Note: This is an optional feature, leave this array empty if you prefer to enter your name manually via an input prompt)
 name_queue = []
+
 "#
     .to_string()
 }
