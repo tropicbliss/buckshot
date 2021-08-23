@@ -14,9 +14,7 @@ pub struct Config {
 pub struct Account {
     pub email: String,
     pub password: String,
-    pub sq1: String,
-    pub sq2: String,
-    pub sq3: String,
+    pub sq_ans: [String; 3],
 }
 
 #[derive(Deserialize)]
@@ -28,7 +26,7 @@ pub struct Others {
     pub gc_snipe: bool,
     pub change_skin: bool,
     pub skin_model: String,
-    pub skin_filename: String,
+    pub skin_path: String,
     pub name_queue: Vec<String>,
 }
 
@@ -53,12 +51,10 @@ impl Config {
 
 fn get_default_config() -> String {
     r#"[account]
-email = ""
-password = ""
-# Leave the fields empty if you did not set any security questions for your Minecraft account
-sq1 = ""
-sq2 = ""
-sq3 = ""
+email = "test@example.com"
+password = "123456789"
+# Leave the strings in this array empty if your Minecraft account does not have security questions
+sq_ans = ["Foo", "Bar", "Baz"]
 
 [config]
 offset = 0
@@ -69,7 +65,7 @@ microsoft_auth = false
 gc_snipe = false
 change_skin = false
 skin_model = "slim"
-skin_filename = "example.png"
+skin_path = "example.png"
 # Name queueing (allows you to queue up multiple names for sniping)
 # Note: This is an optional feature, leave this array empty if you prefer to enter your name manually via an input prompt)
 name_queue = []

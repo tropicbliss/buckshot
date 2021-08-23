@@ -103,12 +103,7 @@ async fn main() -> Result<()> {
             progress_bar.abandon();
             continue;
         };
-        let answers = [
-            &config.account.sq1,
-            &config.account.sq2,
-            &config.account.sq3,
-        ];
-        let mut bearer_token = authenticate(&answers, &requestor, &task)?;
+        let mut bearer_token = authenticate(&config.account.sq_ans, &requestor, &task)?;
         progress_bar.inc(25);
         if task == SnipeTask::Giftcode && count == 0 {
             if let Some(gc) = &args.giftcode {
@@ -183,7 +178,7 @@ async fn main() -> Result<()> {
             {
                 continue;
             }
-            bearer_token = authenticate(&answers, &requestor, &task)?;
+            bearer_token = authenticate(&config.account.sq_ans, &requestor, &task)?;
             if task != SnipeTask::Giftcode {
                 requestor
                     .check_name_change_eligibility(&bearer_token)
@@ -206,7 +201,7 @@ async fn main() -> Result<()> {
                 requestor
                     .upload_skin(
                         &bearer_token,
-                        &config.config.skin_filename,
+                        &config.config.skin_path,
                         config.config.skin_model.clone(),
                     )
                     .with_context(|| "Failed to upload skin")?;
@@ -223,7 +218,7 @@ async fn main() -> Result<()> {
 }
 
 fn authenticate(
-    answers: &[&String; 3],
+    answers: &[String; 3],
     requestor: &requests::Requests,
     task: &SnipeTask,
 ) -> Result<String> {
