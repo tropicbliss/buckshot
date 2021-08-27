@@ -41,11 +41,11 @@ impl<'a> Executor<'a> {
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
         socket.write_all(&payload).await?;
-        let before = Instant::now();
+        let start = Instant::now();
         socket.write_all(b"\r\n").await?;
         socket.read_exact(&mut buf).await?;
-        let after = Instant::now();
-        Ok((i64::try_from((after - before).as_millis())? - SERVER_RES_TIME) / 2)
+        let elapsed = start.elapsed();
+        Ok((i64::try_from((elapsed).as_millis())? - SERVER_RES_TIME) / 2)
     }
 
     pub async fn snipe_executor(
