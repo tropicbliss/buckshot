@@ -94,7 +94,6 @@ async fn main() -> Result<()> {
         } else {
             continue;
         };
-        let mut bearer_tokens = Vec::new();
         let is_gc = task == SnipeTask::Giftcode;
         let executor = sockets::Executor::new(&name, is_gc);
         let offset = if config.auto_offset {
@@ -141,76 +140,75 @@ async fn main() -> Result<()> {
             {
                 continue;
             }
-            bearer_tokens = Vec::new();
-            for account in &config.accounts {
-                if account.email.is_empty() || account.password.is_empty() {
-                    if config.accounts.len() != 1 {
-                        writeln!(
-                            stdout(),
-                            "No email or password provided, moving on to next account..."
-                        )?;
-                        continue;
-                    }
-                    bail!("No email or password provided");
+        }
+        let mut bearer_tokens = Vec::new();
+        for account in &config.accounts {
+            if account.email.is_empty() || account.password.is_empty() {
+                if config.accounts.len() != 1 {
+                    writeln!(
+                        stdout(),
+                        "No email or password provided, moving on to next account..."
+                    )?;
+                    continue;
                 }
-                let bearer_token = if task == SnipeTask::Mojang {
-                    let bearer_token = requestor
-                        .authenticate_mojang(&account.email, &account.password)
-                        .with_context(|| "Failed to authenticate Mojang account")?;
-                    if let Some(questions) = requestor
-                        .get_questions(&bearer_token)
-                        .with_context(|| "Failed to get SQ IDs.")?
-                    {
-                        match &account.sq_ans {
-                            Some(x) => {
-                                requestor
-                                    .send_answers(&bearer_token, questions, x)
-                                    .with_context(|| "Failed to send SQ answers")?;
+                bail!("No email or password provided");
+            }
+            let bearer_token = if task == SnipeTask::Mojang {
+                let bearer_token = requestor
+                    .authenticate_mojang(&account.email, &account.password)
+                    .with_context(|| "Failed to authenticate Mojang account")?;
+                if let Some(questions) = requestor
+                    .get_questions(&bearer_token)
+                    .with_context(|| "Failed to get SQ IDs.")?
+                {
+                    match &account.sq_ans {
+                        Some(x) => {
+                            requestor
+                                .send_answers(&bearer_token, questions, x)
+                                .with_context(|| "Failed to send SQ answers")?;
+                        }
+                        None => {
+                            if config.accounts.len() != 1 {
+                                writeln!(
+                                    stdout(),
+                                    "SQ answers required, moving on to next account..."
+                                )?;
+                                continue;
                             }
-                            None => {
-                                if config.accounts.len() != 1 {
-                                    writeln!(
-                                        stdout(),
-                                        "SQ answers required, moving on to next account..."
-                                    )?;
-                                    continue;
-                                }
-                                bail!("SQ answers required");
-                            }
+                            bail!("SQ answers required");
                         }
                     }
-                    bearer_token
-                } else {
-                    requestor
-                        .authenticate_microsoft(&account.email, &account.password)
-                        .with_context(|| "Failed to authenticate Microsoft account")?
-                };
-                if task == SnipeTask::Giftcode && count == 0 {
-                    if let Some(gc) = &args.giftcode {
-                        requestor.redeem_giftcode(&bearer_token, gc)?;
-                        writeln!(
-                            stdout(),
-                            "{}",
-                            style("Successfully redeemed giftcode").green()
-                        )?;
-                    } else {
-                        writeln!(
-                            stdout(),
-                            "{}",
-                            style("Reminder: You should redeem your giftcode before GC sniping")
-                                .red()
-                        )?;
-                    }
-                } else {
-                    requestor
-                        .check_name_change_eligibility(&bearer_token)
-                        .with_context(|| "Failed to check name change eligibility")?;
                 }
-                bearer_tokens.push(bearer_token);
-                if config.accounts.len() != 1 {
-                    writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
-                    sleep(std::time::Duration::from_secs(20));
+                bearer_token
+            } else {
+                requestor
+                    .authenticate_microsoft(&account.email, &account.password)
+                    .with_context(|| "Failed to authenticate Microsoft account")?
+            };
+            if task == SnipeTask::Giftcode && count == 0 {
+                if let Some(gc) = &args.giftcode {
+                    requestor.redeem_giftcode(&bearer_token, gc)?;
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        style("Successfully redeemed giftcode").green()
+                    )?;
+                } else {
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        style("Reminder: You should redeem your giftcode before GC sniping").red()
+                    )?;
                 }
+            } else {
+                requestor
+                    .check_name_change_eligibility(&bearer_token)
+                    .with_context(|| "Failed to check name change eligibility")?;
+            }
+            bearer_tokens.push(bearer_token);
+            if config.accounts.len() != 1 {
+                writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
+                sleep(std::time::Duration::from_secs(20));
             }
         }
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
