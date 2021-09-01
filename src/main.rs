@@ -5,7 +5,7 @@ mod sockets;
 
 use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
-use console::{style, Emoji};
+use console::style;
 use std::{
     io::{stdout, Write},
     path::PathBuf,
@@ -44,8 +44,6 @@ pub enum SnipeTask {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    static HOURGLASS: Emoji<'_, '_> = Emoji("\u{231b} ", "");
-    static SPARKLE: Emoji<'_, '_> = Emoji("\u{2728} ", ":-) ");
     let args = Args::new();
     let config = config::Config::new(&args.config_path)
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
@@ -90,7 +88,7 @@ async fn main() -> Result<()> {
             writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?; // As the only publicly available sniper that does name queueing, please tell me if there is an easier way to solve this problem.
             sleep(std::time::Duration::from_secs(20));
         }
-        writeln!(stdout(), "{}Initialising...", HOURGLASS)?;
+        writeln!(stdout(), "Initialising...")?;
         let droptime = if let Some(x) = requestor
             .check_name_availability_time(&name)
             .with_context(|| "Failed to get droptime")?
@@ -103,7 +101,7 @@ async fn main() -> Result<()> {
         let is_gc = task == SnipeTask::Giftcode;
         let executor = sockets::Executor::new(&name, is_gc);
         let offset = if config.auto_offset {
-            writeln!(stdout(), "{}Calculating offset...", HOURGLASS)?;
+            writeln!(stdout(), "Calculating offset...")?;
             executor
                 .auto_offset_calculator()
                 .await
@@ -111,7 +109,7 @@ async fn main() -> Result<()> {
         } else {
             config.offset
         };
-        writeln!(stdout(), "{}Your offset is: {} ms", SPARKLE, offset)?;
+        writeln!(stdout(), "Your offset is: {} ms", offset)?;
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
