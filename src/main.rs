@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
     };
     if task != SnipeTask::Giftcode && config.accounts.len() != 1 {
         bail!(
-            "`accounts` field is of invalid length as sniper is set to GC sniping in {}",
+            "You can only provide 1 account as sniper is set to GC sniping mode",
             args.config_path.display()
         );
     }
