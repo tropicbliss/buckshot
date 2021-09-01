@@ -8,34 +8,28 @@ use reqwest::{
 use serde_json::{json, Value};
 use std::{
     io::{stdout, Write},
+    path::PathBuf,
     time::Duration,
 };
 
-pub struct Requests<'a> {
+pub struct Requests {
     client: Client,
-    email: &'a str,
-    password: &'a str,
 }
 
-impl<'a> Requests<'a> {
-    pub fn new(email: &'a str, password: &'a str) -> Result<Self> {
-        if email.is_empty() || password.is_empty() {
-            bail!("No email or password provided");
-        }
+impl Requests {
+    pub fn new() -> Result<Self> {
         Ok(Self {
             client: Client::builder()
                 .timeout(Duration::from_secs(5))
                 .user_agent("Sniper")
                 .build()?,
-            email,
-            password,
         })
     }
 
-    pub fn authenticate_mojang(&self) -> Result<String> {
+    pub fn authenticate_mojang(&self, email: &str, password: &str) -> Result<String> {
         let post_json = json!({
-            "username": self.email,
-            "password": self.password
+            "username": email,
+            "password": password
         });
         let res = self
             .client
@@ -61,10 +55,10 @@ impl<'a> Requests<'a> {
         }
     }
 
-    pub fn authenticate_microsoft(&self) -> Result<String> {
+    pub fn authenticate_microsoft(&self, email: &str, password: &str) -> Result<String> {
         let post_json = json!({
-            "email": self.email,
-            "password": self.password
+            "email": email,
+            "password": password
         });
         let res = self
             .client
@@ -130,9 +124,6 @@ impl<'a> Requests<'a> {
         questions: [i64; 3],
         answers: &[String; 3],
     ) -> Result<()> {
-        if answers[0].is_empty() || answers[1].is_empty() || answers[2].is_empty() {
-            bail!("One or more SQ answers not provided");
-        }
         let post_body = json!([
             {
                 "id": questions[0],
@@ -224,14 +215,11 @@ impl<'a> Requests<'a> {
     pub fn upload_skin(
         &self,
         bearer_token: &str,
-        skin_path: &str,
+        skin_path: PathBuf,
         skin_model: String,
     ) -> Result<()> {
         if !(skin_model.to_lowercase() == "slim" || skin_model.to_lowercase() == "classic") {
             bail!("Invalid skin model");
-        }
-        if skin_path.is_empty() {
-            bail!("No skin path provided")
         }
         let form = Form::new()
             .text("variant", skin_model)

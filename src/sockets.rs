@@ -50,20 +50,12 @@ impl<'a> Executor<'a> {
 
     pub async fn snipe_executor(
         &self,
-        bearer_token: &str,
+        bearer_token: Vec<String>,
         spread_offset: usize,
         snipe_time: DateTime<Utc>,
-    ) -> Result<bool> {
-        let mut is_success = false;
+    ) -> Result<Option<String>> {
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut spread = 0;
-        let payload = if self.is_gc {
-            let post_body = json!({ "profileName": self.name }).to_string();
-            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", bearer_token, post_body.len(), post_body).into_bytes()
-        } else {
-            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\n", self.name, bearer_token).into_bytes()
-        };
-        let payload = Arc::new(payload);
         let addr = "api.minecraftservices.com:443"
             .to_socket_addrs()?
             .next()
@@ -71,8 +63,18 @@ impl<'a> Executor<'a> {
         let cx = TlsConnector::builder().build()?;
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let cx = Arc::new(cx);
-        let handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> = (0..req_count)
-            .map(|_| {
+        let mut handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> =
+            Vec::with_capacity(req_count * bearer_token.len());
+        for bearer in bearer_token {
+            let payload = if self.is_gc {
+                let post_body = json!({ "profileName": self.name }).to_string();
+                format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", bearer, post_body.len(), post_body).into_bytes()
+            } else {
+                format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\n", self.name, bearer).into_bytes()
+            };
+            let payload = Arc::new(payload);
+            for _ in 0..req_count {
+                let bearer = bearer.clone();
                 let cx = Arc::clone(&cx);
                 let payload = Arc::clone(&payload);
                 let handle = tokio::task::spawn(async move {
@@ -106,7 +108,7 @@ impl<'a> Executor<'a> {
                                 style("200").green(),
                                 style(format!("{}", formatted_res_time)).cyan()
                             )?;
-                            Ok(true)
+                            Ok(Some(bearer))
                         }
                         status => {
                             writeln!(
@@ -116,20 +118,20 @@ impl<'a> Executor<'a> {
                                 style(format!("{}", status)).red(),
                                 style(format!("{}", formatted_res_time)).cyan()
                             )?;
-                            Ok(false)
+                            Ok(None)
                         }
                     }
                 });
                 spread += spread_offset as i64;
-                handle
-            })
-            .collect();
-        for handle in handle_vec {
-            let status = handle.await??;
-            if status {
-                is_success = true;
+                handle_vec.push(handle);
             }
         }
-        Ok(is_success)
+        for handle in handle_vec {
+            let status = handle.await??;
+            if status.is_some() {
+                return Ok(status);
+            }
+        }
+        Ok(None)
     }
 }
