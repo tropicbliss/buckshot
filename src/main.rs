@@ -73,12 +73,7 @@ async fn main() -> Result<()> {
     for (count, username) in name_list.into_iter().enumerate() {
         let name = username.trim().to_string();
         if !cli::username_filter_predicate(&name) {
-            writeln!(
-                stdout(),
-                "{}",
-                style(format!("{} is an invalid name", name)).red()
-            )?;
-            continue;
+            bail!("{} is an invalid name", name);
         }
         if count != 0 {
             writeln!(stdout(), "Moving on to next name...")?;
@@ -144,13 +139,6 @@ async fn main() -> Result<()> {
         let mut bearer_tokens = Vec::new();
         for account in &config.accounts {
             if account.email.is_empty() || account.password.is_empty() {
-                if config.accounts.len() != 1 {
-                    writeln!(
-                        stdout(),
-                        "No email or password provided, moving on to next account..."
-                    )?;
-                    continue;
-                }
                 bail!("No email or password provided");
             }
             let bearer_token = if task == SnipeTask::Mojang {
@@ -168,13 +156,6 @@ async fn main() -> Result<()> {
                                 .with_context(|| "Failed to send SQ answers")?;
                         }
                         None => {
-                            if config.accounts.len() != 1 {
-                                writeln!(
-                                    stdout(),
-                                    "SQ answers required, moving on to next account..."
-                                )?;
-                                continue;
-                            }
                             bail!("SQ answers required");
                         }
                     }
