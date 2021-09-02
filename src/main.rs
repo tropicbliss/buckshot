@@ -69,9 +69,6 @@ async fn main() -> Result<()> {
     } else {
         vec![cli::get_name_choice().with_context(|| "Failed to get username choice")?]
     };
-    if name_list.is_empty() {
-        bail!("The name queue is empty");
-    }
     let requestor = requests::Requests::new()?;
     for (count, username) in name_list.into_iter().enumerate() {
         let name = username.trim().to_string();
@@ -141,9 +138,6 @@ async fn main() -> Result<()> {
         }
         let mut bearer_tokens = Vec::new();
         for account in &config.account_entry {
-            if account.email.is_empty() || account.password.is_empty() {
-                bail!("No email or password provided");
-            }
             let bearer_token = if task == SnipeTask::Mojang {
                 let bearer_token = requestor
                     .authenticate_mojang(&account.email, &account.password)
