@@ -6,8 +6,7 @@ use std::path::{Path, PathBuf};
 #[derive(Deserialize)]
 pub struct Config {
     pub accounts: Vec<Account>,
-    pub offset: i64,
-    pub auto_offset: bool,
+    pub offset: Option<i64>,
     pub spread: usize,
     pub microsoft_auth: bool,
     pub gc_snipe: bool,

@@ -91,14 +91,14 @@ async fn main() -> Result<()> {
         };
         let is_gc = task == SnipeTask::Giftcode;
         let executor = sockets::Executor::new(&name, is_gc);
-        let offset = if config.auto_offset {
+        let offset = if let Some(x) = config.offset {
+            x
+        } else {
             writeln!(stdout(), "Calculating offset...")?;
             executor
                 .auto_offset_calculator()
                 .await
                 .with_context(|| "Failed to calculate offset")?
-        } else {
-            config.offset
         };
         writeln!(stdout(), "Your offset is: {} ms", offset)?;
         let formatted_droptime = droptime.format("%F %T");
