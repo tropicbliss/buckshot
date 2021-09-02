@@ -69,6 +69,9 @@ async fn main() -> Result<()> {
     } else {
         vec![cli::get_name_choice().with_context(|| "Failed to get username choice")?]
     };
+    if name_list.is_empty() {
+        bail!("The name queue is empty");
+    }
     let requestor = requests::Requests::new()?;
     for (count, username) in name_list.into_iter().enumerate() {
         let name = username.trim().to_string();
