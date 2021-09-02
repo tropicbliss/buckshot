@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
     } else {
         SnipeTask::Microsoft
     };
-    if task != SnipeTask::Giftcode && config.accounts.len() != 1 {
+    if task != SnipeTask::Giftcode && config.user_entry.len() != 1 {
         bail!("You can only provide 1 account in config file as sniper is set to GC sniping mode");
     }
     let name_list = if let Some(username_to_snipe) = args.username_to_snipe {
@@ -137,7 +137,7 @@ async fn main() -> Result<()> {
             }
         }
         let mut bearer_tokens = Vec::new();
-        for account in &config.accounts {
+        for account in &config.user_entry {
             if account.email.is_empty() || account.password.is_empty() {
                 bail!("No email or password provided");
             }
@@ -187,7 +187,7 @@ async fn main() -> Result<()> {
                     .with_context(|| "Failed to check name change eligibility")?;
             }
             bearer_tokens.push(bearer_token);
-            if config.accounts.len() != 1 {
+            if config.user_entry.len() != 1 {
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
                 sleep(std::time::Duration::from_secs(20));
             }
