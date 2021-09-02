@@ -203,8 +203,9 @@ async fn main() -> Result<()> {
                     style(format!("Successfully sniped {}!", name)).green()
                 )?;
                 if let Some(skin) = config.skin {
+                    let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
                     requestor
-                        .upload_skin(&bearer, skin.skin_path, skin.skin_model)
+                        .upload_skin(&bearer, skin.skin_path, skin_model)
                         .with_context(|| "Failed to upload skin")?;
                     writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
                 }

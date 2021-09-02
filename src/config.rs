@@ -16,8 +16,8 @@ pub struct Config {
 
 #[derive(Deserialize)]
 pub struct Skin {
-    pub skin_model: String,
     pub skin_path: PathBuf,
+    pub slim: bool,
 }
 
 #[derive(Deserialize)]
