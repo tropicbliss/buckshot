@@ -16,7 +16,7 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 ## Limitations
 
-- No multi-account support for sniping with GCs
+- No multi-account support for sniping with GCs (though beta version now has support for it)
 
 ## Setup
 
