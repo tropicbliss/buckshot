@@ -67,12 +67,12 @@ async fn main() -> Result<()> {
     } else if let Some(x) = config.name_queue {
         x
     } else {
-        vec![cli::get_username_choice().with_context(|| "Failed to get username choice")?]
+        vec![cli::get_name_choice().with_context(|| "Failed to get username choice")?]
     };
     let requestor = requests::Requests::new()?;
     for (count, username) in name_list.into_iter().enumerate() {
         let name = username.trim().to_string();
-        if !cli::username_filter_predicate(&name) {
+        if !cli::name_filter_predicate(&name) {
             bail!("{} is an invalid name", name);
         }
         if count != 0 {
