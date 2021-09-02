@@ -218,7 +218,8 @@ impl Requests {
         skin_path: PathBuf,
         skin_model: String,
     ) -> Result<()> {
-        if !(skin_model.to_lowercase() == "slim" || skin_model.to_lowercase() == "classic") {
+        let skin_model = skin_model.to_lowercase();
+        if !(skin_model == "slim" || skin_model == "classic") {
             bail!("Invalid skin model");
         }
         let form = Form::new()
