@@ -11,7 +11,6 @@ pub fn get_username_choice() -> Result<String> {
             break input;
         }
         writeln!(stdout(), "Invalid username entered, please try again")?;
-        continue;
     })
 }
 
