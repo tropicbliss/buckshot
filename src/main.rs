@@ -71,10 +71,6 @@ async fn main() -> Result<()> {
     };
     let requestor = requests::Requests::new()?;
     for (count, name) in name_list.into_iter().enumerate() {
-        let name = name.trim().to_string();
-        if !cli::name_filter_predicate(&name) {
-            bail!("{} is an invalid name", name);
-        }
         if count != 0 {
             writeln!(stdout(), "Moving on to next name...")?;
             writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
