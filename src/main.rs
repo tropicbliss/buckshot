@@ -18,7 +18,7 @@ use structopt::StructOpt;
 struct Args {
     /// An optional argument for specifying the name you want to snipe
     #[structopt(short, long)]
-    username_to_snipe: Option<String>,
+    name: Option<String>,
 
     /// Name of config file (must be a TOML file)
     #[structopt(short, long, default_value = "config.toml")]
@@ -62,16 +62,16 @@ async fn main() -> Result<()> {
     if task != SnipeTask::Giftcode && config.account_entry.len() != 1 {
         bail!("You can only provide 1 account in config file as sniper is set to GC sniping mode");
     }
-    let name_list = if let Some(username_to_snipe) = args.username_to_snipe {
-        vec![username_to_snipe]
+    let name_list = if let Some(name) = args.name {
+        vec![name]
     } else if let Some(x) = config.name_queue {
         x
     } else {
-        vec![cli::get_name_choice().with_context(|| "Failed to get username choice")?]
+        vec![cli::get_name_choice().with_context(|| "Failed to get name choice")?]
     };
     let requestor = requests::Requests::new()?;
-    for (count, username) in name_list.into_iter().enumerate() {
-        let name = username.trim().to_string();
+    for (count, name) in name_list.into_iter().enumerate() {
+        let name = name.trim().to_string();
         if !cli::name_filter_predicate(&name) {
             bail!("{} is an invalid name", name);
         }
