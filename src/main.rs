@@ -47,8 +47,9 @@ async fn main() -> Result<()> {
         vec![name]
     };
     let requestor = requests::Requests::new()?;
-    for (count, name) in name_list.into_iter().enumerate() {
-        if count != 0 {
+    let mut is_first_name = true;
+    for name in name_list {
+        if !is_first_name {
             writeln!(stdout(), "Moving on to next name...")?;
             writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
             sleep(std::time::Duration::from_secs(20));
@@ -137,7 +138,7 @@ async fn main() -> Result<()> {
                     .authenticate_microsoft(&account.email, &account.password)
                     .with_context(|| "Failed to authenticate Microsoft account")?
             };
-            if task == SnipeTask::Giftcode && count == 0 {
+            if task == SnipeTask::Giftcode && is_first_name {
                 if let Some(gc) = &account.giftcode {
                     requestor.redeem_giftcode(&bearer_token, gc)?;
                     writeln!(
@@ -189,6 +190,7 @@ async fn main() -> Result<()> {
             }
             None => {
                 writeln!(stdout(), "Failed to snipe {}", name)?;
+                is_first_name = false;
             }
         }
     }
