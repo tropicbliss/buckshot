@@ -1,4 +1,3 @@
-mod cli;
 mod config;
 mod requests;
 mod sockets;
@@ -6,6 +5,7 @@ mod sockets;
 use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
 use console::style;
+use dialoguer::Input;
 use std::{
     io::{stdout, Write},
     path::PathBuf,
@@ -67,7 +67,10 @@ async fn main() -> Result<()> {
     } else if let Some(x) = config.name_queue {
         x
     } else {
-        vec![cli::get_name_choice().with_context(|| "Failed to get name choice")?]
+        let name: String = Input::new()
+            .with_prompt("What name would you like to snipe")
+            .interact_text()?;
+        vec![name]
     };
     let requestor = requests::Requests::new()?;
     for (count, name) in name_list.into_iter().enumerate() {
