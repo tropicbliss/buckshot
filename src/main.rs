@@ -1,3 +1,4 @@
+mod cli;
 mod config;
 mod requests;
 mod sockets;
@@ -5,35 +6,10 @@ mod sockets;
 use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
 use console::style;
-use dialoguer::Input;
 use std::{
     io::{stdout, Write},
-    path::PathBuf,
     thread::sleep,
 };
-use structopt::StructOpt;
-
-#[derive(StructOpt, Debug)]
-#[structopt(author, about)]
-struct Args {
-    /// An optional argument for specifying the name you want to snipe
-    #[structopt(short, long)]
-    name: Option<String>,
-
-    /// Name of config file (must be a TOML file)
-    #[structopt(short, long, default_value = "config.toml")]
-    config_path: PathBuf,
-
-    /// An optional argument for specifying the giftcode if you want the sniper to redeem the giftcode for you
-    #[structopt(short, long)]
-    giftcode: Option<String>,
-}
-
-impl Args {
-    pub fn new() -> Self {
-        Self::from_args()
-    }
-}
 
 #[derive(PartialEq)]
 pub enum SnipeTask {
@@ -44,7 +20,7 @@ pub enum SnipeTask {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = Args::new();
+    let args = cli::Args::new();
     let config = config::Config::new(&args.config_path)
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
@@ -67,9 +43,7 @@ async fn main() -> Result<()> {
     } else if let Some(x) = config.name_queue {
         x
     } else {
-        let name: String = Input::new()
-            .with_prompt("What name would you like to snipe")
-            .interact_text()?;
+        let name = cli::get_name_choice().with_context(|| "Failed to get name choice")?;
         vec![name]
     };
     let requestor = requests::Requests::new()?;
