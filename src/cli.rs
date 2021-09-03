@@ -13,10 +13,6 @@ pub struct Args {
     /// Name of config file (must be a TOML file)
     #[structopt(short, long, default_value = "config.toml")]
     pub config_path: PathBuf,
-
-    /// An optional argument for specifying the giftcode if you want the sniper to redeem the giftcode for you
-    #[structopt(short, long)]
-    pub giftcode: Option<String>,
 }
 
 impl Args {

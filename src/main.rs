@@ -110,6 +110,7 @@ async fn main() -> Result<()> {
             }
         }
         let mut bearer_tokens = Vec::new();
+        let mut is_warned = false;
         for account in &config.account_entry {
             let bearer_token = if task == SnipeTask::Mojang {
                 let bearer_token = requestor
@@ -137,21 +138,23 @@ async fn main() -> Result<()> {
                     .with_context(|| "Failed to authenticate Microsoft account")?
             };
             if task == SnipeTask::Giftcode && count == 0 {
-                if let Some(gc) = &args.giftcode {
+                if let Some(gc) = &account.giftcode {
                     requestor.redeem_giftcode(&bearer_token, gc)?;
                     writeln!(
                         stdout(),
                         "{}",
                         style("Successfully redeemed giftcode").green()
                     )?;
-                } else {
+                } else if !is_warned {
                     writeln!(
                         stdout(),
                         "{}",
                         style("Reminder: You should redeem your giftcode before GC sniping").red()
                     )?;
+                    is_warned = true;
                 }
-            } else {
+            }
+            if task != SnipeTask::Giftcode {
                 requestor
                     .check_name_change_eligibility(&bearer_token)
                     .with_context(|| "Failed to check name change eligibility")?;

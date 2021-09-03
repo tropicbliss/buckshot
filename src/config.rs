@@ -25,6 +25,7 @@ pub struct Account {
     pub email: String,
     pub password: String,
     pub sq_ans: Option<[String; 3]>,
+    pub giftcode: Option<String>,
 }
 
 impl Config {
