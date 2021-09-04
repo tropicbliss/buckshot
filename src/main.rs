@@ -6,10 +6,7 @@ mod sockets;
 use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
 use console::style;
-use std::{
-    io::{stdout, Write},
-    thread::sleep,
-};
+use std::thread::sleep;
 
 #[derive(PartialEq)]
 pub enum SnipeTask {
@@ -25,7 +22,7 @@ async fn main() -> Result<()> {
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
         if config.gc_snipe {
-            writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
+            println!("{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red());
             SnipeTask::Giftcode
         } else {
             SnipeTask::Mojang
@@ -50,11 +47,11 @@ async fn main() -> Result<()> {
     let mut is_first_name = true;
     for name in name_list {
         if !is_first_name {
-            writeln!(stdout(), "Moving on to next name...")?;
-            writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
+            println!("Moving on to next name...");
+            println!("Waiting 20 seconds to prevent rate limiting...");
             sleep(std::time::Duration::from_secs(20));
         }
-        writeln!(stdout(), "Initialising...")?;
+        println!("Initialising...");
         let droptime = if let Some(x) = requestor
             .check_name_availability_time(&name)
             .with_context(|| "Failed to get droptime")?
@@ -68,31 +65,29 @@ async fn main() -> Result<()> {
         let offset = if let Some(x) = config.offset {
             x
         } else {
-            writeln!(stdout(), "Calculating offset...")?;
+            println!("Calculating offset...");
             executor
                 .auto_offset_calculator()
                 .await
                 .with_context(|| "Failed to calculate offset")?
         };
-        writeln!(stdout(), "Your offset is: {} ms", offset)?;
+        println!("Your offset is: {} ms", offset);
         let formatted_droptime = droptime.format("%F %T");
         let duration_in_sec = droptime - Utc::now();
         if duration_in_sec < Duration::minutes(1) {
-            writeln!(
-                stdout(),
+            println!(
                 "Sniping {} in ~{} seconds | sniping at {} (utc)",
                 name,
                 duration_in_sec.num_seconds(),
                 formatted_droptime
-            )?;
+            );
         } else {
-            writeln!(
-                stdout(),
+            println!(
                 "Sniping {} in ~{} minutes | sniping at {} (utc)",
                 name,
                 duration_in_sec.num_minutes(),
                 formatted_droptime
-            )?;
+            );
         }
         let snipe_time = droptime - Duration::milliseconds(offset);
         let setup_time = snipe_time - Duration::hours(23);
@@ -141,17 +136,12 @@ async fn main() -> Result<()> {
             if task == SnipeTask::Giftcode && is_first_name {
                 if let Some(gc) = &account.giftcode {
                     requestor.redeem_giftcode(&bearer_token, gc)?;
-                    writeln!(
-                        stdout(),
-                        "{}",
-                        style("Successfully redeemed giftcode").green()
-                    )?;
+                    println!("{}", style("Successfully redeemed giftcode").green());
                 } else if !is_warned {
-                    writeln!(
-                        stdout(),
+                    println!(
                         "{}",
                         style("Reminder: You should redeem your giftcode before GC sniping").red()
-                    )?;
+                    );
                     is_warned = true;
                 }
             }
@@ -162,34 +152,33 @@ async fn main() -> Result<()> {
             }
             bearer_tokens.push(bearer_token);
             if config.account_entry.len() != 1 {
-                writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
+                println!("Waiting 20 seconds to prevent rate limiting...");
                 sleep(std::time::Duration::from_secs(20));
             }
         }
-        writeln!(stdout(), "{}", style("Successfully signed in").green())?;
-        writeln!(stdout(), "Setup complete")?;
+        println!("{}", style("Successfully signed in").green());
+        println!("Setup complete");
         match executor
             .snipe_executor(bearer_tokens, config.spread, snipe_time)
             .await
             .with_context(|| "Failed to execute snipe")?
         {
             Some(bearer) => {
-                writeln!(
-                    stdout(),
+                println!(
                     "{}",
                     style(format!("Successfully sniped {}!", name)).green()
-                )?;
+                );
                 if let Some(skin) = config.skin {
                     let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
                     requestor
                         .upload_skin(&bearer, skin.skin_path, skin_model)
                         .with_context(|| "Failed to upload skin")?;
-                    writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
+                    println!("{}", style("Successfully changed skin").green());
                 }
                 break;
             }
             None => {
-                writeln!(stdout(), "Failed to snipe {}", name)?;
+                println!("Failed to snipe {}", name);
                 is_first_name = false;
             }
         }

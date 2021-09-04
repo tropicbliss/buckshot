@@ -31,7 +31,7 @@ pub struct Account {
 impl Config {
     pub fn new(config_path: &Path) -> Result<Self> {
         let s = read_to_string(&config_path)?;
-        let config: Self = toml::from_str(&s)?;
-        Ok(config)
+        let cfg: Self = toml::from_str(&s)?;
+        Ok(cfg)
     }
 }

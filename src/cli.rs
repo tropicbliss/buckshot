@@ -11,7 +11,7 @@ pub struct Args {
     pub name: Option<String>,
 
     /// Name of config file (must be a TOML file)
-    #[structopt(short, long, default_value = "config.toml")]
+    #[structopt(parse(from_os_str), short, long, default_value = "config.toml")]
     pub config_path: PathBuf,
 }
 

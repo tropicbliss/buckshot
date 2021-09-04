@@ -6,11 +6,7 @@ use reqwest::{
     header::ACCEPT,
 };
 use serde_json::{json, Value};
-use std::{
-    io::{stdout, Write},
-    path::PathBuf,
-    time::Duration,
-};
+use std::{path::PathBuf, time::Duration};
 
 pub struct Requests {
     client: Client,
@@ -180,11 +176,10 @@ impl Requests {
                 } else {
                     error.to_string()
                 };
-                writeln!(
-                    stdout(),
+                println!(
                     "{}",
                     style(format!("Failed to get droptime: {}", reason)).red()
-                )?;
+                );
                 Ok(None)
             }
             _ => bail!("HTTP {}", status),
