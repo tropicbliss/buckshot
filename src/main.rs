@@ -44,9 +44,8 @@ async fn main() -> Result<()> {
         vec![name]
     };
     let requestor = requests::Requests::new()?;
-    let mut is_first_name = true;
-    for name in name_list {
-        if !is_first_name {
+    for (count, name) in name_list.into_iter().enumerate() {
+        if count != 0 {
             println!("Moving on to next name...");
             println!("Waiting 20 seconds to prevent rate limiting...");
             sleep(std::time::Duration::from_secs(20));
@@ -58,7 +57,6 @@ async fn main() -> Result<()> {
         {
             x
         } else {
-            is_first_name = false;
             continue;
         };
         let is_gc = task == SnipeTask::Giftcode;
@@ -103,7 +101,6 @@ async fn main() -> Result<()> {
                 .with_context(|| "Failed to get droptime")?
                 .is_none()
             {
-                is_first_name = false;
                 continue;
             }
         }
@@ -135,7 +132,7 @@ async fn main() -> Result<()> {
                     .authenticate_microsoft(&account.email, &account.password)
                     .with_context(|| "Failed to authenticate Microsoft account")?
             };
-            if task == SnipeTask::Giftcode && is_first_name {
+            if task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &account.giftcode {
                     requestor.redeem_giftcode(&bearer_token, gc)?;
                     println!("{}", style("Successfully redeemed giftcode").green());
@@ -181,7 +178,6 @@ async fn main() -> Result<()> {
             }
             None => {
                 println!("Failed to snipe {}", name);
-                is_first_name = false;
             }
         }
     }
