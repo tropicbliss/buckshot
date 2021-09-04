@@ -58,6 +58,7 @@ async fn main() -> Result<()> {
         {
             x
         } else {
+            is_first_name = false;
             continue;
         };
         let is_gc = task == SnipeTask::Giftcode;
@@ -102,6 +103,7 @@ async fn main() -> Result<()> {
                 .with_context(|| "Failed to get droptime")?
                 .is_none()
             {
+                is_first_name = false;
                 continue;
             }
         }
