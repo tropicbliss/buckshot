@@ -169,16 +169,9 @@ impl Requests {
                 let error = v["error"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
-                let reason = if error == "username is not dropping" {
-                    format!("{} is taken", username_to_snipe)
-                } else if error == "username not dropping" {
-                    format!("{} is not taken", username_to_snipe)
-                } else {
-                    error.to_string()
-                };
                 println!(
                     "{}",
-                    style(format!("Failed to get droptime: {}", reason)).red()
+                    style(format!("Failed to get droptime: {}", error)).red()
                 );
                 Ok(None)
             }
