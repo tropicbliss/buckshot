@@ -148,11 +148,8 @@ impl Requests {
         }
     }
 
-    pub fn check_name_availability_time(
-        &self,
-        username_to_snipe: &str,
-    ) -> Result<Option<DateTime<Utc>>> {
-        let url = format!("https://api.star.shopping/droptime/{}", username_to_snipe);
+    pub fn check_name_availability_time(&self, name: &str) -> Result<Option<DateTime<Utc>>> {
+        let url = format!("https://api.star.shopping/droptime/{}", name);
         let res = self.client.get(url).send()?;
         let status = res.status();
         let body = res.text()?;
@@ -171,7 +168,7 @@ impl Requests {
                     .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
                 println!(
                     "{}",
-                    style(format!("Failed to get droptime: {}", error)).red()
+                    style(format!("Failed to get droptime of {}: {}", name, error)).red()
                 );
                 Ok(None)
             }
