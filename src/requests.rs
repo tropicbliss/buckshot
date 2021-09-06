@@ -62,10 +62,10 @@ impl Requests {
             .json(&post_json)
             .send()?;
         let status = res.status();
+        let body = res.text()?;
+        let v: Value = serde_json::from_str(&body)?;
         match status.as_u16() {
             200 => {
-                let body = res.text()?;
-                let v: Value = serde_json::from_str(&body)?;
                 let bearer_token = v["bearer_token"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `bearer_token` from JSON"))?
@@ -73,8 +73,6 @@ impl Requests {
                 Ok(bearer_token)
             }
             400 => {
-                let body = res.text()?;
-                let v: Value = serde_json::from_str(&body)?;
                 let err = v["detail"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `detail` from JSON"))?;
