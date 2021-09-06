@@ -49,10 +49,10 @@ impl<'a> Executor<'a> {
 
     pub async fn snipe_executor(
         &self,
-        bearer_tokens: Vec<String>,
+        bearer_tokens: &[String],
         spread_offset: usize,
         snipe_time: DateTime<Utc>,
-    ) -> Result<Option<String>> {
+    ) -> Result<Option<usize>> {
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut spread = 0;
         let addr = "api.minecraftservices.com:443"
@@ -64,7 +64,7 @@ impl<'a> Executor<'a> {
         let cx = Arc::new(cx);
         let mut handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> =
             Vec::with_capacity(req_count * bearer_tokens.len());
-        for bearer_token in bearer_tokens {
+        for (count, bearer_token) in bearer_tokens.iter().enumerate() {
             let payload = if self.is_gc {
                 let post_body = json!({ "profileName": self.name }).to_string();
                 format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", bearer_token, post_body.len(), post_body).into_bytes()
@@ -73,7 +73,6 @@ impl<'a> Executor<'a> {
             };
             let payload = Arc::new(payload);
             for _ in 0..req_count {
-                let bearer_token = bearer_token.clone();
                 let cx = Arc::clone(&cx);
                 let payload = Arc::clone(&payload);
                 let handle = tokio::task::spawn(async move {
@@ -106,7 +105,7 @@ impl<'a> Executor<'a> {
                                 style("200").green(),
                                 style(format!("{}", formatted_res_time)).cyan()
                             );
-                            Ok(Some(bearer_token))
+                            Ok(Some(count))
                         }
                         status => {
                             println!(

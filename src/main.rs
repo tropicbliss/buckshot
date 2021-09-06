@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
-    } else if let Some(x) = config.name_queue {
+    } else if let Some(x) = config.name_queue.clone() {
         x
     } else {
         let name = cli::get_name_choice().with_context(|| "Failed to get name choice")?;
@@ -110,19 +110,26 @@ async fn main() -> Result<()> {
             let bearer_token = if task == SnipeTask::Mojang {
                 let bearer_token = requestor
                     .authenticate_mojang(&account.email, &account.password)
-                    .with_context(|| "Failed to authenticate Mojang account")?;
+                    .with_context(|| {
+                        format!(
+                            "Unable to authenticate the Mojang account: {}",
+                            account.email
+                        )
+                    })?;
                 if let Some(questions) = requestor
                     .get_questions(&bearer_token)
-                    .with_context(|| "Failed to get SQ IDs.")?
+                    .with_context(|| format!("Failed to get the SQ IDs of: {}", account.email))?
                 {
                     match &account.sq_ans {
                         Some(x) => {
                             requestor
                                 .send_answers(&bearer_token, questions, x)
-                                .with_context(|| "Failed to send SQ answers")?;
+                                .with_context(|| {
+                                    format!("Failed to send the SQ answers of: {}", account.email)
+                                })?;
                         }
                         None => {
-                            bail!("SQ answers required");
+                            bail!("SQ answers required for the account: {}", account.email);
                         }
                     }
                 }
@@ -130,7 +137,12 @@ async fn main() -> Result<()> {
             } else {
                 requestor
                     .authenticate_microsoft(&account.email, &account.password)
-                    .with_context(|| "Failed to authenticate Microsoft account")?
+                    .with_context(|| {
+                        format!(
+                            "Failed to authenticate the Microsoft account: {}",
+                            account.email
+                        )
+                    })?
             };
             if task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &account.giftcode {
@@ -147,7 +159,12 @@ async fn main() -> Result<()> {
             if task != SnipeTask::Giftcode {
                 requestor
                     .check_name_change_eligibility(&bearer_token)
-                    .with_context(|| "Failed to check name change eligibility")?;
+                    .with_context(|| {
+                        format!(
+                            "Failed to check name change eligibility of the account: {}",
+                            account.email
+                        )
+                    })?;
             }
             bearer_tokens.push(bearer_token);
             if config.account_entry.len() != 1 {
@@ -158,20 +175,25 @@ async fn main() -> Result<()> {
         println!("{}", style("Successfully signed in").green());
         println!("Setup complete");
         match executor
-            .snipe_executor(bearer_tokens, config.spread, snipe_time)
+            .snipe_executor(&bearer_tokens, config.spread, snipe_time)
             .await
             .with_context(|| "Failed to execute snipe")?
         {
-            Some(bearer) => {
+            Some(account_idx) => {
                 println!(
                     "{}",
                     style(format!("Successfully sniped {}!", name)).green()
                 );
-                if let Some(skin) = config.skin {
+                if let Some(skin) = &config.skin {
                     let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
                     requestor
-                        .upload_skin(&bearer, skin.skin_path, skin_model)
-                        .with_context(|| "Failed to upload skin")?;
+                        .upload_skin(&bearer_tokens[account_idx], &skin.skin_path, skin_model)
+                        .with_context(|| {
+                            format!(
+                                "Failed to change the skin of the account: {}",
+                                config.account_entry[account_idx].email
+                            )
+                        })?;
                     println!("{}", style("Successfully changed skin").green());
                 }
                 break;

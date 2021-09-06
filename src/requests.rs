@@ -7,7 +7,7 @@ use reqwest::{
     header::ACCEPT,
 };
 use serde_json::{json, Value};
-use std::{collections::HashMap, path::PathBuf, time::Duration};
+use std::{collections::HashMap, path::Path, time::Duration};
 
 pub struct Requests {
     client: Client,
@@ -187,7 +187,7 @@ impl Requests {
     pub fn upload_skin(
         &self,
         bearer_token: &str,
-        skin_path: PathBuf,
+        skin_path: &Path,
         skin_model: String,
     ) -> Result<()> {
         let form = Form::new()
