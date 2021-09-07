@@ -1,6 +1,7 @@
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use console::style;
+use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::{
     blocking::{multipart::Form, Client},
@@ -235,11 +236,13 @@ impl Requests {
     }
 
     fn get_login_data(&self) -> Result<LoginData> {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r#"value="(.+?)""#).unwrap();
+        }
         const URL: &str = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
         let res = self.client.get(URL).send()?;
         let html = res.text()?;
-        let ppft_re = Regex::new(r#"value="(.+?)""#)?;
-        let ppft_captures = ppft_re
+        let ppft_captures = RE
             .captures(&html)
             .ok_or_else(|| anyhow!("Error capturing PPFT from regex"))?;
         let ppft = ppft_captures
