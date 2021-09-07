@@ -78,7 +78,7 @@ impl<'a> Executor<'a> {
                 let handle = tokio::task::spawn(async move {
                     let mut buf = [0; 12];
                     let snipe_time = snipe_time + Duration::milliseconds(spread);
-                    let handshake_time = snipe_time - Duration::seconds(3);
+                    let handshake_time = snipe_time - Duration::seconds(4);
                     let sleep_duration = match (handshake_time - Utc::now()).to_std() {
                         Ok(x) => x,
                         Err(_) => std::time::Duration::ZERO,
