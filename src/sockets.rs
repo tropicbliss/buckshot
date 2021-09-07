@@ -64,7 +64,7 @@ impl<'a> Executor<'a> {
         let cx = Arc::new(cx);
         let mut handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> =
             Vec::with_capacity(req_count * bearer_tokens.len());
-        for (count, bearer_token) in bearer_tokens.iter().enumerate() {
+        for (account_idx, bearer_token) in bearer_tokens.iter().enumerate() {
             let payload = if self.is_gc {
                 let post_body = json!({ "profileName": self.name }).to_string();
                 format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", bearer_token, post_body.len(), post_body).into_bytes()
@@ -105,7 +105,7 @@ impl<'a> Executor<'a> {
                                 style("200").green(),
                                 style(format!("{}", formatted_res_time)).cyan()
                             );
-                            Ok(Some(count))
+                            Ok(Some(account_idx))
                         }
                         status => {
                             println!(
