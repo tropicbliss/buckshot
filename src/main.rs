@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
         println!("Initialising...");
         let droptime = if let Some(x) = requestor
             .check_name_availability_time(&name)
-            .with_context(|| "Failed to get droptime")?
+            .with_context(|| format!("Failed to get the droptime of {}", name))?
         {
             x
         } else {
@@ -98,7 +98,7 @@ async fn main() -> Result<()> {
             sleep(sleep_duration);
             if requestor
                 .check_name_availability_time(&name)
-                .with_context(|| "Failed to get droptime")?
+                .with_context(|| format!("Failed to get the droptime of {}", name))?
                 .is_none()
             {
                 continue;
@@ -118,14 +118,14 @@ async fn main() -> Result<()> {
                     })?;
                 if let Some(questions) = requestor
                     .get_questions(&bearer_token)
-                    .with_context(|| format!("Failed to get the SQ IDs of: {}", account.email))?
+                    .with_context(|| format!("Failed to get the SQ IDs of {}", account.email))?
                 {
                     match &account.sq_ans {
                         Some(x) => {
                             requestor
                                 .send_answers(&bearer_token, questions, x)
                                 .with_context(|| {
-                                    format!("Failed to send the SQ answers of: {}", account.email)
+                                    format!("Failed to send the SQ answers of {}", account.email)
                                 })?;
                         }
                         None => {
@@ -146,7 +146,14 @@ async fn main() -> Result<()> {
             };
             if task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &account.giftcode {
-                    requestor.redeem_giftcode(&bearer_token, gc)?;
+                    requestor
+                        .redeem_giftcode(&bearer_token, gc)
+                        .with_context(|| {
+                            format!(
+                                "Failed to redeem giftcode of the account: {}",
+                                account.email
+                            )
+                        })?;
                     println!("{}", style("Successfully redeemed giftcode").green());
                 } else if !is_warned {
                     println!(
@@ -177,7 +184,7 @@ async fn main() -> Result<()> {
         match executor
             .snipe_executor(&bearer_tokens, config.spread, snipe_time)
             .await
-            .with_context(|| "Failed to execute snipe")?
+            .with_context(|| format!("Failed to execute the snipe of {}", name))?
         {
             Some(account_idx) => {
                 println!(
