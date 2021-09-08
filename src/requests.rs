@@ -239,8 +239,7 @@ impl Requests {
         lazy_static! {
             static ref RE: Regex = Regex::new(r#"value="(.+?)""#).unwrap();
         }
-        const URL: &str = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
-        let res = self.client.get(URL).send()?;
+        let res = self.client.get("https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en").send()?;
         let html = res.text()?;
         let ppft_captures = RE
             .captures(&html)
@@ -317,7 +316,6 @@ impl Requests {
     }
 
     fn authenticate_with_xbl(&self, access_token: &str) -> Result<XBLData> {
-        const URL: &str = "https://user.auth.xboxlive.com/user/authenticate";
         let json = json!({
             "Properties": {
                 "AuthMethod": "RPS",
@@ -329,7 +327,7 @@ impl Requests {
         });
         let res = self
             .client
-            .post(URL)
+            .post("https://user.auth.xboxlive.com/user/authenticate")
             .json(&json)
             .header(ACCEPT, "application/json")
             .send()?;
@@ -351,7 +349,6 @@ impl Requests {
     }
 
     fn authenticate_with_xsts(&self, token: &str) -> Result<String> {
-        const URL: &str = "https://xsts.auth.xboxlive.com/xsts/authorize";
         let json = json!({
             "Properties": {
                 "SandboxId": "RETAIL",
@@ -362,7 +359,7 @@ impl Requests {
         });
         let res = self
             .client
-            .post(URL)
+            .post("https://xsts.auth.xboxlive.com/xsts/authorize")
             .header(ACCEPT, "application/json")
             .json(&json)
             .send()?;
@@ -392,9 +389,8 @@ impl Requests {
     }
 
     fn authenticate_with_minecraft(&self, userhash: &str, xsts_token: &str) -> Result<String> {
-        const URL: &str = "https://api.minecraftservices.com/authentication/login_with_xbox";
         let json = json!({ "identityToken": format!("XBL3.0 x={};{}", userhash, xsts_token) });
-        let res = self.client.post(URL).json(&json).send()?;
+        let res = self.client.post("https://api.minecraftservices.com/authentication/login_with_xbox").json(&json).send()?;
         let status = res.status();
         if status.as_u16() != 200 {
             bail!("HTTP {}", status);
