@@ -390,7 +390,11 @@ impl Requests {
 
     fn authenticate_with_minecraft(&self, userhash: &str, xsts_token: &str) -> Result<String> {
         let json = json!({ "identityToken": format!("XBL3.0 x={};{}", userhash, xsts_token) });
-        let res = self.client.post("https://api.minecraftservices.com/authentication/login_with_xbox").json(&json).send()?;
+        let res = self
+            .client
+            .post("https://api.minecraftservices.com/authentication/login_with_xbox")
+            .json(&json)
+            .send()?;
         let status = res.status();
         if status.as_u16() != 200 {
             bail!("HTTP {}", status);
