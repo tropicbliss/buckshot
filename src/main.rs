@@ -129,7 +129,7 @@ async fn main() -> Result<()> {
                                 })?;
                         }
                         None => {
-                            bail!("SQ answers required for the account: {}", account.email);
+                            bail!("SQ answers required for {}", account.email);
                         }
                     }
                 }
@@ -168,7 +168,7 @@ async fn main() -> Result<()> {
                     .check_name_change_eligibility(&bearer_token)
                     .with_context(|| {
                         format!(
-                            "Failed to check name change eligibility of the account: {}",
+                            "Failed to check name change eligibility of {}",
                             account.email
                         )
                     })?;
@@ -197,7 +197,7 @@ async fn main() -> Result<()> {
                         .upload_skin(&bearer_tokens[account_idx], &skin.skin_path, skin_model)
                         .with_context(|| {
                             format!(
-                                "Failed to change the skin of the account: {}",
+                                "Failed to change the skin of {}",
                                 config.account_entry[account_idx].email
                             )
                         })?;
