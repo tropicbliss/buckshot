@@ -230,7 +230,7 @@ impl Requests {
             .get_login_data()
             .with_context(|| "Error getting login data")?;
         let access_token = self
-            .sign_in(&login_data, email, password)
+            .sign_in(email, password, &login_data)
             .with_context(|| "Error getting access token")?;
         Ok(access_token)
     }
@@ -262,7 +262,7 @@ impl Requests {
         Ok(LoginData { ppft, url_post })
     }
 
-    fn sign_in(&self, login_data: &LoginData, email: &str, password: &str) -> Result<String> {
+    fn sign_in(&self, email: &str, password: &str, login_data: &LoginData) -> Result<String> {
         let params = [
             ("login", email),
             ("loginfmt", email),
