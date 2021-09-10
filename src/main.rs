@@ -1,5 +1,6 @@
 mod cli;
 mod config;
+mod msauth;
 mod requests;
 mod sockets;
 
