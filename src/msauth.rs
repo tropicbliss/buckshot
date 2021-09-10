@@ -57,7 +57,7 @@ impl<'a> Auth<'a> {
     fn get_login_data(&self) -> Result<LoginData> {
         lazy_static! {
             static ref PPFT_RE: Regex = Regex::new(r#"value="(.+?)""#).unwrap();
-            static ref URLPOST_RE: Regex = Regex::new(r#"urlPost:'(.+?)'"#).unwrap();
+            static ref URLPOST_RE: Regex = Regex::new("urlPost:'(.+?)'").unwrap();
         }
         let res = self.client.get("https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en").send()?;
         let html = res.text()?;
