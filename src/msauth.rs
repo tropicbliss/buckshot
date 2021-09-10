@@ -37,20 +37,20 @@ impl<'a> Auth<'a> {
     pub fn authenticate(&self) -> Result<String> {
         let access_token = self
             .get_access_token()
-            .with_context(|| "Error getting access token")?;
+            .with_context(|| "Unable to get access token")?;
         let bearer_token = self
             .get_bearer_token(&access_token)
-            .with_context(|| "Error getting bearer token")?;
+            .with_context(|| "Unable to get bearer token")?;
         Ok(bearer_token)
     }
 
     fn get_access_token(&self) -> Result<String> {
         let login_data = self
             .get_login_data()
-            .with_context(|| "Error getting login data")?;
+            .with_context(|| "Unable to get login data")?;
         let access_token = self
             .sign_in(&login_data)
-            .with_context(|| "Error getting access token")?;
+            .with_context(|| "Unable to get access token")?;
         Ok(access_token)
     }
 
@@ -62,19 +62,19 @@ impl<'a> Auth<'a> {
         let html = res.text()?;
         let ppft_captures = RE
             .captures(&html)
-            .ok_or_else(|| anyhow!("Error capturing PPFT from regex"))?;
+            .ok_or_else(|| anyhow!("Unable to capture PPFT from regex"))?;
         let ppft = ppft_captures
             .get(1)
-            .ok_or_else(|| anyhow!("Error getting PPFT"))?
+            .ok_or_else(|| anyhow!("Unable to get PPFT"))?
             .as_str()
             .to_string();
         let urlpost_re = Regex::new(r#"urlPost:'(.+?)'"#)?;
         let urlpost_captures = urlpost_re
             .captures(&html)
-            .with_context(|| anyhow!("Error capturing POST URL from regex"))?;
+            .with_context(|| anyhow!("Unable to capture POST URL from regex"))?;
         let url_post = urlpost_captures
             .get(1)
-            .ok_or_else(|| anyhow!("Error getting POST URL"))?
+            .ok_or_else(|| anyhow!("Unable to get POST URL"))?
             .as_str()
             .to_string();
         Ok(LoginData { ppft, url_post })
@@ -108,7 +108,7 @@ impl<'a> Auth<'a> {
         }
         let mut param: HashMap<&str, &str> = url
             .fragment()
-            .ok_or_else(|| anyhow!("Error parsing params"))?
+            .ok_or_else(|| anyhow!("Unable to parse params from URL"))?
             .split('&')
             .map(|kv| {
                 let mut key_value: Vec<&str> = kv.split('=').collect();
@@ -117,20 +117,20 @@ impl<'a> Auth<'a> {
             .collect();
         Ok(param
             .remove("access_token")
-            .ok_or_else(|| anyhow!("Error getting access token from params"))?
+            .ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?
             .to_string())
     }
 
     fn get_bearer_token(&self, access_token: &str) -> Result<String> {
         let xbl_data = self
             .authenticate_with_xbl(access_token)
-            .with_context(|| "Error getting Xbox Live data")?;
+            .with_context(|| "Unable to get Xbox Live data")?;
         let xsts_token = self
             .authenticate_with_xsts(&xbl_data.token)
-            .with_context(|| "Error getting XSTS token")?;
+            .with_context(|| "Unable to get XSTS token")?;
         let bearer_token = self
             .authenticate_with_minecraft(&xbl_data.userhash, &xsts_token)
-            .with_context(|| "Error getting bearer token")?;
+            .with_context(|| "Unable to get bearer token")?;
         Ok(bearer_token)
     }
 
@@ -158,11 +158,11 @@ impl<'a> Auth<'a> {
         let v: Value = serde_json::from_str(&text)?;
         let token = v["Token"]
             .as_str()
-            .ok_or_else(|| anyhow!("Error parsing access token from JSON"))?
+            .ok_or_else(|| anyhow!("Unable to parse `Token` from JSON"))?
             .to_string();
         let userhash = v["DisplayClaims"]["xui"][0]["uhs"]
             .as_str()
-            .ok_or_else(|| anyhow!("Error parsing user hash from JSON"))?
+            .ok_or_else(|| anyhow!("Unable to parse `DisplayClaims`, `xui`, or `uhs` from index 0 of JSON array"))?
             .to_string();
         Ok(XBLData { token, userhash })
     }
@@ -188,18 +188,18 @@ impl<'a> Auth<'a> {
         if status.as_u16() == 401 {
             let err = v["XErr"]
                 .as_u64()
-                .ok_or_else(|| anyhow!("Error parsing error message from JSON"))?;
+                .ok_or_else(|| anyhow!("Unable to parse `XErr` from JSON"))?;
             if err == 2_148_916_233 {
-                bail!("The account doesn't have an Xbox account. Once they sign up for one (or login through minecraft.net to create one) then they can proceed with the login. This shouldn't happen with accounts that have purchased Minecraft with a Microsoft account, as they would've already gone through that Xbox signup process.");
+                bail!("This account doesn't have an Xbox account");
             }
             if err == 2_148_916_238 {
-                bail!("The account is a child (under 18) and cannot proceed unless the account is added to a Family by an adult. This only seems to occur when using a custom Microsoft Azure application. When using the Minecraft launchers client id, this doesn't trigger.");
+                bail!("The account is a child (under 18) and cannot proceed unless the account is added to a family by an adult");
             }
             bail!("Something went wrong.");
         } else if status.as_u16() == 200 {
             let token = v["Token"]
                 .as_str()
-                .ok_or_else(|| anyhow!("Error parsing XSTS token from JSON"))?
+                .ok_or_else(|| anyhow!("Unable to parse `Token` from JSON"))?
                 .to_string();
             Ok(token)
         } else {
@@ -222,7 +222,7 @@ impl<'a> Auth<'a> {
         let v: Value = serde_json::from_str(&text)?;
         let bearer = v["access_token"]
             .as_str()
-            .ok_or_else(|| anyhow!("Error parsing bearer token from JSON"))?
+            .ok_or_else(|| anyhow!("Unable to parse `access_token` from JSON"))?
             .to_string();
         Ok(bearer)
     }
