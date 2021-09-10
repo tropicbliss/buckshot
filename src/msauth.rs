@@ -46,11 +46,11 @@ impl<'a> Auth<'a> {
 
     fn get_login_data(&self) -> Result<LoginData> {
         lazy_static! {
-            static ref PPFT_RE: Regex = Regex::new(r#"value="(.+?)""#).unwrap();
+            static ref RE: Regex = Regex::new(r#"value="(.+?)""#).unwrap();
         }
         let res = self.client.get("https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en").send()?;
         let html = res.text()?;
-        let ppft_captures = PPFT_RE
+        let ppft_captures = RE
             .captures(&html)
             .ok_or_else(|| anyhow!("Error capturing PPFT from regex"))?;
         let ppft = ppft_captures

@@ -53,8 +53,8 @@ impl Requests {
     }
 
     pub fn authenticate_microsoft(&self, email: &str, password: &str) -> Result<String> {
-        let authenticator =
-            msauth::Auth::new(email, password).with_context(|| "Error creating authenticator")?;
+        let authenticator = msauth::Auth::new(email, password)
+            .with_context(|| "Error creating Microsoft authenticator")?;
         let access_token = authenticator
             .get_access_token()
             .with_context(|| "Error getting access token")?;
