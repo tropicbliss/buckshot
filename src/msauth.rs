@@ -57,6 +57,7 @@ impl<'a> Auth<'a> {
     fn get_login_data(&self) -> Result<LoginData> {
         lazy_static! {
             static ref PPFT_RE: Regex = Regex::new(r#"value="(.+?)""#).unwrap();
+            static ref URLPOST_RE: Regex = Regex::new(r#"urlPost:'(.+?)'"#).unwrap();
         }
         let res = self.client.get("https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en").send()?;
         let html = res.text()?;
@@ -68,8 +69,7 @@ impl<'a> Auth<'a> {
             .ok_or_else(|| anyhow!("Unable to get PPFT"))?
             .as_str()
             .to_string();
-        let urlpost_re = Regex::new(r#"urlPost:'(.+?)'"#)?;
-        let urlpost_captures = urlpost_re
+        let urlpost_captures = URLPOST_RE
             .captures(&html)
             .with_context(|| anyhow!("Unable to capture POST URL from regex"))?;
         let url_post = urlpost_captures

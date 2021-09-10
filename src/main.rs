@@ -34,7 +34,9 @@ async fn main() -> Result<()> {
         SnipeTask::Microsoft
     };
     if task != SnipeTask::Giftcode && config.account_entry.len() != 1 {
-        bail!("You can only provide 1 account in config file as sniper is not set to GC sniping mode");
+        bail!(
+            "You can only provide 1 account in config file as sniper is not set to GC sniping mode"
+        );
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
