@@ -162,7 +162,11 @@ impl<'a> Auth<'a> {
             .to_string();
         let userhash = v["DisplayClaims"]["xui"][0]["uhs"]
             .as_str()
-            .ok_or_else(|| anyhow!("Unable to parse `DisplayClaims`, `xui`, or `uhs` from index 0 of JSON array"))?
+            .ok_or_else(|| {
+                anyhow!(
+                    "Unable to parse `DisplayClaims`, `xui`, or `uhs` from index 0 of JSON array"
+                )
+            })?
             .to_string();
         Ok(XBLData { token, userhash })
     }
