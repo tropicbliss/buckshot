@@ -109,32 +109,14 @@ async fn main() -> Result<()> {
         let mut is_warned = false;
         for account in &config.account_entry {
             let bearer_token = if task == SnipeTask::Mojang {
-                let bearer_token = requestor
-                    .authenticate_mojang(&account.email, &account.password)
+                requestor
+                    .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
                     .with_context(|| {
                         format!(
-                            "Unable to authenticate the Mojang account: {}",
+                            "Failed to authenticate the Mojang account: {}",
                             account.email
                         )
-                    })?;
-                if let Some(questions) = requestor
-                    .get_questions(&bearer_token)
-                    .with_context(|| format!("Failed to get the SQ IDs of {}", account.email))?
-                {
-                    match &account.sq_ans {
-                        Some(x) => {
-                            requestor
-                                .send_answers(&bearer_token, questions, x)
-                                .with_context(|| {
-                                    format!("Failed to send the SQ answers of {}", account.email)
-                                })?;
-                        }
-                        None => {
-                            bail!("SQ answers required for {}", account.email);
-                        }
-                    }
-                }
-                bearer_token
+                    })?
             } else {
                 requestor
                     .authenticate_microsoft(&account.email, &account.password)

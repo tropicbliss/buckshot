@@ -23,7 +23,33 @@ impl Requests {
         })
     }
 
-    pub fn authenticate_mojang(&self, email: &str, password: &str) -> Result<String> {
+    pub fn authenticate_mojang(
+        &self,
+        email: &str,
+        password: &str,
+        answers: &Option<[String; 3]>,
+    ) -> Result<String> {
+        let bearer_token = self
+            .get_bearer_token(email, password)
+            .with_context(|| "Error getting bearer token")?;
+        if let Some(questions) = self
+            .get_questions(&bearer_token)
+            .with_context(|| format!("Failed to get the SQ IDs of {}", email))?
+        {
+            match answers {
+                Some(x) => {
+                    self.send_answers(&bearer_token, questions, x)
+                        .with_context(|| format!("Failed to send the SQ answers of {}", email))?;
+                }
+                None => {
+                    bail!("SQ answers required for {}", email);
+                }
+            }
+        }
+        Ok(bearer_token)
+    }
+
+    fn get_bearer_token(&self, email: &str, password: &str) -> Result<String> {
         let post_json = json!({
             "username": email,
             "password": password
@@ -64,7 +90,7 @@ impl Requests {
         Ok(bearer_token)
     }
 
-    pub fn get_questions(&self, bearer_token: &str) -> Result<Option<[i64; 3]>> {
+    fn get_questions(&self, bearer_token: &str) -> Result<Option<[i64; 3]>> {
         let res = self
             .client
             .get("https://api.mojang.com/user/security/challenges")
@@ -92,7 +118,7 @@ impl Requests {
         }
     }
 
-    pub fn send_answers(
+    fn send_answers(
         &self,
         bearer_token: &str,
         questions: [i64; 3],
