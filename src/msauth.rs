@@ -34,7 +34,17 @@ impl<'a> Auth<'a> {
         })
     }
 
-    pub fn get_access_token(&self) -> Result<String> {
+    pub fn authenticate(&self) -> Result<String> {
+        let access_token = self
+            .get_access_token()
+            .with_context(|| "Error getting access token")?;
+        let bearer_token = self
+            .get_bearer_token(&access_token)
+            .with_context(|| "Error getting bearer token")?;
+        Ok(bearer_token)
+    }
+
+    fn get_access_token(&self) -> Result<String> {
         let login_data = self
             .get_login_data()
             .with_context(|| "Error getting login data")?;
@@ -111,7 +121,7 @@ impl<'a> Auth<'a> {
             .to_string())
     }
 
-    pub fn get_bearer_token(&self, access_token: &str) -> Result<String> {
+    fn get_bearer_token(&self, access_token: &str) -> Result<String> {
         let xbl_data = self
             .authenticate_with_xbl(access_token)
             .with_context(|| "Error getting Xbox Live data")?;

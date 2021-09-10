@@ -118,14 +118,14 @@ async fn main() -> Result<()> {
                         )
                     })?
             } else {
-                requestor
-                    .authenticate_microsoft(&account.email, &account.password)
-                    .with_context(|| {
-                        format!(
-                            "Failed to authenticate the Microsoft account: {}",
-                            account.email
-                        )
-                    })?
+                let authenticator = msauth::Auth::new(&account.email, &account.password)
+                    .with_context(|| "Error creating Microsoft authenticator")?;
+                authenticator.authenticate().with_context(|| {
+                    format!(
+                        "Failed to authenticate the Microsoft account: {}",
+                        account.email
+                    )
+                })?
             };
             if task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &account.giftcode {

@@ -1,4 +1,3 @@
-use crate::msauth;
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, TimeZone, Utc};
 use console::style;
@@ -76,18 +75,6 @@ impl Requests {
                 bail!("HTTP {}", status);
             }
         }
-    }
-
-    pub fn authenticate_microsoft(&self, email: &str, password: &str) -> Result<String> {
-        let authenticator = msauth::Auth::new(email, password)
-            .with_context(|| "Error creating Microsoft authenticator")?;
-        let access_token = authenticator
-            .get_access_token()
-            .with_context(|| "Error getting access token")?;
-        let bearer_token = authenticator
-            .get_bearer_token(&access_token)
-            .with_context(|| "Error getting bearer token")?;
-        Ok(bearer_token)
     }
 
     fn get_questions(&self, bearer_token: &str) -> Result<Option<[i64; 3]>> {
