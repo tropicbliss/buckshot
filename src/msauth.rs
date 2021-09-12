@@ -11,7 +11,7 @@ pub struct Auth<'a> {
     password: &'a str,
 }
 
-pub struct LoginData {
+struct LoginData {
     ppft: String,
     url_post: String,
 }
