@@ -19,7 +19,7 @@ pub enum SnipeTask {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = cli::Args::new();
-    let config = config::Config::new(&args.config_path)
+    let mut config = config::Config::new(&args.config_path)
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
         if config.gc_snipe {
@@ -109,7 +109,7 @@ async fn main() -> Result<()> {
         }
         let mut bearer_tokens = Vec::new();
         let mut is_warned = false;
-        for account in &config.account_entry {
+        for (account_idx, account) in config.account_entry.clone().iter().enumerate() {
             let bearer_token = if task == SnipeTask::Mojang {
                 requestor
                     .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
@@ -122,12 +122,14 @@ async fn main() -> Result<()> {
             } else {
                 let authenticator = msauth::Auth::new(&account.email, &account.password)
                     .with_context(|| "Error creating Microsoft authenticator")?;
-                authenticator.authenticate().with_context(|| {
-                    format!(
-                        "Failed to authenticate the Microsoft account: {}",
-                        account.email
-                    )
-                })?
+                match authenticator.authenticate() {
+                    Ok(x) => x,
+                    Err(_) => {
+                        println!("Failed to authenticate a Microsoft account, removing it from the list...");
+                        config.account_entry.remove(account_idx);
+                        continue;
+                    }
+                }
             };
             if task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &account.giftcode {

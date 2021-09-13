@@ -20,7 +20,7 @@ pub struct Skin {
     pub slim: bool,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct Account {
     pub email: String,
     pub password: String,
