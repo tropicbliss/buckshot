@@ -125,7 +125,7 @@ async fn main() -> Result<()> {
                 match authenticator.authenticate() {
                     Ok(x) => x,
                     Err(_) => {
-                        println!("Failed to authenticate a Microsoft account, removing it from the list...");
+                        println!("{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red());
                         config.account_entry.remove(account_idx);
                         continue;
                     }
@@ -165,6 +165,10 @@ async fn main() -> Result<()> {
                 println!("Waiting 20 seconds to prevent rate limiting...");
                 sleep(std::time::Duration::from_secs(20));
             }
+        }
+        if bearer_tokens.is_empty() {
+            println!("{}", style("No Microsoft accounts left to use").red());
+            break;
         }
         println!("{}", style("Successfully signed in").green());
         println!("Setup complete");
