@@ -110,6 +110,10 @@ async fn main() -> Result<()> {
         let mut bearer_tokens = Vec::new();
         let mut is_warned = false;
         for (account_idx, account) in config.account_entry.clone().iter().enumerate() {
+            if account_idx != 0 {
+                println!("Waiting 20 seconds to prevent rate limiting...");
+                sleep(std::time::Duration::from_secs(20));
+            }
             let bearer_token = if task == SnipeTask::Mojang {
                 requestor
                     .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
@@ -122,32 +126,33 @@ async fn main() -> Result<()> {
             } else {
                 let authenticator = msauth::Auth::new(&account.email, &account.password)
                     .with_context(|| "Error creating Microsoft authenticator")?;
-                match authenticator.authenticate() {
-                    Ok(x) => x,
-                    Err(_) => {
-                        if task == SnipeTask::Giftcode {
-                            println!("{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red());
-                        } else {
-                            bail!(
-                                "Failed to authenticate the Microsoft account: {}",
-                                account.email
-                            );
-                        }
-                        config.account_entry.remove(account_idx);
-                        continue;
+                if let Ok(x) = authenticator.authenticate() {
+                    x
+                } else {
+                    if config.account_entry.len() == 1 {
+                        bail!(
+                            "Failed to authenticate the Microsoft account: {}",
+                            account.email
+                        );
                     }
+                    println!("{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red());
+                    config.account_entry.remove(account_idx);
+                    continue;
                 }
             };
             if task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &account.giftcode {
-                    requestor
-                        .redeem_giftcode(&bearer_token, gc)
-                        .with_context(|| {
-                            format!(
-                                "Failed to redeem giftcode of the account: {}",
+                    if requestor.redeem_giftcode(&bearer_token, gc).is_err() {
+                        if config.account_entry.len() == 1 {
+                            bail!(
+                                "Failed to redeem the giftcode of the account: {}",
                                 account.email
-                            )
-                        })?;
+                            );
+                        }
+                        println!("{}", style("Failed to redeem the giftcode of an account, removing it from the list...").red());
+                        config.account_entry.remove(account_idx);
+                        continue;
+                    }
                     println!("{}", style("Successfully redeemed giftcode").green());
                 } else if !is_warned {
                     println!(
@@ -168,10 +173,6 @@ async fn main() -> Result<()> {
                     })?;
             }
             bearer_tokens.push(bearer_token);
-            if config.account_entry.len() != 1 {
-                println!("Waiting 20 seconds to prevent rate limiting...");
-                sleep(std::time::Duration::from_secs(20));
-            }
         }
         if bearer_tokens.is_empty() {
             println!("{}", style("No Microsoft accounts left to use").red());
