@@ -125,7 +125,14 @@ async fn main() -> Result<()> {
                 match authenticator.authenticate() {
                     Ok(x) => x,
                     Err(_) => {
-                        println!("{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red());
+                        if task == SnipeTask::Giftcode {
+                            println!("{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red());
+                        } else {
+                            bail!(
+                                "Failed to authenticate the Microsoft account: {}",
+                                account.email
+                            );
+                        }
                         config.account_entry.remove(account_idx);
                         continue;
                     }
