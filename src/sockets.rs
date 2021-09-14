@@ -87,7 +87,7 @@ impl<'a> Executor<'a> {
                     let socket = TcpStream::connect(&addr).await?;
                     let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
                     socket.write_all(&payload).await?;
-                    let sleep_duration = match (handshake_time - Utc::now()).to_std() {
+                    let sleep_duration = match (snipe_time - Utc::now()).to_std() {
                         Ok(x) => x,
                         Err(_) => std::time::Duration::ZERO,
                     };
