@@ -109,8 +109,9 @@ async fn main() -> Result<()> {
         }
         let mut bearer_tokens = Vec::new();
         let mut is_warned = false;
-        for (account_idx, account) in config.account_entry.clone().iter().enumerate() {
-            if account_idx != 0 {
+        let mut account_idx = 0;
+        for (count, account) in config.account_entry.clone().iter().enumerate() {
+            if count != 0 {
                 println!("Waiting 20 seconds to prevent rate limiting...");
                 sleep(std::time::Duration::from_secs(20));
             }
@@ -162,6 +163,7 @@ async fn main() -> Result<()> {
                     is_warned = true;
                 }
             }
+            account_idx += 1;
             if task != SnipeTask::Giftcode {
                 requestor
                     .check_name_change_eligibility(&bearer_token)
