@@ -175,8 +175,7 @@ async fn main() -> Result<()> {
             bearer_tokens.push(bearer_token);
         }
         if bearer_tokens.is_empty() {
-            println!("{}", style("No Microsoft accounts left to use").red());
-            break;
+            bail!("No Microsoft accounts left to use");
         }
         println!("{}", style("Successfully signed in").green());
         println!("Setup complete");
