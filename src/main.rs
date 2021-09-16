@@ -79,7 +79,7 @@ async fn main() -> Result<()> {
         let wait_time = droptime - Utc::now();
         let formatted_wait_time = HumanTime::from(wait_time);
         println!(
-            r#"Sniping "{}" in {} | sniping at {} (utc)"#,
+            r#"Sniping "{}" {} | sniping at {} (utc)"#,
             name, formatted_wait_time, formatted_droptime
         );
         let snipe_time = droptime - Duration::milliseconds(offset);
