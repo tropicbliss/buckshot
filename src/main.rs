@@ -6,6 +6,7 @@ mod sockets;
 
 use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
+use chrono_humanize::{Accuracy, HumanTime, Tense};
 use console::style;
 use std::thread::sleep;
 
@@ -75,22 +76,14 @@ async fn main() -> Result<()> {
         };
         println!("Your offset is: {} ms", offset);
         let formatted_droptime = droptime.format("%F %T");
-        let duration_in_sec = droptime - Utc::now();
-        if duration_in_sec < Duration::minutes(1) {
-            println!(
-                "Sniping {} in ~{} seconds | sniping at {} (utc)",
-                name,
-                duration_in_sec.num_seconds(),
-                formatted_droptime
-            );
-        } else {
-            println!(
-                "Sniping {} in ~{} minutes | sniping at {} (utc)",
-                name,
-                duration_in_sec.num_minutes(),
-                formatted_droptime
-            );
-        }
+        let wait_time = droptime - Utc::now();
+        let formatted_wait_time = HumanTime::from(wait_time);
+        println!(
+            r#"Sniping "{}" in {} | sniping at {} (utc)"#,
+            name,
+            formatted_wait_time.to_text_en(Accuracy::Precise, Tense::Present),
+            formatted_droptime
+        );
         let snipe_time = droptime - Duration::milliseconds(offset);
         let setup_time = snipe_time - Duration::hours(12);
         if Utc::now() < setup_time {
