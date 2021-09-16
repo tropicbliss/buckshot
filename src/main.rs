@@ -81,7 +81,7 @@ async fn main() -> Result<()> {
         println!(
             r#"Sniping "{}" in {} | sniping at {} (utc)"#,
             name,
-            formatted_wait_time.to_text_en(Accuracy::Precise, Tense::Present),
+            formatted_wait_time.to_text_en(Accuracy::Rough, Tense::Present),
             formatted_droptime
         );
         let snipe_time = droptime - Duration::milliseconds(offset);
