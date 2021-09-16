@@ -6,7 +6,7 @@ mod sockets;
 
 use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
-use chrono_humanize::{Accuracy, HumanTime, Tense};
+use chrono_humanize::HumanTime;
 use console::style;
 use std::thread::sleep;
 
@@ -80,9 +80,7 @@ async fn main() -> Result<()> {
         let formatted_wait_time = HumanTime::from(wait_time);
         println!(
             r#"Sniping "{}" in {} | sniping at {} (utc)"#,
-            name,
-            formatted_wait_time.to_text_en(Accuracy::Rough, Tense::Present),
-            formatted_droptime
+            name, formatted_wait_time, formatted_droptime
         );
         let snipe_time = droptime - Duration::milliseconds(offset);
         let setup_time = snipe_time - Duration::hours(12);
