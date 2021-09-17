@@ -199,7 +199,7 @@ impl<'a> Auth<'a> {
             if err == 2_148_916_238 {
                 bail!("The account is a child (under 18) and cannot proceed unless the account is added to a family by an adult");
             }
-            bail!("Something went wrong.");
+            bail!("Something went wrong");
         } else if status.as_u16() == 200 {
             let token = v["Token"]
                 .as_str()
