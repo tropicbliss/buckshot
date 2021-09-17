@@ -6,7 +6,11 @@ use reqwest::{
     header::ACCEPT,
 };
 use serde_json::{json, Value};
-use std::{path::Path, time::Duration};
+use std::{
+    io::{stdout, Write},
+    path::Path,
+    time::Duration,
+};
 
 pub struct Requests {
     client: Client,
@@ -157,10 +161,11 @@ impl Requests {
                 let error = v["error"]
                     .as_str()
                     .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
-                println!(
+                writeln!(
+                    stdout(),
                     "{}",
                     style(format!("Failed to get droptime of {}: {}", name, error)).red()
-                );
+                )?;
                 Ok(None)
             }
             _ => bail!("HTTP {}", status),

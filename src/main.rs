@@ -8,7 +8,10 @@ use anyhow::{bail, Context, Result};
 use chrono::{Duration, Utc};
 use chrono_humanize::HumanTime;
 use console::style;
-use std::thread::sleep;
+use std::{
+    io::{stdout, Write},
+    thread::sleep,
+};
 
 #[derive(PartialEq)]
 pub enum SnipeTask {
@@ -24,7 +27,7 @@ async fn main() -> Result<()> {
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
         if config.gc_snipe {
-            println!("{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red());
+            writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
             SnipeTask::Giftcode
         } else {
             SnipeTask::Mojang
@@ -50,11 +53,11 @@ async fn main() -> Result<()> {
     let requestor = requests::Requests::new()?;
     for (count, name) in name_list.into_iter().enumerate() {
         if count != 0 {
-            println!("Moving on to next name...");
-            println!("Waiting 20 seconds to prevent rate limiting...");
+            writeln!(stdout(), "Moving on to next name...")?;
+            writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
             sleep(std::time::Duration::from_secs(20));
         }
-        println!("Initialising...");
+        writeln!(stdout(), "Initialising...")?;
         let droptime = if let Some(x) = requestor
             .check_name_availability_time(&name)
             .with_context(|| format!("Failed to get the droptime of {}", name))?
@@ -68,20 +71,23 @@ async fn main() -> Result<()> {
         let offset = if let Some(x) = config.offset {
             x
         } else {
-            println!("Calculating offset...");
+            writeln!(stdout(), "Calculating offset...")?;
             executor
                 .auto_offset_calculator()
                 .await
                 .with_context(|| "Failed to calculate offset")?
         };
-        println!("Your offset is: {} ms", offset);
+        writeln!(stdout(), "Your offset is: {} ms", offset)?;
         let formatted_droptime = droptime.format("%F %T");
         let wait_time = droptime - Utc::now();
         let formatted_wait_time = HumanTime::from(wait_time);
-        println!(
+        writeln!(
+            stdout(),
             r#"Sniping "{}" {} | sniping at {} (utc)"#,
-            name, formatted_wait_time, formatted_droptime
-        );
+            name,
+            formatted_wait_time,
+            formatted_droptime
+        )?;
         let snipe_time = droptime - Duration::milliseconds(offset);
         let setup_time = snipe_time - Duration::hours(12);
         if Utc::now() < setup_time {
@@ -98,12 +104,12 @@ async fn main() -> Result<()> {
                 continue;
             }
         }
-        let mut bearer_tokens = Vec::new();
+        let mut bearer_tokens = Vec::with_capacity(config.account_entry.len());
         let mut is_warned = false;
         let mut account_idx = 0;
         for (count, account) in config.account_entry.clone().iter().enumerate() {
             if count != 0 {
-                println!("Waiting 20 seconds to prevent rate limiting...");
+                writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
                 sleep(std::time::Duration::from_secs(20));
             }
             let bearer_token = if task == SnipeTask::Mojang {
@@ -127,7 +133,7 @@ async fn main() -> Result<()> {
                             account.email
                         );
                     }
-                    println!("{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red());
+                    writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red())?;
                     config.account_entry.remove(account_idx);
                     continue;
                 }
@@ -141,16 +147,21 @@ async fn main() -> Result<()> {
                                 account.email
                             );
                         }
-                        println!("{}", style("Failed to redeem the giftcode of an account, removing it from the list...").red());
+                        writeln!(stdout(), "{}", style("Failed to redeem the giftcode of an account, removing it from the list...").red())?;
                         config.account_entry.remove(account_idx);
                         continue;
                     }
-                    println!("{}", style("Successfully redeemed giftcode").green());
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        style("Successfully redeemed giftcode").green()
+                    )?;
                 } else if !is_warned {
-                    println!(
+                    writeln!(
+                        stdout(),
                         "{}",
                         style("Reminder: You should redeem your giftcode before GC sniping").red()
-                    );
+                    )?;
                     is_warned = true;
                 }
             }
@@ -170,18 +181,19 @@ async fn main() -> Result<()> {
         if bearer_tokens.is_empty() {
             bail!("No Microsoft accounts left to use");
         }
-        println!("{}", style("Successfully signed in").green());
-        println!("Setup complete");
+        writeln!(stdout(), "{}", style("Successfully signed in").green())?;
+        writeln!(stdout(), "Setup complete")?;
         match executor
             .snipe_executor(&bearer_tokens, config.spread, snipe_time)
             .await
             .with_context(|| format!("Failed to execute the snipe of {}", name))?
         {
             Some(account_idx) => {
-                println!(
+                writeln!(
+                    stdout(),
                     "{}",
                     style(format!("Successfully sniped {}!", name)).green()
-                );
+                )?;
                 if let Some(skin) = &config.skin {
                     let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
                     requestor
@@ -192,12 +204,12 @@ async fn main() -> Result<()> {
                                 config.account_entry[account_idx].email
                             )
                         })?;
-                    println!("{}", style("Successfully changed skin").green());
+                    writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
                 }
                 break;
             }
             None => {
-                println!("Failed to snipe {}", name);
+                writeln!(stdout(), "Failed to snipe {}", name)?;
             }
         }
     }

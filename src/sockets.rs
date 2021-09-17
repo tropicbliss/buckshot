@@ -4,6 +4,7 @@ use console::style;
 use native_tls::TlsConnector;
 use serde_json::json;
 use std::convert::TryFrom;
+use std::io::{stdout, Write};
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use std::time::Instant;
@@ -99,21 +100,23 @@ impl<'a> Executor<'a> {
                     let status: u16 = res[9..].parse()?;
                     match status {
                         200 => {
-                            println!(
+                            writeln!(
+                                stdout(),
                                 "[{}] {} @ {}",
                                 style("success").green(),
                                 style("200").green(),
                                 style(format!("{}", formatted_res_time)).cyan()
-                            );
+                            )?;
                             Ok(Some(account_idx))
                         }
                         status => {
-                            println!(
+                            writeln!(
+                                stdout(),
                                 "[{}] {} @ {}",
                                 style("fail").red(),
                                 style(format!("{}", status)).red(),
                                 style(format!("{}", formatted_res_time)).cyan()
-                            );
+                            )?;
                             Ok(None)
                         }
                     }
