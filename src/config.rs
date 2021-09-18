@@ -31,11 +31,11 @@ pub struct Account {
 
 impl Config {
     pub fn new(config_path: &Path) -> Result<Self> {
-        let s = match read_to_string(&config_path) {
+        let cfg_str = match read_to_string(&config_path) {
             Ok(x) => x,
             Err(y) if y.kind() == ErrorKind::NotFound => {
-                let config_s = include_bytes!("config.toml");
-                write(config_path, config_s)?;
+                let sample_cfg_u8 = include_bytes!("config.toml");
+                write(config_path, sample_cfg_u8)?;
                 bail!(
                     "{} not found, creating a sample config file",
                     config_path.display()
@@ -43,7 +43,7 @@ impl Config {
             }
             Err(z) => bail!(z),
         };
-        let cfg: Self = toml::from_str(&s)?;
+        let cfg: Self = toml::from_str(&cfg_str)?;
         Ok(cfg)
     }
 }
