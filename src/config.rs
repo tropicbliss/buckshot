@@ -34,7 +34,7 @@ impl Config {
         let cfg_str = match read_to_string(&config_path) {
             Ok(x) => x,
             Err(y) if y.kind() == ErrorKind::NotFound => {
-                let sample_cfg_u8 = include_bytes!("config.toml");
+                let sample_cfg_u8 = include_bytes!("../config.toml");
                 write(config_path, sample_cfg_u8)?;
                 bail!(
                     "{} not found, creating a sample config file",
