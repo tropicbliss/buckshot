@@ -1,6 +1,6 @@
 # Optional fields are marked with a '#' at the start of each line (uncomment the fields by removing the '#' at the start of each line)
 
-spread = 0
+spread = 0 # delay between each snipe request (try not to change this field unless you are confident that you need more spread between requests)
 microsoft_auth = true
 gc_snipe = false
 
