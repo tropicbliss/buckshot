@@ -11,9 +11,9 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Auto offset
 - Change skin on snipe
 - Name queueing
+- Multi account support for GC sniping
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks [arceus-sniper](https://github.com/aquild/arceus) for yoinking your feature list phrasing)
-- Multi account support for GC sniping
 
 ## Setup
 
