@@ -124,38 +124,49 @@ async fn main() -> Result<()> {
             } else {
                 let authenticator = msauth::Auth::new(&account.email, &account.password)
                     .with_context(|| "Error creating Microsoft authenticator")?;
-                if let Ok(x) = authenticator.authenticate() {
-                    x
-                } else {
-                    if config.account_entry.len() == 1 {
-                        bail!(
-                            "Failed to authenticate the Microsoft account: {}",
-                            account.email
-                        );
+                match authenticator.authenticate().with_context(|| {
+                    format!(
+                        "Failed to authenticate the Microsoft account: {}",
+                        account.email
+                    )
+                }) {
+                    Ok(x) => x,
+                    Err(y) => {
+                        if config.account_entry.len() == 1 {
+                            bail!(y)
+                        }
+                        writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red())?;
+                        config.account_entry.remove(account_idx);
+                        continue;
                     }
-                    writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red())?;
-                    config.account_entry.remove(account_idx);
-                    continue;
                 }
             };
             if task == SnipeTask::Giftcode && count == 0 {
                 if let Some(gc) = &account.giftcode {
-                    if requestor.redeem_giftcode(&bearer_token, gc).is_err() {
-                        if config.account_entry.len() == 1 {
-                            bail!(
+                    match requestor
+                        .redeem_giftcode(&bearer_token, gc)
+                        .with_context(|| {
+                            format!(
                                 "Failed to redeem the giftcode of the account: {}",
                                 account.email
-                            );
+                            )
+                        }) {
+                        Ok(_) => {
+                            writeln!(
+                                stdout(),
+                                "{}",
+                                style("Successfully redeemed giftcode").green()
+                            )?;
                         }
-                        writeln!(stdout(), "{}", style("Failed to redeem the giftcode of an account, removing it from the list...").red())?;
-                        config.account_entry.remove(account_idx);
-                        continue;
+                        Err(y) => {
+                            if config.account_entry.len() == 1 {
+                                bail!(y);
+                            }
+                            writeln!(stdout(), "{}", style("Failed to redeem the giftcode of an account, removing it from the list...").red())?;
+                            config.account_entry.remove(account_idx);
+                            continue;
+                        }
                     }
-                    writeln!(
-                        stdout(),
-                        "{}",
-                        style("Successfully redeemed giftcode").green()
-                    )?;
                 } else if !is_warned {
                     writeln!(
                         stdout(),
