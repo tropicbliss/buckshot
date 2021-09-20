@@ -11,20 +11,20 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Auto offset
 - Change skin on snipe
 - Name queueing
+- Multi account support for GC sniping
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks [arceus-sniper](https://github.com/aquild/arceus) for yoinking your feature list phrasing)
 
-## Limitations
+## Issues
 
-- No multi-account support for sniping with GCs (though beta version now has support for it)
+- Microsoft account authentication doesn't work in macOS
 
 ## Setup
 
-1. Download the sniper [here](https://github.com/chronicallyunfunny/buckshot/releases/latest).
-2. Use Dimension 4 on Windows for time synchronisation.
-3. Open up the terminal and navigate to the working directory and run `./buckshot-<platform>-<architecture>` (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`). I assume you use MCsniperPY so this process should be relatively straightforward.
-4. This should generate `config.toml` on the same directory in which you can edit.
-5. Read the errors. I've spent a large amount of time making the errors easy to read. If you encounter HTTP errors, something might be wrong with the internet or the servers on the other end.
+1. Download the [sniper](https://github.com/chronicallyunfunny/buckshot/releases/latest). Only Windows and Linux executables are provided. Microsoft account authentication doesn't work in macOS.
+2. Download Dimension 4 on Windows or `chrony` on Linux for time synchronisation.
+3. Open up the terminal and navigate to the working directory and run `./buckshot` (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`). I assume you use MCsniperPY so this process should be relatively straightforward.
+4. If `config.toml` is not found in the current directory, Buckshot generates a sample config file. Edit the file to make any necessary adjustments. I would recommend reading up on TOML files if you are unfamiliar with this file format.
 
 ## Moar tips for sniping
 
