@@ -17,7 +17,7 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 
 ## Issues
 
-- Microsoft Authentication does not work on macOS.
+- Microsoft Authentication does not work on macOS
 
 ## Setup
 
