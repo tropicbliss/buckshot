@@ -15,16 +15,15 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks [arceus-sniper](https://github.com/aquild/arceus) for yoinking your feature list phrasing)
 
-## Issues
-
-- Microsoft account authentication doesn't work in macOS
-
 ## Setup
 
-1. Download the [sniper](https://github.com/chronicallyunfunny/buckshot/releases/latest). Only Windows and Linux executables are provided. Microsoft account authentication doesn't work in macOS.
-2. Download Dimension 4 on Windows or `chrony` on Linux for time synchronisation.
-3. Open up the terminal and navigate to the working directory and run `./buckshot` (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`). I assume you use MCsniperPY so this process should be relatively straightforward.
-4. If `config.toml` is not found in the current directory, Buckshot generates a sample config file. Edit the file to make any necessary adjustments. I would recommend reading up on TOML files if you are unfamiliar with this file format.
+1. Download the [latest release](https://github.com/chronicallyunfunny/buckshot/releases/latest) for your operating system.
+2. Download Dimension 4 on Windows or `chrony` on Linux for accurate time synchronisation.
+3. Run that file once. `config.toml` will appear in the current directory.
+5. Open up the terminal and navigate to the working directory. If you are not on Windows, run `sudo chmod +x binary_name_here`.
+6. Run `./buckshot` (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`). `config_toml` will appear in the current directory.
+7. Open `config.toml`. Add your accounts and configure the sniper settings according to your use case. I would recommend reading up on TOML files if you are unfamiliar with this file format.
+8. Run the sniper with the same commands used before in step 6.
 
 ## Moar tips for sniping
 
