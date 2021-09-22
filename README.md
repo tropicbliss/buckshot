@@ -15,6 +15,10 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 - Low latency by opening the TCP connections before sending requests
 - High requests/second by bypassing HTTP overhead (thanks [arceus-sniper](https://github.com/aquild/arceus) for yoinking your feature list phrasing)
 
+## Issues
+
+- Microsoft Authentication does not work on macOS.
+
 ## Setup
 
 1. Download the [latest release](https://github.com/chronicallyunfunny/buckshot/releases/latest) for your operating system.
