@@ -37,10 +37,16 @@ async fn main() -> Result<()> {
     } else {
         SnipeTask::Microsoft
     };
-    if task != SnipeTask::Giftcode && config.account_entry.len() != 1 {
+    if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
         bail!(
             "You can only provide 1 account in config file as sniper is not set to GC sniping mode"
         );
+    }
+    if config.account_entry.is_empty() {
+        bail!("No accounts provided in config file");
+    }
+    if config.account_entry.len() > 10 {
+        bail!("Only a max of 10 accounts is allowed when GC sniping");
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
