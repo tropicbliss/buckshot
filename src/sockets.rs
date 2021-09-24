@@ -18,6 +18,12 @@ pub struct Executor<'a> {
     is_gc: bool,
 }
 
+struct ResData {
+    status: u16,
+    timestamp: DateTime<Utc>,
+    account_idx: usize,
+}
+
 impl<'a> Executor<'a> {
     pub fn new(name: &'a str, is_gc: bool) -> Self {
         Self { name, is_gc }
@@ -54,6 +60,7 @@ impl<'a> Executor<'a> {
         spread_offset: usize,
         snipe_time: DateTime<Utc>,
     ) -> Result<Option<usize>> {
+        let mut is_success = None;
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut spread = 0;
         let addr = "api.minecraftservices.com:443"
@@ -95,42 +102,45 @@ impl<'a> Executor<'a> {
                     sleep(sleep_duration).await;
                     socket.write_all(b"\r\n").await?;
                     socket.read_exact(&mut buf).await?;
-                    let formatted_res_time = Utc::now().format("%F %T%.6f");
+                    let timestamp = Utc::now();
                     let res = String::from_utf8_lossy(&buf[..]);
                     let status: u16 = res[9..].parse()?;
-                    match status {
-                        200 => {
-                            writeln!(
-                                stdout(),
-                                "[{}] {} @ {}",
-                                style("success").green(),
-                                style("200").green(),
-                                style(format!("{}", formatted_res_time)).cyan()
-                            )?;
-                            Ok(Some(account_idx))
-                        }
-                        status => {
-                            writeln!(
-                                stdout(),
-                                "[{}] {} @ {}",
-                                style("fail").red(),
-                                style(format!("{}", status)).red(),
-                                style(format!("{}", formatted_res_time)).cyan()
-                            )?;
-                            Ok(None)
-                        }
-                    }
+                    let res_data = ResData {
+                        status,
+                        timestamp,
+                        account_idx,
+                    };
+                    Ok(res_data)
                 });
                 spread += spread_offset as i64;
                 handle_vec.push(handle);
             }
         }
         for handle in handle_vec {
-            let status = handle.await??;
-            if status.is_some() {
-                return Ok(status);
+            let res_data = handle.await??;
+            let formatted_timestamp = res_data.timestamp.format("%F %T%.6f");
+            match res_data.status {
+                200 => {
+                    writeln!(
+                        stdout(),
+                        "[{}] {} @ {}",
+                        style("success").green(),
+                        style("200").green(),
+                        style(format!("{}", formatted_timestamp)).cyan()
+                    )?;
+                    is_success = Some(res_data.account_idx);
+                }
+                status => {
+                    writeln!(
+                        stdout(),
+                        "[{}] {} @ {}",
+                        style("fail").red(),
+                        style(format!("{}", status)).red(),
+                        style(format!("{}", formatted_timestamp)).cyan()
+                    )?;
+                }
             }
         }
-        Ok(None)
+        Ok(is_success)
     }
 }
