@@ -144,7 +144,7 @@ impl Requests {
     }
 
     pub fn check_name_availability_time(&self, name: &str) -> Result<Option<DateTime<Utc>>> {
-        let url = format!("https://api.star.shopping/droptime/{}", name);
+        let url = format!("http://api.star.shopping/droptime/{}", name);
         let res = self.client.get(url).send()?;
         let status = res.status();
         let body = res.text()?;
