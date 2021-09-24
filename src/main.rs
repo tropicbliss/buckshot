@@ -56,6 +56,9 @@ async fn main() -> Result<()> {
         let name = cli::get_name_choice().with_context(|| "Failed to get name choice")?;
         vec![name]
     };
+    if name_list.is_empty() {
+        bail!("No name provided in name queue");
+    }
     let requestor = requests::Requests::new()?;
     for (count, name) in name_list.into_iter().enumerate() {
         if count != 0 {
