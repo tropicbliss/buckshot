@@ -1,10 +1,8 @@
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Duration, Utc};
-use console::style;
 use native_tls::TlsConnector;
 use serde_json::json;
 use std::convert::TryFrom;
-use std::io::{stdout, Write};
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use std::time::Instant;
@@ -18,10 +16,10 @@ pub struct Executor<'a> {
     is_gc: bool,
 }
 
-struct ResData {
-    status: u16,
-    timestamp: DateTime<Utc>,
-    account_idx: usize,
+pub struct ResData {
+    pub status: u16,
+    pub timestamp: DateTime<Utc>,
+    pub account_idx: usize,
 }
 
 impl<'a> Executor<'a> {
@@ -59,8 +57,7 @@ impl<'a> Executor<'a> {
         bearer_tokens: &[String],
         spread_offset: usize,
         snipe_time: DateTime<Utc>,
-    ) -> Result<Option<usize>> {
-        let mut is_success = None;
+    ) -> Result<Vec<ResData>> {
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut spread = 0;
         let addr = "api.minecraftservices.com:443"
@@ -122,30 +119,6 @@ impl<'a> Executor<'a> {
             res_vec.push(res_data);
         }
         res_vec.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
-        for res_data in res_vec {
-            let formatted_timestamp = res_data.timestamp.format("%F %T%.6f");
-            match res_data.status {
-                200 => {
-                    writeln!(
-                        stdout(),
-                        "[{}] {} @ {}",
-                        style("success").green(),
-                        style("200").green(),
-                        style(format!("{}", formatted_timestamp)).cyan()
-                    )?;
-                    is_success = Some(res_data.account_idx);
-                }
-                status => {
-                    writeln!(
-                        stdout(),
-                        "[{}] {} @ {}",
-                        style("fail").red(),
-                        style(format!("{}", status)).red(),
-                        style(format!("{}", formatted_timestamp)).cyan()
-                    )?;
-                }
-            }
-        }
-        Ok(is_success)
+        Ok(res_vec)
     }
 }

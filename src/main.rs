@@ -67,13 +67,19 @@ async fn main() -> Result<()> {
             sleep(std::time::Duration::from_secs(20));
         }
         writeln!(stdout(), "Initialising...")?;
-        let droptime = if let Some(x) = requestor
+        let droptime = match requestor
             .check_name_availability_time(&name)
             .with_context(|| format!("Failed to get the droptime of {}", name))?
         {
-            x
-        } else {
-            continue;
+            requests::DroptimeData::Available(droptime) => droptime,
+            requests::DroptimeData::Unavailable(error) => {
+                writeln!(
+                    stdout(),
+                    "{}",
+                    style(format!("Failed to get droptime of {}: {}", name, error)).red()
+                )?;
+                continue;
+            }
         };
         let is_gc = task == SnipeTask::Giftcode;
         let executor = sockets::Executor::new(&name, is_gc);
@@ -105,11 +111,15 @@ async fn main() -> Result<()> {
                 Err(_) => std::time::Duration::ZERO,
             };
             sleep(sleep_duration);
-            if requestor
+            if let requests::DroptimeData::Unavailable(error) = requestor
                 .check_name_availability_time(&name)
                 .with_context(|| format!("Failed to get the droptime of {}", name))?
-                .is_none()
             {
+                writeln!(
+                    stdout(),
+                    "{}",
+                    style(format!("Failed to get droptime of {}: {}", name, error)).red()
+                )?;
                 continue;
             }
         }
@@ -203,34 +213,56 @@ async fn main() -> Result<()> {
         }
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         writeln!(stdout(), "Setup complete")?;
-        match executor
+        let mut is_success = None;
+        let res_data = executor
             .snipe_executor(&bearer_tokens, config.spread, snipe_time)
             .await
-            .with_context(|| format!("Failed to execute the snipe of {}", name))?
-        {
-            Some(account_idx) => {
-                writeln!(
-                    stdout(),
-                    "{}",
-                    style(format!("Successfully sniped {}!", name)).green()
-                )?;
-                if let Some(skin) = &config.skin {
-                    let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
-                    requestor
-                        .upload_skin(&bearer_tokens[account_idx], &skin.skin_path, skin_model)
-                        .with_context(|| {
-                            format!(
-                                "Failed to change the skin of {}",
-                                config.account_entry[account_idx].email
-                            )
-                        })?;
-                    writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
+            .with_context(|| format!("Failed to execute the snipe of {}", name))?;
+        for res in res_data {
+            let formatted_timestamp = res.timestamp.format("%F %T%.6f");
+            match res.status {
+                200 => {
+                    writeln!(
+                        stdout(),
+                        "[{}] {} @ {}",
+                        style("success").green(),
+                        style("200").green(),
+                        style(format!("{}", formatted_timestamp)).cyan()
+                    )?;
+                    is_success = Some(res.account_idx);
                 }
-                break;
+                status => {
+                    writeln!(
+                        stdout(),
+                        "[{}] {} @ {}",
+                        style("fail").red(),
+                        style(format!("{}", status)).red(),
+                        style(format!("{}", formatted_timestamp)).cyan()
+                    )?;
+                }
             }
-            None => {
-                writeln!(stdout(), "Failed to snipe {}", name)?;
+        }
+        if let Some(account_idx) = is_success {
+            writeln!(
+                stdout(),
+                "{}",
+                style(format!("Successfully sniped {}!", name)).green()
+            )?;
+            if let Some(skin) = &config.skin {
+                let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
+                requestor
+                    .upload_skin(&bearer_tokens[account_idx], &skin.skin_path, skin_model)
+                    .with_context(|| {
+                        format!(
+                            "Failed to change the skin of {}",
+                            config.account_entry[account_idx].email
+                        )
+                    })?;
+                writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
             }
+            break;
+        } else {
+            writeln!(stdout(), "Failed to snipe {}", name)?;
         }
     }
     Ok(())

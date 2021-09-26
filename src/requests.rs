@@ -1,19 +1,19 @@
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, TimeZone, Utc};
-use console::style;
 use reqwest::{
     blocking::{multipart::Form, Client},
     header::ACCEPT,
 };
 use serde_json::{json, Value};
-use std::{
-    io::{stdout, Write},
-    path::Path,
-    time::Duration,
-};
+use std::{path::Path, time::Duration};
 
 pub struct Requests {
     client: Client,
+}
+
+pub enum DroptimeData {
+    Available(DateTime<Utc>),
+    Unavailable(String),
 }
 
 impl Requests {
@@ -143,7 +143,7 @@ impl Requests {
         }
     }
 
-    pub fn check_name_availability_time(&self, name: &str) -> Result<Option<DateTime<Utc>>> {
+    pub fn check_name_availability_time(&self, name: &str) -> Result<DroptimeData> {
         let url = format!("http://api.star.shopping/droptime/{}", name);
         let res = self.client.get(url).send()?;
         let status = res.status();
@@ -155,18 +155,14 @@ impl Requests {
                     .as_i64()
                     .ok_or_else(|| anyhow!("Unable to parse `unix` from JSON"))?;
                 let droptime = Utc.timestamp(epoch, 0);
-                Ok(Some(droptime))
+                Ok(DroptimeData::Available(droptime))
             }
             400 => {
                 let error = v["error"]
                     .as_str()
-                    .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?;
-                writeln!(
-                    stdout(),
-                    "{}",
-                    style(format!("Failed to get droptime of {}: {}", name, error)).red()
-                )?;
-                Ok(None)
+                    .ok_or_else(|| anyhow!("Unable to parse `error` from JSON"))?
+                    .to_string();
+                Ok(DroptimeData::Unavailable(error))
             }
             _ => bail!("HTTP {}", status),
         }
