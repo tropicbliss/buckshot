@@ -5,7 +5,6 @@ authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 edition = "2018"
 license = "MIT"
 description = "A performant and capable Minecraft name sniper"
-branch = "main"
 
 [dependencies]
 anyhow = "1.0"
