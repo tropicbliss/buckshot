@@ -127,6 +127,10 @@ async fn main() -> Result<()> {
         let mut is_warned = false;
         let mut account_idx = 0;
         for (count, account) in config.account_entry.clone().iter().enumerate() {
+            if let Some(bearer) = account.bearer.clone() {
+                bearer_tokens.push(bearer);
+                continue;
+            }
             if count != 0 {
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
                 sleep(std::time::Duration::from_secs(20));
