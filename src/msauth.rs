@@ -106,7 +106,6 @@ impl<'a> Auth<'a> {
                 bail!("Please disable 2FA at https://account.live.com/activity");
             }
         }
-        println!("{}", url);
         let mut param: HashMap<&str, &str> = url
             .fragment()
             .ok_or_else(|| anyhow!("Unable to get URL fragment"))?
