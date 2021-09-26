@@ -108,7 +108,7 @@ impl<'a> Auth<'a> {
         }
         let mut param: HashMap<&str, &str> = url
             .fragment()
-            .ok_or_else(|| anyhow!(r#"Please dismiss "unusual account activity" notification at https://account.live.com/activity"#))?
+            .ok_or_else(|| anyhow!(r#"Please dismiss "unusual account activity" alert at https://account.live.com/activity"#))?
             .split('&')
             .map(|kv| {
                 let mut key_value: Vec<&str> = kv.split('=').collect();
