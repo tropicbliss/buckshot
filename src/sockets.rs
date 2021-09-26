@@ -116,8 +116,13 @@ impl<'a> Executor<'a> {
                 handle_vec.push(handle);
             }
         }
+        let mut res_vec = Vec::with_capacity(req_count * bearer_tokens.len());
         for handle in handle_vec {
             let res_data = handle.await??;
+            res_vec.push(res_data);
+        }
+        res_vec.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+        for res_data in res_vec {
             let formatted_timestamp = res_data.timestamp.format("%F %T%.6f");
             match res_data.status {
                 200 => {
