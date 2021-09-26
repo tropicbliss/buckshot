@@ -8,7 +8,8 @@ gc_snipe = false
 email = "example@gmail.com"
 password = "youaremylittlepogchamp"
 #sq_ans = ["Foo", "Bar", "Baz"] # uncomment this if you are sniping with a Mojang account and have enabled security questions
-#giftcode = "abc" #uncomment this to enable auto giftcode redemption
+#giftcode = "abc" # uncomment this to enable auto giftcode redemption
+#bearer = "abacaba" # uncomment this to manually specify a bearer. This takes precedence over email and password
 
 #offset = 0 # uncomment this if you want a fixed offset
 #name_queue = ["Dream", "Marc"] # uncomment this to enable name queueing
