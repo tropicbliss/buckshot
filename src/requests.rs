@@ -1,11 +1,8 @@
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, TimeZone, Utc};
-use reqwest::{
-    blocking::{multipart::Form, Client},
-    header::ACCEPT,
-};
+use reqwest::{blocking::Client, header::ACCEPT};
 use serde_json::{json, Value};
-use std::{path::Path, time::Duration};
+use std::time::Duration;
 
 pub struct Requests {
     client: Client,
@@ -189,20 +186,16 @@ impl Requests {
         Ok(())
     }
 
-    pub fn upload_skin(
-        &self,
-        bearer_token: &str,
-        skin_path: &Path,
-        skin_model: String,
-    ) -> Result<()> {
-        let form = Form::new()
-            .text("variant", skin_model)
-            .file("file", skin_path)?;
+    pub fn upload_skin(&self, bearer_token: &str, skin_url: &str, skin_model: &str) -> Result<()> {
+        let post_body = json!({
+            "url": skin_url,
+            "variant": skin_model
+        });
         let res = self
             .client
             .post("https://api.minecraftservices.com/minecraft/profile/skins")
             .bearer_auth(bearer_token)
-            .multipart(form)
+            .json(&post_body)
             .send()?;
         let status = res.status();
         if status.as_u16() != 200 {

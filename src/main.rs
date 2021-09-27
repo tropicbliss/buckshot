@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic)]
+
 mod cli;
 mod config;
 mod msauth;
@@ -251,7 +253,7 @@ async fn main() -> Result<()> {
             if let Some(skin) = &config.skin {
                 let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
                 requestor
-                    .upload_skin(&bearer_tokens[account_idx], &skin.skin_path, skin_model)
+                    .upload_skin(&bearer_tokens[account_idx], &skin.skin_url, &skin_model)
                     .with_context(|| {
                         format!(
                             "Failed to change the skin of {}",
@@ -261,9 +263,8 @@ async fn main() -> Result<()> {
                 writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
             }
             break;
-        } else {
-            writeln!(stdout(), "Failed to snipe {}", name)?;
         }
+        writeln!(stdout(), "Failed to snipe {}", name)?;
     }
     Ok(())
 }

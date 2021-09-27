@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::fs::{read_to_string, write};
 use std::io::ErrorKind;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -17,7 +17,7 @@ pub struct Config {
 
 #[derive(Deserialize)]
 pub struct Skin {
-    pub skin_path: PathBuf,
+    pub skin_url: String,
     pub slim: bool,
 }
 
