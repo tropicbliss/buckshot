@@ -14,5 +14,6 @@ password = "youaremylittlepogchamp"
 #name_queue = ["Dream", "Marc"] # uncomment this to enable name queueing
 
 #[skin] # uncomment this section if you want the sniper to upload a new skin if the snipe is successful
-#skin_url = "https://texture.namemc.com/f7/a2/f7a2edf56e1bbad3.png"
+#is_file = false # determines whether the `path` field below is a path to your skin file or a URL
+#path = "https://texture.namemc.com/f7/a2/f7a2edf56e1bbad3.png"
 #slim = false
