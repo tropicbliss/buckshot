@@ -31,9 +31,9 @@ impl<'a> Executor<'a> {
         const SERVER_RES_TIME: i64 = 40;
         let mut buf = [0; 12];
         let addr = "api.minecraftservices.com:443"
-            .to_socket_addrs()?
+            .to_socket_addrs().unwrap()
             .next()
-            .ok_or_else(|| anyhow!("Invalid socket address"))?;
+            .unwrap();
         let payload = if self.is_gc {
             let post_body = json!({ "profileName": self.name }).to_string();
             format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", post_body.len(), post_body).into_bytes()
@@ -61,9 +61,9 @@ impl<'a> Executor<'a> {
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut spread = 0;
         let addr = "api.minecraftservices.com:443"
-            .to_socket_addrs()?
+            .to_socket_addrs().unwrap()
             .next()
-            .ok_or_else(|| anyhow!("Invalid socket address"))?;
+            .unwrap();
         let cx = TlsConnector::builder().build()?;
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let cx = Arc::new(cx);
