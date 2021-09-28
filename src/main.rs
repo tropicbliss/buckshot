@@ -253,7 +253,12 @@ async fn main() -> Result<()> {
             if let Some(skin) = &config.skin {
                 let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
                 requestor
-                    .upload_skin(&bearer_tokens[account_idx], &skin.skin_url, &skin_model)
+                    .upload_skin(
+                        &bearer_tokens[account_idx],
+                        &skin.path,
+                        skin_model,
+                        skin.is_file,
+                    )
                     .with_context(|| {
                         format!(
                             "Failed to change the skin of {}",
