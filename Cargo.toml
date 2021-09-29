@@ -22,7 +22,3 @@ structopt = "0.3"
 tokio = { version = "1.12", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-native-tls = "0.3"
 toml = "0.5"
-
-[profile.release]
-lto = true
-codegen-units = 1
