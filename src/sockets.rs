@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use native_tls::TlsConnector;
 use serde_json::json;
@@ -31,7 +31,7 @@ impl<'a> Executor<'a> {
         const SERVER_RES_TIME: i64 = 40;
         let mut buf = [0; 12];
         let addr = "api.minecraftservices.com:443"
-            .to_socket_addrs().unwrap()
+            .to_socket_addrs()?
             .next()
             .unwrap();
         let payload = if self.is_gc {
@@ -61,7 +61,7 @@ impl<'a> Executor<'a> {
         let req_count = if self.is_gc { 6 } else { 3 };
         let mut spread = 0;
         let addr = "api.minecraftservices.com:443"
-            .to_socket_addrs().unwrap()
+            .to_socket_addrs()?
             .next()
             .unwrap();
         let cx = TlsConnector::builder().build()?;
