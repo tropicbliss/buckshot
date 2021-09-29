@@ -13,6 +13,10 @@ pub struct Args {
     /// Name of config file (must be a TOML file)
     #[structopt(parse(from_os_str), short, long, default_value = "config.toml")]
     pub config_path: PathBuf,
+
+    /// Activate testing mode in which an invalid bearer token is used to snipe names
+    #[structopt(short, long)]
+    pub test: bool,
 }
 
 impl Args {
