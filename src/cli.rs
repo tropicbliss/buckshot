@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::Result;
 use dialoguer::Input;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -14,20 +14,14 @@ pub struct Args {
     #[structopt(parse(from_os_str), short, long, default_value = "config.toml")]
     pub config_path: PathBuf,
 
-    /// Indicate the number of invalid bearer tokens used to snipe names for testing
-    #[structopt(short, long, name = "count")]
-    pub test: Option<usize>,
+    /// Activate testing mode in which an invalid bearer token is used to snipe names
+    #[structopt(short, long)]
+    pub test: bool,
 }
 
 impl Args {
-    pub fn new() -> Result<Self> {
-        let args = Self::from_args();
-        if let Some(count) = args.test {
-            if count == 0 {
-                bail!("Test account count cannot be 0");
-            }
-        }
-        Ok(args)
+    pub fn new() -> Self {
+        Self::from_args()
     }
 }
 

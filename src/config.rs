@@ -51,6 +51,11 @@ impl Config {
         if cfg.account_entry.len() > 10 {
             bail!("Only a max of 10 accounts is allowed when GC sniping");
         }
+        if let Some(count) = &cfg.name_queue {
+            if count.is_empty() {
+                bail!("No name provided in name queue");
+            }
+        }
         Ok(cfg)
     }
 }

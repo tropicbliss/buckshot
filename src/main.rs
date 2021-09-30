@@ -22,7 +22,7 @@ pub enum SnipeTask {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = cli::Args::new().with_context(|| "Failed to parse command line arguments")?;
+    let args = cli::Args::new();
     let mut config = config::Config::new(&args.config_path)
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
@@ -50,9 +50,6 @@ async fn main() -> Result<()> {
         let name = cli::get_name_choice().with_context(|| "Failed to get name choice")?;
         vec![name]
     };
-    if name_list.is_empty() {
-        bail!("No name provided in name queue");
-    }
     let requestor = requests::Requests::new()?;
     for (count, name) in name_list.into_iter().enumerate() {
         if count != 0 {
@@ -117,8 +114,8 @@ async fn main() -> Result<()> {
                 continue;
             }
         }
-        let bearer_tokens = if let Some(count) = args.test {
-            vec!["abc123".to_string(); count]
+        let bearer_tokens = if args.test {
+            vec!["abc123".to_string()]
         } else {
             let mut bearer_tokens = Vec::with_capacity(config.account_entry.len());
             let mut is_warned = false;
