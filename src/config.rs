@@ -45,6 +45,12 @@ impl Config {
             Err(z) => bail!(z),
         };
         let cfg: Self = toml::from_str(&cfg_str)?;
+        if cfg.account_entry.is_empty() {
+            bail!("No accounts provided in config file");
+        }
+        if cfg.account_entry.len() > 10 {
+            bail!("Only a max of 10 accounts is allowed when GC sniping");
+        }
         Ok(cfg)
     }
 }
