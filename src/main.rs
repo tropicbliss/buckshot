@@ -22,7 +22,7 @@ pub enum SnipeTask {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = cli::Args::new();
+    let args = cli::Args::new().with_context(|| "Failed to parse command line arguments")?;
     let mut config = config::Config::new(&args.config_path)
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
@@ -37,7 +37,11 @@ async fn main() -> Result<()> {
     } else {
         SnipeTask::Microsoft
     };
-    if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
+    if let Some(count) = args.test {
+        if task != SnipeTask::Giftcode && count > 1 {
+            bail!("Test account count can only be 1 as sniper is not set to GC sniping mode");
+        }
+    } else if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
         bail!(
             "You can only provide 1 account in config file as sniper is not set to GC sniping mode"
         );
@@ -114,8 +118,8 @@ async fn main() -> Result<()> {
                 continue;
             }
         }
-        let bearer_tokens = if args.test {
-            vec!["abc123".to_string()]
+        let bearer_tokens = if let Some(count) = args.test {
+            vec!["token".to_string(); count]
         } else {
             let mut bearer_tokens = Vec::with_capacity(config.account_entry.len());
             let mut is_warned = false;
