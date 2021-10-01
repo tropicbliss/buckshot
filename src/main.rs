@@ -22,7 +22,7 @@ pub enum SnipeTask {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = cli::Args::new().with_context(|| "Failed to parse command line arguments")?;
+    let args = cli::Args::new();
     let mut config = config::Config::new(&args.config_path)
         .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
@@ -37,11 +37,7 @@ async fn main() -> Result<()> {
     } else {
         SnipeTask::Microsoft
     };
-    if let Some(count) = args.test {
-        if task != SnipeTask::Giftcode && count > 1 {
-            bail!("Test account count can only be 1 as sniper is not set to GC sniping mode");
-        }
-    } else if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
+    if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
         bail!(
             "You can only provide 1 account in config file as sniper is not set to GC sniping mode"
         );
@@ -118,100 +114,94 @@ async fn main() -> Result<()> {
                 continue;
             }
         }
-        let bearer_tokens = if let Some(count) = args.test {
-            vec!["token".to_string(); count]
-        } else {
-            let mut bearer_tokens = Vec::with_capacity(config.account_entry.len());
-            let mut is_warned = false;
-            let mut account_idx = 0;
-            for (count, account) in config.account_entry.clone().iter().enumerate() {
-                if count != 0 {
-                    writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
-                    sleep(std::time::Duration::from_secs(20));
-                }
-                let bearer_token = if task == SnipeTask::Mojang {
-                    requestor
-                        .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
-                        .with_context(|| {
-                            format!(
-                                "Failed to authenticate the Mojang account: {}",
-                                account.email
-                            )
-                        })?
-                } else {
-                    let authenticator = msauth::Auth::new(&account.email, &account.password)
-                        .with_context(|| "Error creating Microsoft authenticator")?;
-                    match authenticator.authenticate().with_context(|| {
+        let mut bearer_tokens = Vec::with_capacity(config.account_entry.len());
+        let mut is_warned = false;
+        let mut account_idx = 0;
+        for (count, account) in config.account_entry.clone().iter().enumerate() {
+            if count != 0 {
+                writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
+                sleep(std::time::Duration::from_secs(20));
+            }
+            let bearer_token = if task == SnipeTask::Mojang {
+                requestor
+                    .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
+                    .with_context(|| {
                         format!(
-                            "Failed to authenticate the Microsoft account: {}",
+                            "Failed to authenticate the Mojang account: {}",
                             account.email
                         )
-                    }) {
-                        Ok(x) => x,
+                    })?
+            } else {
+                let authenticator = msauth::Auth::new(&account.email, &account.password)
+                    .with_context(|| "Error creating Microsoft authenticator")?;
+                match authenticator.authenticate().with_context(|| {
+                    format!(
+                        "Failed to authenticate the Microsoft account: {}",
+                        account.email
+                    )
+                }) {
+                    Ok(x) => x,
+                    Err(y) => {
+                        if config.account_entry.len() == 1 {
+                            bail!(y)
+                        }
+                        writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red())?;
+                        config.account_entry.remove(account_idx);
+                        continue;
+                    }
+                }
+            };
+            if task == SnipeTask::Giftcode && count == 0 {
+                if let Some(gc) = &account.giftcode {
+                    match requestor
+                        .redeem_giftcode(&bearer_token, gc)
+                        .with_context(|| {
+                            format!(
+                                "Failed to redeem the giftcode of the account: {}",
+                                account.email
+                            )
+                        }) {
+                        Ok(_) => {
+                            writeln!(
+                                stdout(),
+                                "{}",
+                                style("Successfully redeemed giftcode").green()
+                            )?;
+                        }
                         Err(y) => {
                             if config.account_entry.len() == 1 {
-                                bail!(y)
+                                bail!(y);
                             }
-                            writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red())?;
+                            writeln!(stdout(), "{}", style("Failed to redeem the giftcode of an account, removing it from the list...").red())?;
                             config.account_entry.remove(account_idx);
                             continue;
                         }
                     }
-                };
-                if task == SnipeTask::Giftcode && count == 0 {
-                    if let Some(gc) = &account.giftcode {
-                        match requestor
-                            .redeem_giftcode(&bearer_token, gc)
-                            .with_context(|| {
-                                format!(
-                                    "Failed to redeem the giftcode of the account: {}",
-                                    account.email
-                                )
-                            }) {
-                            Ok(_) => {
-                                writeln!(
-                                    stdout(),
-                                    "{}",
-                                    style("Successfully redeemed giftcode").green()
-                                )?;
-                            }
-                            Err(y) => {
-                                if config.account_entry.len() == 1 {
-                                    bail!(y);
-                                }
-                                writeln!(stdout(), "{}", style("Failed to redeem the giftcode of an account, removing it from the list...").red())?;
-                                config.account_entry.remove(account_idx);
-                                continue;
-                            }
-                        }
-                    } else if !is_warned {
-                        writeln!(
-                            stdout(),
-                            "{}",
-                            style("Reminder: You should redeem your giftcode before GC sniping")
-                                .red()
-                        )?;
-                        is_warned = true;
-                    }
+                } else if !is_warned {
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        style("Reminder: You should redeem your giftcode before GC sniping").red()
+                    )?;
+                    is_warned = true;
                 }
-                account_idx += 1;
-                if task != SnipeTask::Giftcode {
-                    requestor
-                        .check_name_change_eligibility(&bearer_token)
-                        .with_context(|| {
-                            format!(
-                                "Failed to check name change eligibility of {}",
-                                account.email
-                            )
-                        })?;
-                }
-                bearer_tokens.push(bearer_token);
             }
-            if bearer_tokens.is_empty() {
-                bail!("No Microsoft accounts left to use");
+            account_idx += 1;
+            if task != SnipeTask::Giftcode {
+                requestor
+                    .check_name_change_eligibility(&bearer_token)
+                    .with_context(|| {
+                        format!(
+                            "Failed to check name change eligibility of {}",
+                            account.email
+                        )
+                    })?;
             }
-            bearer_tokens
-        };
+            bearer_tokens.push(bearer_token);
+        }
+        if bearer_tokens.is_empty() {
+            bail!("No Microsoft accounts left to use");
+        }
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         writeln!(stdout(), "Setup complete")?;
         let mut is_success = None;
