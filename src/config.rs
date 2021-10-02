@@ -38,7 +38,7 @@ impl Config {
                 let sample_cfg_u8 = include_bytes!("../config.toml");
                 write(config_path, sample_cfg_u8)?;
                 bail!(
-                    "{} not found, creating a sample config file",
+                    "`{}` not found, creating a sample config file",
                     config_path.display()
                 );
             }

@@ -24,7 +24,7 @@ pub enum SnipeTask {
 async fn main() -> Result<()> {
     let args = cli::Args::new();
     let mut config = config::Config::new(&args.config_path)
-        .with_context(|| format!("Failed to parse {}", args.config_path.display()))?;
+        .with_context(|| format!("Failed to parse `{}`", args.config_path.display()))?;
     let task = if !config.microsoft_auth {
         if config.gc_snipe {
             writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
