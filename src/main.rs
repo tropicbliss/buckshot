@@ -151,7 +151,7 @@ async fn main() -> Result<()> {
                     }
                 }
             };
-            if task == SnipeTask::Giftcode && count == 0 {
+            if task == SnipeTask::Giftcode {
                 if let Some(gc) = &account.giftcode {
                     match requestor
                         .redeem_giftcode(&bearer_token, gc)
