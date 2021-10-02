@@ -1,7 +1,6 @@
 use anyhow::{bail, Result};
 use serde::Deserialize;
-use std::fs::{read_to_string, write};
-use std::io::ErrorKind;
+use std::fs::read_to_string;
 use std::path::Path;
 
 #[derive(Deserialize)]
@@ -32,18 +31,7 @@ pub struct Account {
 
 impl Config {
     pub fn new(config_path: &Path) -> Result<Self> {
-        let cfg_str = match read_to_string(&config_path) {
-            Ok(x) => x,
-            Err(y) if y.kind() == ErrorKind::NotFound => {
-                let sample_cfg_u8 = include_bytes!("../config.toml");
-                write(config_path, sample_cfg_u8)?;
-                bail!(
-                    "`{}` not found, creating a sample config file",
-                    config_path.display()
-                );
-            }
-            Err(z) => bail!(z),
-        };
+        let cfg_str = read_to_string(&config_path)?;
         let cfg: Self = toml::from_str(&cfg_str)?;
         if cfg.account_entry.is_empty() {
             bail!("No accounts provided in config file");
