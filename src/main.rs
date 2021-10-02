@@ -127,7 +127,7 @@ async fn main() -> Result<()> {
                     .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
                     .with_context(|| {
                         format!(
-                            "Failed to authenticate the Mojang account: {}",
+                            "Failed to authenticate the Mojang account `{}`",
                             account.email
                         )
                     })?
@@ -157,7 +157,7 @@ async fn main() -> Result<()> {
                         .redeem_giftcode(&bearer_token, gc)
                         .with_context(|| {
                             format!(
-                                "Failed to redeem the giftcode of the account: {}",
+                                "Failed to redeem the giftcode of the account `{}`",
                                 account.email
                             )
                         }) {
@@ -192,7 +192,7 @@ async fn main() -> Result<()> {
                     .check_name_change_eligibility(&bearer_token)
                     .with_context(|| {
                         format!(
-                            "Failed to check name change eligibility of {}",
+                            "Failed to check name change eligibility of `{}`",
                             account.email
                         )
                     })?;
@@ -250,7 +250,7 @@ async fn main() -> Result<()> {
                     )
                     .with_context(|| {
                         format!(
-                            "Failed to change the skin of {}",
+                            "Failed to change the skin of `{}`",
                             config.account_entry[account_idx].email
                         )
                     })?;
