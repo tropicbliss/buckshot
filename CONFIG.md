@@ -86,7 +86,7 @@ If your password contains special characters in `toml`, you have to escape it wi
 email = "example@gmail.com" # Email of the account
 password = "youaremylittlepogchamp" # Password of the account
 sq_ans = ["Foo", "Bar", "Baz"] # Security questions
-giftcode = "geui2iig3" # This account has not redeemed its giftcode. This sniper will redeem this account's giftcode (geui2iig3) during authentication
+giftcode = "geui2iig3" # This account has not redeemed its giftcode. This sniper will redeem the giftcode (geui2iig3) onto this account
 
 # Account no. 2
 # This account already redeemed its giftcode
