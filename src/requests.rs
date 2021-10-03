@@ -81,7 +81,7 @@ impl Requests {
         }
     }
 
-    fn get_questions(&self, bearer_token: &str) -> Result<Option<[i64; 3]>> {
+    fn get_questions(&self, bearer_token: &str) -> Result<Option<[u64; 3]>> {
         let res = self
             .client
             .get("https://api.mojang.com/user/security/challenges")
@@ -98,7 +98,7 @@ impl Requests {
             let v: Value = serde_json::from_str(&body)?;
             let mut sqid_array = [0; 3];
             for idx in 0..2 {
-                sqid_array[idx] = v[idx]["answer"]["id"].as_i64().ok_or_else(|| {
+                sqid_array[idx] = v[idx]["answer"]["id"].as_u64().ok_or_else(|| {
                     anyhow!(
                         "Unable to parse `answer` or `id` from index {} of JSON array",
                         idx
@@ -112,7 +112,7 @@ impl Requests {
     fn send_answers(
         &self,
         bearer_token: &str,
-        questions: [i64; 3],
+        questions: [u64; 3],
         answers: &[String; 3],
     ) -> Result<()> {
         let post_body = json!([
