@@ -84,18 +84,16 @@ impl<'a> Executor<'a> {
                     let mut buf = [0; 12];
                     let snipe_time = snipe_time + Duration::milliseconds(spread);
                     let handshake_time = snipe_time - Duration::seconds(32);
-                    let sleep_duration = match (handshake_time - Utc::now()).to_std() {
-                        Ok(x) => x,
-                        Err(_) => std::time::Duration::ZERO,
-                    };
+                    let sleep_duration = (handshake_time - Utc::now())
+                        .to_std()
+                        .unwrap_or(std::time::Duration::ZERO);
                     sleep(sleep_duration).await;
                     let socket = TcpStream::connect(&addr).await?;
                     let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
                     socket.write_all(&payload).await?;
-                    let sleep_duration = match (snipe_time - Utc::now()).to_std() {
-                        Ok(x) => x,
-                        Err(_) => std::time::Duration::ZERO,
-                    };
+                    let sleep_duration = (snipe_time - Utc::now())
+                        .to_std()
+                        .unwrap_or(std::time::Duration::ZERO);
                     sleep(sleep_duration).await;
                     socket.write_all(b"\r\n").await?;
                     socket.read_exact(&mut buf).await?;

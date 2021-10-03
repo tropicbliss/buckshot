@@ -97,10 +97,9 @@ async fn main() -> Result<()> {
         let snipe_time = droptime - Duration::milliseconds(offset);
         let setup_time = snipe_time - Duration::hours(12);
         if Utc::now() < setup_time {
-            let sleep_duration = match (setup_time - Utc::now()).to_std() {
-                Ok(x) => x,
-                Err(_) => std::time::Duration::ZERO,
-            };
+            let sleep_duration = (setup_time - Utc::now())
+                .to_std()
+                .unwrap_or(std::time::Duration::ZERO);
             sleep(sleep_duration);
             if let requests::DroptimeData::Unavailable(error) = requestor
                 .check_name_availability_time(&name)
