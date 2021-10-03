@@ -101,12 +101,6 @@ sq_ans = ["Foo", "Bar", "Baz"]
 
 An optional module that when specified will enable skin change after successful snipes.
 
-::: warning
-
-This module is optional.
-
-:::
-
 ### Options
 
 | Option            | Default                         | Description                                                          |
