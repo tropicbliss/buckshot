@@ -39,7 +39,6 @@ Any field marked with `mandatory field` must be filled up by the user.
 | `offset`          | auto offset                     | Manually overrides auto offset calculation.                      |
 | `name_queue `     | `[]`                            | Enables name queueing.                                           |
 
-
 ### Example
 
 ```toml
