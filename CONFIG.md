@@ -53,7 +53,7 @@ microsoft_auth = true
 # Enables GC sniping
 gc_snipe = true
 
-# Uses an offset of 9ms
+# 9 ms offset
 offset = 9
 
 # Sniping Dream and Marc automatically with name queueing
