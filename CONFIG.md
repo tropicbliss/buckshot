@@ -36,7 +36,7 @@ Any field marked with `mandatory field` must be filled up by the user.
 | `spread`          | mandatory field                 | Delay between each snipe request.                                |
 | `microsoft_auth`  | mandatory field                 | Enables Microsoft authentication.                                |
 | `gc_snipe`        | mandatory field                 | Enables GC sniping mode.                                         |
-| `offset`          | auto offset                     | Manually overrides auto offset calculation.                      |
+| `offset`          | auto offset                     | Manually overrides auto offset calculatior.                      |
 | `name_queue `     | `[]`                            | Enables name queueing.                                           |
 
 ### Example
