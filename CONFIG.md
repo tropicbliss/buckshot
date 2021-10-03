@@ -25,6 +25,8 @@ You can change configuration file location with a command line argument:
 ./buckshot -c .buckshot/config.toml`
 ```
 
+Any field marked with `mandatory field` must be filled up by the user.
+
 ## Config
 
 ### Options
@@ -56,4 +58,71 @@ gc_snipe = true
 
 # Sniping Dream and Marc automatically with name queueing
 name_queue = ["Dream", "Marc"]
+```
+
+## Account Entry
+
+The `account_entry` module is special. You can have multiple of these modules in your config file if you are sniping with multiple accounts.
+
+### Escapable characters
+
+If your password contains special characters in `toml`, you have to escape it with a backslash (`\`) before the character. Look at `toml`'s [escape syntax](https://github.com/toml-lang/toml#user-content-string) for more information.
+
+### Options
+
+| Option            | Default                         | Description                                                                    |
+| ----------------- | ------------------------------- | ------------------------------------------------------------------------------ |
+| `email `          | mandatory field                 | Email of your Minecraft account.                                               |
+| `password`        | mandatory field                 | Password of your Minecraft account.                                            |
+| `sq_ans`          | `[]`                            | Security questions if you are sniping with a Mojang account.                   |
+| `giftcode`        | `""`                            | Enables giftcode redemption if you have not already done so via minecraft.net. |
+
+### Example
+
+```toml
+# config.toml
+
+# Account no. 1
+[[account_entry]]
+email = "example@gmail.com" # Email of the account
+password = "youaremylittlepogchamp" # Password of the account
+sq_ans = ["Foo", "Bar", "Baz"] # Security questions
+giftcode = "geui2iig3" # This account has not redeemed its giftcode. This sniper will redeem this account's giftcode (geui2iig3) during authentication
+
+# Account no. 2
+# This account already redeemed its giftcode
+[[account_entry]]
+email = "hello@gmail.com"
+password = "youaremylittlepogchamp"
+sq_ans = ["Foo", "Bar", "Baz"]
+```
+
+## Skin
+
+An optional module that when specified will enable skin change after successful snipes.
+
+::: warning
+
+This module is optional.
+
+:::
+
+### Options
+
+| Option            | Default                         | Description                                                          |
+| ----------------- | ------------------------------- | -------------------------------------------------------------------- |
+| `is_file`         | mandatory field                 | When enabled uses a local skin file instead of a URL link to a skin. |
+| `path`            | mandatory field                 | Local file path or URL depending on `is_file`.                       |
+| `slim`            | mandatory field                 | Model of skin (slim/alex - `true`, classic/steve - `false`.          |
+
+### Example
+
+```toml
+# config.toml
+
+# Change skin after a successful snipe
+[skin]
+is_file = false # Get a skin from the internet
+path = "https://texture.namemc.com/f7/a2/f7a2edf56e1bbad3.png" # Link to skin
+slim = false # Sets player model to slim/alex
 ```
