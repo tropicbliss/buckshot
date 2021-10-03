@@ -25,7 +25,7 @@ You can change configuration file location with a command line argument:
 ./buckshot -c .buckshot/config.toml`
 ```
 
-Any field marked with `mandatory field` must be filled up by the user.
+Any field marked with "mandatory field" must be filled up by the user.
 
 ## Config
 
