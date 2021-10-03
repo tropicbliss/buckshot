@@ -53,7 +53,8 @@ microsoft_auth = true
 # Enables GC sniping
 gc_snipe = true
 
-# Offset field not found, use auto offset calculator to determine offset
+# Uses an offset of 9ms
+offset = 9
 
 # Sniping Dream and Marc automatically with name queueing
 name_queue = ["Dream", "Marc"]
