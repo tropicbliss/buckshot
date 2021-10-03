@@ -24,7 +24,7 @@ An asynchronous Minecraft username sniper written in Rust, powered by the Tokio 
 1. Download the [latest release](https://github.com/chronicallyunfunny/buckshot/releases/latest) for your operating system.
 2. Download Dimension 4 on Windows or `chrony` on Linux for accurate time synchronisation.
 3. Open up the terminal and navigate to the directory where the sniper is downloaded to. If you are not on Windows, run `sudo chmod +x binary_name_here`.
-4. Create a new config file. Click [here]() for instructions.
+4. Create a new config file. Click [here](https://github.com/tropicbliss/buckshot/blob/main/CONFIG.md) for instructions.
 5. Run `./buckshot` (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`). `config.toml` will appear in the current directory.
 6. Run the sniper again with the same command used in step 4.
 
