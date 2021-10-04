@@ -245,7 +245,7 @@ async fn main() -> Result<()> {
                         &bearer_tokens[account_idx],
                         &skin.path,
                         skin_model,
-                        skin.is_file,
+                        skin.file,
                     )
                     .with_context(|| {
                         format!(

@@ -21,6 +21,7 @@ password = "youaremylittlepogchamp"
 ```
 
 You can change configuration file location with a command line argument:
+
 ```sh
 ./buckshot -c .buckshot/config.toml`
 ```
@@ -31,13 +32,13 @@ Any field marked with "mandatory field" must be filled up by the user.
 
 ### Options
 
-| Option            | Default                         | Description                                                      |
-| ----------------- | ------------------------------- | ---------------------------------------------------------------- |
-| `spread`          | mandatory field                 | Delay between each snipe request.                                |
-| `microsoft_auth`  | mandatory field                 | Enables Microsoft authentication.                                |
-| `gc_snipe`        | mandatory field                 | Enables GC sniping mode.                                         |
-| `offset`          | auto offset                     | Manually overrides auto offset calculator.                       |
-| `name_queue `     | `[]`                            | Enables name queueing.                                           |
+| Option           | Default         | Description                                |
+| ---------------- | --------------- | ------------------------------------------ |
+| `spread`         | mandatory field | Delay between each snipe request.          |
+| `microsoft_auth` | mandatory field | Enables Microsoft authentication.          |
+| `gc_snipe`       | mandatory field | Enables GC sniping mode.                   |
+| `offset`         | auto offset     | Manually overrides auto offset calculator. |
+| `name_queue `    | `[]`            | Enables name queueing.                     |
 
 ### Example
 
@@ -70,12 +71,12 @@ If your password contains special characters in `toml`, you have to escape it wi
 
 ### Options
 
-| Option            | Default                         | Description                                                                    |
-| ----------------- | ------------------------------- | ------------------------------------------------------------------------------ |
-| `email `          | mandatory field                 | Email of your Minecraft account.                                               |
-| `password`        | mandatory field                 | Password of your Minecraft account.                                            |
-| `sq_ans`          | `[]`                            | Security questions if you are sniping with a Mojang account.                   |
-| `giftcode`        | `""`                            | Enables giftcode redemption if you have not already done so via minecraft.net. |
+| Option     | Default         | Description                                                                    |
+| ---------- | --------------- | ------------------------------------------------------------------------------ |
+| `email `   | mandatory field | Email of your Minecraft account.                                               |
+| `password` | mandatory field | Password of your Minecraft account.                                            |
+| `sq_ans`   | `[]`            | Security questions if you are sniping with a Mojang account.                   |
+| `giftcode` | `""`            | Enables giftcode redemption if you have not already done so via minecraft.net. |
 
 ### Example
 
@@ -103,11 +104,11 @@ An optional module that when specified will enable skin change after successful 
 
 ### Options
 
-| Option            | Default                         | Description                                                          |
-| ----------------- | ------------------------------- | -------------------------------------------------------------------- |
-| `is_file`         | mandatory field                 | When enabled uses a local skin file instead of a URL link to a skin. |
-| `path`            | mandatory field                 | Local file path or URL depending on `is_file`.                       |
-| `slim`            | mandatory field                 | Model of skin (slim/alex - `true`, classic/steve - `false`.          |
+| Option    | Default         | Description                                                          |
+| --------- | --------------- | -------------------------------------------------------------------- |
+| `is_file` | mandatory field | When enabled uses a local skin file instead of a URL link to a skin. |
+| `path`    | mandatory field | Local file path or URL depending on `file`.                          |
+| `slim`    | mandatory field | Model of skin (slim/alex - `true`, classic/steve - `false`.          |
 
 ### Example
 
@@ -116,7 +117,7 @@ An optional module that when specified will enable skin change after successful 
 
 # Change skin after a successful snipe
 [skin]
-is_file = false # Get a skin from the internet
+file = false # Get a skin from the internet
 path = "https://texture.namemc.com/f7/a2/f7a2edf56e1bbad3.png" # Link to skin
 slim = false # Sets player model to slim/alex
 ```

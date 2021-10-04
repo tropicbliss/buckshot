@@ -16,7 +16,7 @@ pub struct Config {
 
 #[derive(Deserialize)]
 pub struct Skin {
-    pub is_file: bool,
+    pub file: bool,
     pub path: String,
     pub slim: bool,
 }
