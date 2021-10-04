@@ -104,11 +104,11 @@ An optional module that when specified will enable skin change after successful 
 
 ### Options
 
-| Option    | Default         | Description                                                          |
-| --------- | --------------- | -------------------------------------------------------------------- |
-| `is_file` | mandatory field | When enabled uses a local skin file instead of a URL link to a skin. |
-| `path`    | mandatory field | Local file path or URL depending on `file`.                          |
-| `slim`    | mandatory field | Model of skin (slim/alex - `true`, classic/steve - `false`.          |
+| Option | Default         | Description                                                          |
+| ------ | --------------- | -------------------------------------------------------------------- |
+| `file` | mandatory field | When enabled uses a local skin file instead of a URL link to a skin. |
+| `path` | mandatory field | Local file path or URL depending on `file`.                          |
+| `slim` | mandatory field | Model of skin (slim/alex - `true`, classic/steve - `false`.          |
 
 ### Example
 
