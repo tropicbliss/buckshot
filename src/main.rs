@@ -72,8 +72,7 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
-        let is_gc = task == SnipeTask::Giftcode;
-        let executor = sockets::Executor::new(&name, is_gc);
+        let executor = sockets::Executor::new(&name);
         let offset = if let Some(x) = config.offset {
             x
         } else {
@@ -204,8 +203,9 @@ async fn main() -> Result<()> {
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         writeln!(stdout(), "Setup complete")?;
         let mut is_success = None;
+        let is_gc = task == SnipeTask::Giftcode;
         let res_data = executor
-            .snipe_executor(&bearer_tokens, config.spread, snipe_time)
+            .snipe_executor(&bearer_tokens, config.spread, snipe_time, is_gc)
             .await
             .with_context(|| format!("Failed to execute the snipe of {}", name))?;
         for res in res_data {

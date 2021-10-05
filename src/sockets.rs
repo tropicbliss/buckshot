@@ -13,7 +13,6 @@ use tokio::time::sleep;
 
 pub struct Executor<'a> {
     name: &'a str,
-    is_gc: bool,
 }
 
 pub struct ResData {
@@ -23,8 +22,8 @@ pub struct ResData {
 }
 
 impl<'a> Executor<'a> {
-    pub fn new(name: &'a str, is_gc: bool) -> Self {
-        Self { name, is_gc }
+    pub fn new(name: &'a str) -> Self {
+        Self { name }
     }
 
     pub async fn auto_offset_calculator(&self) -> Result<i64> {
@@ -34,12 +33,7 @@ impl<'a> Executor<'a> {
             .to_socket_addrs()?
             .next()
             .unwrap();
-        let payload = if self.is_gc {
-            let post_body = json!({ "profileName": self.name }).to_string();
-            format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", post_body.len(), post_body).into_bytes()
-        } else {
-            format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\n", self.name).into_bytes()
-        };
+        let payload = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\n", self.name).into_bytes();
         let socket = TcpStream::connect(&addr).await?;
         let cx = TlsConnector::builder().build()?;
         let cx = tokio_native_tls::TlsConnector::from(cx);
@@ -57,8 +51,9 @@ impl<'a> Executor<'a> {
         bearer_tokens: &[String],
         spread_offset: usize,
         snipe_time: DateTime<Utc>,
+        is_gc: bool,
     ) -> Result<Vec<ResData>> {
-        let req_count = if self.is_gc { 6 } else { 3 };
+        let req_count = if is_gc { 6 } else { 3 };
         let mut spread = 0;
         let addr = "api.minecraftservices.com:443"
             .to_socket_addrs()?
@@ -70,7 +65,7 @@ impl<'a> Executor<'a> {
         let mut handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> =
             Vec::with_capacity(req_count * bearer_tokens.len());
         for (account_idx, bearer_token) in bearer_tokens.iter().enumerate() {
-            let payload = if self.is_gc {
+            let payload = if is_gc {
                 let post_body = json!({ "profileName": self.name }).to_string();
                 format!("POST /minecraft/profile HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}", bearer_token, post_body.len(), post_body).into_bytes()
             } else {
