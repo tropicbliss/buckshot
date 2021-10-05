@@ -1,7 +1,6 @@
 use anyhow::{bail, Result};
 use serde::Deserialize;
-use std::fs::read_to_string;
-use std::path::Path;
+use std::{fs::read_to_string, path::Path};
 
 #[derive(Deserialize)]
 pub struct Config {

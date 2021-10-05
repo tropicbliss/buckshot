@@ -2,14 +2,13 @@ use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use native_tls::TlsConnector;
 use serde_json::json;
-use std::convert::TryFrom;
-use std::net::ToSocketAddrs;
-use std::sync::Arc;
-use std::time::Instant;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::TcpStream;
-use tokio::task::JoinHandle;
-use tokio::time::sleep;
+use std::{convert::TryFrom, net::ToSocketAddrs, sync::Arc, time::Instant};
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    net::TcpStream,
+    task::JoinHandle,
+    time::sleep,
+};
 
 pub struct Executor<'a> {
     name: &'a str,
@@ -62,8 +61,7 @@ impl<'a> Executor<'a> {
         let cx = TlsConnector::builder().build()?;
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let cx = Arc::new(cx);
-        let mut handle_vec: Vec<JoinHandle<Result<_, anyhow::Error>>> =
-            Vec::with_capacity(req_count * bearer_tokens.len());
+        let mut handle_vec = Vec::with_capacity(req_count * bearer_tokens.len());
         for (account_idx, bearer_token) in bearer_tokens.iter().enumerate() {
             let payload = if is_gc {
                 let post_body = json!({ "profileName": self.name }).to_string();
@@ -78,7 +76,7 @@ impl<'a> Executor<'a> {
                 let mut buf = [0; 12];
                 let snipe_time = snipe_time + Duration::milliseconds(spread);
                 let handshake_time = snipe_time - Duration::seconds(32);
-                let handle = tokio::task::spawn(async move {
+                let handle: JoinHandle<Result<_, anyhow::Error>> = tokio::task::spawn(async move {
                     let sleep_duration = (handshake_time - Utc::now())
                         .to_std()
                         .unwrap_or(std::time::Duration::ZERO);
@@ -91,6 +89,7 @@ impl<'a> Executor<'a> {
                         .unwrap_or(std::time::Duration::ZERO);
                     sleep(sleep_duration).await;
                     socket.write_all(b"\r\n").await?;
+                    tokio::task::yield_now().await;
                     socket.read_exact(&mut buf).await?;
                     let timestamp = Utc::now();
                     let res = String::from_utf8_lossy(&buf[..]);
