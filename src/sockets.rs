@@ -75,10 +75,10 @@ impl<'a> Executor<'a> {
             for _ in 0..req_count {
                 let cx = Arc::clone(&cx);
                 let payload = Arc::clone(&payload);
+                let mut buf = [0; 12];
+                let snipe_time = snipe_time + Duration::milliseconds(spread);
+                let handshake_time = snipe_time - Duration::seconds(32);
                 let handle = tokio::task::spawn(async move {
-                    let mut buf = [0; 12];
-                    let snipe_time = snipe_time + Duration::milliseconds(spread);
-                    let handshake_time = snipe_time - Duration::seconds(32);
                     let sleep_duration = (handshake_time - Utc::now())
                         .to_std()
                         .unwrap_or(std::time::Duration::ZERO);
