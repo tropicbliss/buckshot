@@ -6,6 +6,7 @@ use std::{convert::TryFrom, net::ToSocketAddrs, sync::Arc, time::Instant};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
+    sync::Barrier,
     task::JoinHandle,
     time::sleep,
 };
@@ -62,6 +63,11 @@ impl<'a> Executor<'a> {
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let cx = Arc::new(cx);
         let mut handle_vec = Vec::with_capacity(req_count * bearer_tokens.len());
+        let barrier = if spread_offset != 0 {
+            Arc::new(Barrier::new(0))
+        } else {
+            Arc::new(Barrier::new(req_count * bearer_tokens.len()))
+        };
         for (account_idx, bearer_token) in bearer_tokens.iter().enumerate() {
             let payload = if is_gc {
                 let post_body = json!({ "profileName": self.name }).to_string();
@@ -73,6 +79,7 @@ impl<'a> Executor<'a> {
             for _ in 0..req_count {
                 let cx = Arc::clone(&cx);
                 let payload = Arc::clone(&payload);
+                let c = barrier.clone();
                 let mut buf = [0; 12];
                 let snipe_time = snipe_time + Duration::milliseconds(spread);
                 let handshake_time = snipe_time - Duration::seconds(32);
@@ -89,7 +96,7 @@ impl<'a> Executor<'a> {
                         .unwrap_or(std::time::Duration::ZERO);
                     sleep(sleep_duration).await;
                     socket.write_all(b"\r\n").await?;
-                    tokio::task::yield_now().await;
+                    c.wait().await;
                     socket.read_exact(&mut buf).await?;
                     let timestamp = Utc::now();
                     let res = String::from_utf8_lossy(&buf[..]);
