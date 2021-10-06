@@ -62,7 +62,7 @@ impl<'a> Executor<'a> {
         let cx = TlsConnector::builder().build()?;
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let cx = Arc::new(cx);
-        let mut handle_vec = Vec::with_capacity(req_count * bearer_tokens.len());
+        let mut handles = Vec::with_capacity(req_count * bearer_tokens.len());
         let barrier = if spread_offset == 0 {
             Arc::new(Barrier::new(req_count * bearer_tokens.len()))
         } else {
@@ -109,11 +109,11 @@ impl<'a> Executor<'a> {
                     Ok(res_data)
                 });
                 spread += spread_offset as i64;
-                handle_vec.push(handle);
+                handles.push(handle);
             }
         }
         let mut res_vec = Vec::with_capacity(req_count * bearer_tokens.len());
-        for handle in handle_vec {
+        for handle in handles {
             let res_data = handle.await??;
             res_vec.push(res_data);
         }
