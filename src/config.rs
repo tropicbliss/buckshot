@@ -30,8 +30,8 @@ pub struct Account {
 
 impl Config {
     pub fn new(config_path: &Path) -> Result<Self> {
-        let cfg_str = read_to_string(&config_path)?;
-        let cfg: Self = toml::from_str(&cfg_str)?;
+        let cfg = read_to_string(&config_path)?;
+        let cfg: Self = toml::from_str(&cfg)?;
         if cfg.account_entry.is_empty() {
             bail!("No accounts provided in config file");
         }
