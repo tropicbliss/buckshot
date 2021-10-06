@@ -63,10 +63,10 @@ impl<'a> Executor<'a> {
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let cx = Arc::new(cx);
         let mut handle_vec = Vec::with_capacity(req_count * bearer_tokens.len());
-        let barrier = if spread_offset != 0 {
-            Arc::new(Barrier::new(0))
-        } else {
+        let barrier = if spread_offset == 0 {
             Arc::new(Barrier::new(req_count * bearer_tokens.len()))
+        } else {
+            Arc::new(Barrier::new(0))
         };
         for (account_idx, bearer_token) in bearer_tokens.iter().enumerate() {
             let payload = if is_gc {
