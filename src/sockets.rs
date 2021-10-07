@@ -35,6 +35,7 @@ impl<'a> Executor<'a> {
             .unwrap();
         let payload = format!("PUT /minecraft/profile/name/{} HTTP/1.1\r\nHost: api.minecraftservices.com\r\nConnection: close\r\nAuthorization: Bearer token\r\n", self.name).into_bytes();
         let socket = TcpStream::connect(&addr).await?;
+        socket.set_nodelay(true)?;
         let cx = TlsConnector::builder().build()?;
         let cx = tokio_native_tls::TlsConnector::from(cx);
         let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
@@ -89,6 +90,7 @@ impl<'a> Executor<'a> {
                         .unwrap_or(std::time::Duration::ZERO);
                     sleep(sleep_duration).await;
                     let socket = TcpStream::connect(&addr).await?;
+                    socket.set_nodelay(true)?;
                     let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
                     socket.write_all(&payload).await?;
                     let sleep_duration = (snipe_time - Utc::now())
