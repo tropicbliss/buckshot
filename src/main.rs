@@ -126,7 +126,7 @@ async fn main() -> Result<()> {
                     .with_context(|| "Error creating Microsoft authenticator")?;
                 match authenticator.authenticate().with_context(|| {
                     format!(
-                        "Failed to authenticate the Microsoft account {}",
+                        "Failed to authenticate the Microsoft account `{}`",
                         account.email
                     )
                 }) {
