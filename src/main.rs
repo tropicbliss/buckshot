@@ -117,7 +117,7 @@ async fn main() -> Result<()> {
                     .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
                     .with_context(|| {
                         format!(
-                            "Failed to authenticate the Mojang account: `{}`",
+                            "Failed to authenticate the Mojang account `{}`",
                             account.email
                         )
                     })?
@@ -126,7 +126,7 @@ async fn main() -> Result<()> {
                     .with_context(|| "Error creating Microsoft authenticator")?;
                 match authenticator.authenticate().with_context(|| {
                     format!(
-                        "Failed to authenticate the Microsoft account: {}",
+                        "Failed to authenticate the Microsoft account {}",
                         account.email
                     )
                 }) {
