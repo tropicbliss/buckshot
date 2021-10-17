@@ -75,7 +75,7 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
-        writeln!(stdout(), "You are using an offset of: {} ms", config.offset)?;
+        writeln!(stdout(), "Sniping with an offset of {} ms", config.offset)?;
         let formatted_droptime = droptime.format("%F %T");
         let wait_time = droptime - Utc::now();
         let formatted_wait_time = HumanTime::from(wait_time);
