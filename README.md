@@ -33,7 +33,14 @@ Run `./buckshot --help`.
 
 ## Compiling from source
 
-1. Download the `rustup` toolchain right [here](https://rustup.rs/). Follow the instructions for your platform.
-2. Run `cargo install --git https://github.com/tropicbliss/buckshot.git`. If you encounter any errors throughout the compilation process, read through the errors as they generally tell you exactly what to do. Typically, when compiling for Linux, you'll need `build-essential`, `pkg-config`, and `libssl-dev`.
-3. You should be able to just run `buckshot` from anywhere on your system.
-4. Continue with step 2 in [usage instructions](https://github.com/tropicbliss/buckshot/blob/main/README.md#usage).
+If you are on another platform, compile the server yourself to try it out:
+
+```
+git clone https://github.com/tropicbliss/buckshot
+cd buckshot
+cargo build --release
+```
+
+Compiling from source requires the latest stable version of Rust. Older Rust versions may be able to compile `buckshot`, but they are not guaranteed to keep working.
+
+The server executable will be located in `target/release`.
