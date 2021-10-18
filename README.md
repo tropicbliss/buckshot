@@ -19,7 +19,7 @@ A fast and capable asynchronous Minecraft name sniper.
 
 ## Usage
 
-- Download the [latest release](https://github.com/tropicbliss/buckshot/releases/latest) for your operating system.
+- Download the [latest release](https://github.com/tropicbliss/buckshot/releases/latest) for your operating system. Alternatively, you can [compile from source](https://github.com/tropicbliss/buckshot#compiling-from-source).
 - Create `config.toml`. Add your accounts and enter your offset. Refer to this [guide](https://github.com/tropicbliss/buckshot/blob/main/CONFIG.md) for more information.
 - Run the sniper.
   - Open a terminal ([instructions for macOS users](https://www.stugon.com/open-terminal-in-current-folder-location-mac/)) (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`) and use `cd` to navigate to the folder where the binary is located.
