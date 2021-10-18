@@ -35,7 +35,7 @@ Run `./buckshot --help`.
 
 If you are on another platform, compile the server yourself to try it out:
 
-```
+```sh
 git clone https://github.com/tropicbliss/buckshot
 cd buckshot
 cargo build --release
