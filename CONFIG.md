@@ -27,13 +27,13 @@ Offset refers to the the time between the snipe request leaving your computer/se
 
 ### Options
 
-| Option           | Default         | Description                       |
-| ---------------- | --------------- | --------------------------------- |
-| `spread`         | mandatory field | Delay between each snipe request. |
-| `microsoft_auth` | mandatory field | Enables Microsoft authentication. |
-| `gc_snipe`       | mandatory field | Enables GC sniping mode.          |
-| `offset`         | mandatory field | Snipe offset                      |
-| `name_queue `    | `[]`            | Enables name queueing.            |
+| Option           | Default                          | Description                       |
+| ---------------- | -------------------------------- | --------------------------------- |
+| `spread`         | mandatory field [recommended: 0] | Delay between each snipe request. |
+| `microsoft_auth` | mandatory field                  | Enables Microsoft authentication. |
+| `gc_snipe`       | mandatory field                  | Enables GC sniping mode.          |
+| `offset`         | mandatory field                  | Snipe offset                      |
+| `name_queue `    | `[]`                             | Enables name queueing.            |
 
 ### Example
 
