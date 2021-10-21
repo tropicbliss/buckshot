@@ -2,7 +2,7 @@
 name = "buckshot"
 version = "4.0.3"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 description = "A fast and capable Minecraft name sniper"
 

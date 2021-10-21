@@ -16,31 +16,14 @@ use std::{
     thread::sleep,
 };
 
-#[derive(PartialEq)]
-pub enum SnipeTask {
-    Mojang,
-    Microsoft,
-    Giftcode,
-}
-
 #[tokio::main]
 async fn main() -> Result<()> {
+    type SnipeTask = config::SnipeTask;
     let args = cli::Args::new();
-    let mut config = config::Config::new()
-        .with_context(|| format!("Failed to parse `{}`", constants::CONFIG_PATH))?;
-    let task = if !config.microsoft_auth {
-        if config.prename {
-            writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
-            SnipeTask::Giftcode
-        } else {
-            SnipeTask::Mojang
-        }
-    } else if config.prename {
-        SnipeTask::Giftcode
-    } else {
-        SnipeTask::Microsoft
-    };
-    if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
+    let mut config =
+        config::new().with_context(|| format!("Failed to parse `{}`", constants::CONFIG_PATH))?;
+    let task = &config.mode;
+    if task != &SnipeTask::Giftcode && config.account_entry.len() > 1 {
         bail!("Unable to use more than one normal account");
     } else if config.account_entry.len() > 10 {
         bail!("Unable to use more than 10 prename accounts");
@@ -115,20 +98,11 @@ async fn main() -> Result<()> {
             let bearer_token = if let Some(bearer) = account.bearer.clone() {
                 bearer
             } else {
-                let (email, password) = if let (Some(email), Some(password)) =
-                    (&account.email, &account.password)
-                {
-                    (email, password)
-                } else {
-                    writeln!(
-                        stdout(),
-                        "{}",
-                        style("No email or password provided, moving on to next account...").red()
-                    )?;
-                    config.account_entry.remove(account_idx);
-                    continue;
-                };
-                let bearer = if task == SnipeTask::Mojang {
+                let (email, password) = (
+                    account.email.as_ref().unwrap(),
+                    account.password.as_ref().unwrap(),
+                );
+                let bearer = if task == &SnipeTask::Mojang {
                     requestor
                         .authenticate_mojang(email, password, &account.sq_ans)
                         .with_context(|| {
@@ -151,7 +125,7 @@ async fn main() -> Result<()> {
                         }
                     }
                 };
-                if task != SnipeTask::Giftcode {
+                if task != &SnipeTask::Giftcode {
                     requestor
                         .check_name_change_eligibility(&bearer)
                         .with_context(|| {
@@ -169,7 +143,7 @@ async fn main() -> Result<()> {
         writeln!(stdout(), "{}", style("Successfully signed in").green())?;
         writeln!(stdout(), "Setup complete")?;
         let mut is_success = None;
-        let is_gc = task == SnipeTask::Giftcode;
+        let is_gc = task == &SnipeTask::Giftcode;
         let res_data = sockets::snipe_executor(&name, &bearer_tokens, snipe_time, is_gc)
             .await
             .with_context(|| format!("Failed to execute the snipe of {}", name))?;

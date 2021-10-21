@@ -14,10 +14,10 @@ pub enum DroptimeData {
     Unavailable(String),
 }
 
-#[allow(non_snake_case)]
 #[derive(Deserialize)]
 struct BearerToken {
-    accessToken: String,
+    #[serde(rename = "accessToken")]
+    access_token: String,
 }
 
 #[derive(Deserialize)]
@@ -30,10 +30,10 @@ struct UnavailableDroptime {
     error: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Deserialize)]
 struct NameChangeEligibility {
-    nameChangeAllowed: bool,
+    #[serde(rename = "nameChangeAllowed")]
+    name_change_allowed: bool,
 }
 
 #[derive(Deserialize)]
@@ -96,7 +96,7 @@ impl Requests {
         match status.as_u16() {
             200 => {
                 let bearer_token: BearerToken = serde_json::from_str(&res.text()?)?;
-                Ok(bearer_token.accessToken)
+                Ok(bearer_token.access_token)
             }
             403 => {
                 bail!("Incorrect email or password");
@@ -191,7 +191,7 @@ impl Requests {
         }
         let body = res.text()?;
         let is_allowed: NameChangeEligibility = serde_json::from_str(&body)?;
-        if !is_allowed.nameChangeAllowed {
+        if !is_allowed.name_change_allowed {
             bail!("Name change not allowed within the cooldown period")
         }
         Ok(())

@@ -17,11 +17,12 @@ struct LoginData {
     url_post: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Deserialize)]
 struct AuthData {
-    Token: String,
-    DisplayClaims: DisplayClaims,
+    #[serde(rename = "Token")]
+    token: String,
+    #[serde(rename = "DisplayClaims")]
+    display_claims: DisplayClaims,
 }
 
 #[derive(Deserialize)]
@@ -34,10 +35,10 @@ struct Uhs {
     uhs: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Deserialize)]
 struct FailedAuthData {
-    XErr: u64,
+    #[serde(rename = "XErr")]
+    x_err: u64,
 }
 
 #[derive(Deserialize)]
@@ -150,10 +151,10 @@ impl<'a> Auth<'a> {
             .authenticate_with_xbl(access_token)
             .with_context(|| "Unable to get Xbox Live data")?;
         let xsts_token = self
-            .authenticate_with_xsts(&xbl_data.Token)
+            .authenticate_with_xsts(&xbl_data.token)
             .with_context(|| "Unable to get XSTS token")?;
         let bearer_token = self
-            .authenticate_with_minecraft(&xbl_data.DisplayClaims.xui[0].uhs, &xsts_token)
+            .authenticate_with_minecraft(&xbl_data.display_claims.xui[0].uhs, &xsts_token)
             .with_context(|| "Unable to get bearer token")?;
         Ok(bearer_token)
     }
@@ -201,16 +202,16 @@ impl<'a> Auth<'a> {
         let text = res.text()?;
         if status.as_u16() == 401 {
             let err: FailedAuthData = serde_json::from_str(&text)?;
-            if err.XErr == 2_148_916_233 {
+            if err.x_err == 2_148_916_233 {
                 bail!("This account doesn't have an Xbox account");
             }
-            if err.XErr == 2_148_916_238 {
+            if err.x_err == 2_148_916_238 {
                 bail!("The account is a child (under 18) and cannot proceed unless the account is added to a family by an adult");
             }
             bail!("Something went wrong");
         } else if status.as_u16() == 200 {
             let auth_data: AuthData = serde_json::from_str(&text)?;
-            Ok(auth_data.Token)
+            Ok(auth_data.token)
         } else {
             bail!("HTTP {}", status);
         }

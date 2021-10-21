@@ -27,23 +27,51 @@ Offset refers to the the time between the snipe request leaving your computer/se
 
 ### Options
 
-| Option           | Default         | Description                       |
-| ---------------- | --------------- | --------------------------------- |
-| `microsoft_auth` | mandatory field | Enables Microsoft authentication. |
-| `prename`        | mandatory field | Enables GC sniping mode.          |
-| `offset`         | mandatory field | Snipe offset                      |
-| `name_queue `    | `[]`            | Enables name queueing.            |
+| Option        | Default         | Description                                                                                                            |
+| ------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `mode`        | mandatory field | Sniping mode. Choose between `mj` (Mojang authentication), `ms` (Microsoft authentication), or `prename` (GC sniping). |
+| `offset`      | mandatory field | Snipe offset                                                                                                           |
+| `name_queue ` | `[]`            | Enables name queueing.                                                                                                 |
 
-### Example
+### Examples
+
+#### Sniping with a Mojang account
 
 ```toml
 # config.toml
 
-# Enable if your account is a Microsoft account
-microsoft_auth = true
+# Sniping mode
+mode = "mj"
 
-# Enable if you are GC sniping
-prename = true
+# 9 ms offset
+offset = 9
+
+# Sniping Dream and Marc consecutively with name queueing
+name_queue = ["Dream", "Marc"]
+```
+
+#### Sniping with a Microsoft account
+
+```toml
+# config.toml
+
+# Sniping mode
+mode = "ms"
+
+# 9 ms offset
+offset = 9
+
+# Sniping Dream and Marc consecutively with name queueing
+name_queue = ["Dream", "Marc"]
+```
+
+#### GC sniping
+
+```toml
+# config.toml
+
+# Sniping mode
+mode = "prename"
 
 # 9 ms offset
 offset = 9
