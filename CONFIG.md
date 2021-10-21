@@ -11,8 +11,7 @@ All configuration for buckshot is done in this [TOML](https://github.com/toml-la
 ```toml
 spread = 0
 offset = 0
-microsoft_auth = true
-gc_snipe = false
+mode = "ms"
 
 [[account_entry]]
 email = "example@gmail.com"
