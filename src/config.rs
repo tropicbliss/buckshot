@@ -23,7 +23,7 @@ pub struct Config {
     pub name_queue: Option<Vec<String>>,
 }
 
-#[derive(PartialEq, Deserialize)]
+#[derive(PartialEq)]
 
 pub enum SnipeTask {
     Mojang,
