@@ -24,7 +24,6 @@ pub struct Config {
 }
 
 #[derive(PartialEq)]
-
 pub enum SnipeTask {
     Mojang,
     Microsoft,
