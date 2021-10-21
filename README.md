@@ -15,16 +15,16 @@ A fast and capable asynchronous Minecraft name sniper.
 
 ## Issues
 
-- Microsoft authentication does not work on macOS
+- Microsoft authentication does not work on macOS (manually specify bearer tokens instead)
 
 ## Usage
 
 1. Download the [latest release](https://github.com/tropicbliss/buckshot/releases/latest) for your operating system.
 2. Create `config.toml`. Add your accounts and enter your offset. Refer to this [guide](https://github.com/tropicbliss/buckshot/blob/main/CONFIG.md) for more information.
 3. Run the sniper.
-    - Open a terminal ([instructions for macOS users](https://www.stugon.com/open-terminal-in-current-folder-location-mac/)) (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`) and use `cd` to navigate to the folder where the binary is located.
-    - For non-Windows users, you will also have to run `sudo chmod +x binary_name_here`.
-    - Run `./binary_name_here`.
+   - Open a terminal ([instructions for macOS users](https://www.stugon.com/open-terminal-in-current-folder-location-mac/)) (if you're on Windows, do yourself a favor and use Windows Terminal instead of `cmd.exe`) and use `cd` to navigate to the folder where the binary is located.
+   - For non-Windows users, you will also have to run `sudo chmod +x binary_name_here`.
+   - Run `./binary_name_here`.
 4. The sniper might prompt you for a username (depending on your configuration). If it does, enter that and then the sniper will authenticate (this is run 8 hours before snipe) and then count down.
 
 ## Command line arguments

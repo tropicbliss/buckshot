@@ -31,7 +31,7 @@ Offset refers to the the time between the snipe request leaving your computer/se
 | ---------------- | -------------------------------- | --------------------------------- |
 | `spread`         | mandatory field [recommended: 0] | Delay between each snipe request. |
 | `microsoft_auth` | mandatory field                  | Enables Microsoft authentication. |
-| `gc_snipe`       | mandatory field                  | Enables GC sniping mode.          |
+| `prename`        | mandatory field                  | Enables GC sniping mode.          |
 | `offset`         | mandatory field                  | Snipe offset                      |
 | `name_queue `    | `[]`                             | Enables name queueing.            |
 
@@ -47,7 +47,7 @@ spread = 0
 microsoft_auth = true
 
 # Enable if you are GC sniping
-gc_snipe = true
+prename = true
 
 # 9 ms offset
 offset = 9
@@ -66,11 +66,12 @@ If your password contains special characters in `toml`, you have to escape it wi
 
 ### Options
 
-| Option     | Default         | Description                                                  |
-| ---------- | --------------- | ------------------------------------------------------------ |
-| `email `   | mandatory field | Email of your Minecraft account.                             |
-| `password` | mandatory field | Password of your Minecraft account.                          |
-| `sq_ans`   | `[]`            | Security questions if you are sniping with a Mojang account. |
+| Option     | Default | Description                                                                                  |
+| ---------- | ------- | -------------------------------------------------------------------------------------------- |
+| `email `   | `""`    | Email of your Minecraft account.                                                             |
+| `password` | `""`    | Password of your Minecraft account.                                                          |
+| `sq_ans`   | `[]`    | Security questions if you are sniping with a Mojang account.                                 |
+| `bearer`   | `""`    | Manually specify bearer token. This takes precedence over the `email` and `password` fields. |
 
 ### Examples
 
@@ -111,6 +112,15 @@ password = "youaremylittlepogchamp"
 [[account_entry]]
 email = "example3@gmail.com"
 password = "youaremylittlepogchamp"
+```
+
+#### Manual authentication with bearer tokens
+
+```toml
+# config.toml
+
+[[account_entry]]
+bearer = "minecraft access token"
 ```
 
 ## Skin

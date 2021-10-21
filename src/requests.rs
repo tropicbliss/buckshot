@@ -67,12 +67,12 @@ impl Requests {
             .with_context(|| "Error getting bearer token")?;
         if let Some(questions) = self
             .get_questions(&bearer_token)
-            .with_context(|| format!("Failed to get SQ IDs"))?
+            .with_context(|| "Failed to get SQ IDs")?
         {
             match answers {
                 Some(x) => {
-                    self.send_answers(&bearer_token, questions, x)
-                        .with_context(|| format!("Failed to send SQ answers"))?;
+                    self.send_answers(&bearer_token, &questions, x)
+                        .with_context(|| "Failed to send SQ answers")?;
                 }
                 None => {
                     bail!("SQ answers required");
@@ -129,7 +129,7 @@ impl Requests {
     fn send_answers(
         &self,
         bearer_token: &str,
-        questions: [QuestionData; 3],
+        questions: &[QuestionData; 3],
         answers: &[String; 3],
     ) -> Result<()> {
         let post_body = json!([

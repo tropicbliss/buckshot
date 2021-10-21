@@ -9,7 +9,7 @@ pub struct Config {
     pub offset: u32,
     pub spread: u32,
     pub microsoft_auth: bool,
-    pub gc_snipe: bool,
+    pub prename: bool,
     pub skin: Option<Skin>,
     pub name_queue: Option<Vec<String>>,
 }
@@ -23,9 +23,10 @@ pub struct Skin {
 
 #[derive(Clone, Deserialize)]
 pub struct Account {
-    pub email: String,
-    pub password: String,
+    pub email: Option<String>,
+    pub password: Option<String>,
     pub sq_ans: Option<[String; 3]>,
+    pub bearer: Option<String>,
 }
 
 impl Config {

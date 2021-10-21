@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic)]
+
 mod cli;
 mod config;
 mod constants;
@@ -27,23 +29,29 @@ async fn main() -> Result<()> {
     let mut config = config::Config::new()
         .with_context(|| format!("Failed to parse `{}`", constants::CONFIG_PATH))?;
     let task = if !config.microsoft_auth {
-        if config.gc_snipe {
+        if config.prename {
             writeln!(stdout(), "{}", style("`microsoft_auth` is set to false yet `gc_snipe` is set to true, defaulting to GC sniping instead").red())?;
             SnipeTask::Giftcode
         } else {
             SnipeTask::Mojang
         }
-    } else if config.gc_snipe {
+    } else if config.prename {
         SnipeTask::Giftcode
     } else {
         SnipeTask::Microsoft
     };
     if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
-        bail!(
-            "You can only provide 1 account in config file as the sniper is not set to GC sniping mode"
-        );
+        writeln!(
+            stdout(),
+            "{}",
+            style("Using more than one normal account is useless").yellow()
+        )?;
     } else if config.account_entry.len() > 10 {
-        bail!("Only a max of 10 accounts is allowed when GC sniping");
+        writeln!(
+            stdout(),
+            "{}",
+            style("Using more than 10 prename accounts is useless").yellow()
+        )?;
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
@@ -112,46 +120,55 @@ async fn main() -> Result<()> {
                 writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
                 sleep(std::time::Duration::from_secs(20));
             }
-            let bearer_token = if task == SnipeTask::Mojang {
-                requestor
-                    .authenticate_mojang(&account.email, &account.password, &account.sq_ans)
-                    .with_context(|| {
-                        format!(
-                            "Failed to authenticate the Mojang account `{}`",
-                            account.email
-                        )
-                    })?
+            let bearer_token = if let Some(bearer) = account.bearer.clone() {
+                bearer
             } else {
-                let authenticator = msauth::Auth::new(&account.email, &account.password)
-                    .with_context(|| "Error creating Microsoft authenticator")?;
-                match authenticator.authenticate().with_context(|| {
-                    format!(
-                        "Failed to authenticate the Microsoft account `{}`",
-                        account.email
-                    )
-                }) {
-                    Ok(x) => x,
-                    Err(y) => {
-                        if config.account_entry.len() == 1 {
-                            bail!(y)
+                let (email, password) = if let (Some(email), Some(password)) =
+                    (&account.email, &account.password)
+                {
+                    (email, password)
+                } else {
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        style("No email or password provided, moving on to next account...").red()
+                    )?;
+                    config.account_entry.remove(account_idx);
+                    continue;
+                };
+                let bearer = if task == SnipeTask::Mojang {
+                    requestor
+                        .authenticate_mojang(email, password, &account.sq_ans)
+                        .with_context(|| {
+                            format!("Failed to authenticate the Mojang account `{}`", email)
+                        })?
+                } else {
+                    let authenticator = msauth::Auth::new(email, password)
+                        .with_context(|| "Error creating Microsoft authenticator")?;
+                    match authenticator.authenticate().with_context(|| {
+                        format!("Failed to authenticate the Microsoft account `{}`", email)
+                    }) {
+                        Ok(x) => x,
+                        Err(y) => {
+                            if config.account_entry.len() == 1 {
+                                bail!(y)
+                            }
+                            writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, moving on to next account...").red())?;
+                            config.account_entry.remove(account_idx);
+                            continue;
                         }
-                        writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, removing it from the list...").red())?;
-                        config.account_entry.remove(account_idx);
-                        continue;
                     }
+                };
+                if task != SnipeTask::Giftcode {
+                    requestor
+                        .check_name_change_eligibility(&bearer)
+                        .with_context(|| {
+                            format!("Failed to check name change eligibility of `{}`", email)
+                        })?;
                 }
+                bearer
             };
             account_idx += 1;
-            if task != SnipeTask::Giftcode {
-                requestor
-                    .check_name_change_eligibility(&bearer_token)
-                    .with_context(|| {
-                        format!(
-                            "Failed to check name change eligibility of `{}`",
-                            account.email
-                        )
-                    })?;
-            }
             bearer_tokens.push(bearer_token);
         }
         if bearer_tokens.is_empty() {
@@ -207,7 +224,7 @@ async fn main() -> Result<()> {
                     .with_context(|| {
                         format!(
                             "Failed to change the skin of `{}`",
-                            config.account_entry[account_idx].email
+                            config.account_entry[account_idx].email.as_ref().unwrap()
                         )
                     })?;
                 writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
