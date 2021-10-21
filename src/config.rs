@@ -26,11 +26,8 @@ pub struct Config {
 #[derive(PartialEq, Deserialize)]
 
 pub enum SnipeTask {
-    #[serde(rename = "mj")]
     Mojang,
-    #[serde(rename = "ms")]
     Microsoft,
-    #[serde(rename = "prename")]
     Giftcode,
 }
 
