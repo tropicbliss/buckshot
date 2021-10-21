@@ -27,21 +27,17 @@ Offset refers to the the time between the snipe request leaving your computer/se
 
 ### Options
 
-| Option           | Default                          | Description                       |
-| ---------------- | -------------------------------- | --------------------------------- |
-| `spread`         | mandatory field [recommended: 0] | Delay between each snipe request. |
-| `microsoft_auth` | mandatory field                  | Enables Microsoft authentication. |
-| `prename`        | mandatory field                  | Enables GC sniping mode.          |
-| `offset`         | mandatory field                  | Snipe offset                      |
-| `name_queue `    | `[]`                             | Enables name queueing.            |
+| Option           | Default         | Description                       |
+| ---------------- | --------------- | --------------------------------- |
+| `microsoft_auth` | mandatory field | Enables Microsoft authentication. |
+| `prename`        | mandatory field | Enables GC sniping mode.          |
+| `offset`         | mandatory field | Snipe offset                      |
+| `name_queue `    | `[]`            | Enables name queueing.            |
 
 ### Example
 
 ```toml
 # config.toml
-
-# No delay between each snipe request
-spread = 0
 
 # Enable if your account is a Microsoft account
 microsoft_auth = true

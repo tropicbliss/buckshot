@@ -41,17 +41,9 @@ async fn main() -> Result<()> {
         SnipeTask::Microsoft
     };
     if task != SnipeTask::Giftcode && config.account_entry.len() > 1 {
-        writeln!(
-            stdout(),
-            "{}",
-            style("Using more than one normal account is useless").yellow()
-        )?;
+        bail!("Unable to use more than one normal account");
     } else if config.account_entry.len() > 10 {
-        writeln!(
-            stdout(),
-            "{}",
-            style("Using more than 10 prename accounts is useless").yellow()
-        )?;
+        bail!("Unable to use more than 10 prename accounts");
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
@@ -178,10 +170,9 @@ async fn main() -> Result<()> {
         writeln!(stdout(), "Setup complete")?;
         let mut is_success = None;
         let is_gc = task == SnipeTask::Giftcode;
-        let res_data =
-            sockets::snipe_executor(&name, &bearer_tokens, config.spread, snipe_time, is_gc)
-                .await
-                .with_context(|| format!("Failed to execute the snipe of {}", name))?;
+        let res_data = sockets::snipe_executor(&name, &bearer_tokens, snipe_time, is_gc)
+            .await
+            .with_context(|| format!("Failed to execute the snipe of {}", name))?;
         for res in res_data {
             let formatted_timestamp = res.timestamp.format("%F %T%.6f");
             match res.status {

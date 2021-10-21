@@ -20,12 +20,10 @@ pub struct ResData {
 pub async fn snipe_executor(
     name: &str,
     bearer_tokens: &[String],
-    spread: u32,
     snipe_time: DateTime<Utc>,
     is_gc: bool,
 ) -> Result<Vec<ResData>> {
     let req_count = if is_gc { 6 } else { 3 };
-    let mut spread_buffer = 0;
     let addr = "api.minecraftservices.com:443"
         .to_socket_addrs()?
         .next()
@@ -34,11 +32,7 @@ pub async fn snipe_executor(
     let cx = tokio_native_tls::TlsConnector::from(cx);
     let cx = Arc::new(cx);
     let mut handles = Vec::with_capacity(req_count * bearer_tokens.len());
-    let barrier = if spread == 0 {
-        Arc::new(Barrier::new(req_count * bearer_tokens.len()))
-    } else {
-        Arc::new(Barrier::new(0))
-    };
+    let barrier = Arc::new(Barrier::new(req_count * bearer_tokens.len()));
     for (account_idx, bearer_token) in bearer_tokens.iter().enumerate() {
         let payload = if is_gc {
             let post_body = json!({ "profileName": name }).to_string();
@@ -52,7 +46,6 @@ pub async fn snipe_executor(
             let payload = Arc::clone(&payload);
             let c = barrier.clone();
             let mut buf = [0; 12];
-            let snipe_time = snipe_time + Duration::milliseconds(spread_buffer);
             let handshake_time = snipe_time - Duration::seconds(32);
             let handle: JoinHandle<Result<_, anyhow::Error>> = tokio::task::spawn(async move {
                 let sleep_duration = (handshake_time - Utc::now())
@@ -79,7 +72,6 @@ pub async fn snipe_executor(
                 };
                 Ok(res_data)
             });
-            spread_buffer += i64::from(spread);
             handles.push(handle);
         }
     }

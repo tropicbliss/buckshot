@@ -7,7 +7,6 @@ use std::fs::read_to_string;
 pub struct Config {
     pub account_entry: Vec<Account>,
     pub offset: u32,
-    pub spread: u32,
     pub microsoft_auth: bool,
     pub prename: bool,
     pub skin: Option<Skin>,
