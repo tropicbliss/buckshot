@@ -8,7 +8,7 @@ mod requests;
 mod sockets;
 
 use anyhow::{bail, Context, Result};
-use chrono::{DateTime, Duration, Local, Utc};
+use chrono::{Duration, Local};
 use console::style;
 use std::{
     io::{stdout, Write},
@@ -57,8 +57,7 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
-        let local_time: DateTime<Local> = DateTime::from(droptime);
-        let formatted_droptime = local_time.format("%F %T");
+        let formatted_droptime = droptime.format("%F %T");
         writeln!(
             stdout(),
             "Sniping {} at {} with an offset of {} ms",
@@ -68,8 +67,8 @@ async fn main() -> Result<()> {
         )?;
         let snipe_time = droptime - Duration::milliseconds(i64::from(config.offset));
         let setup_time = snipe_time - Duration::hours(12);
-        if Utc::now() < setup_time {
-            let sleep_duration = (setup_time - Utc::now())
+        if Local::now() < setup_time {
+            let sleep_duration = (setup_time - Local::now())
                 .to_std()
                 .unwrap_or(std::time::Duration::ZERO);
             sleep(sleep_duration);

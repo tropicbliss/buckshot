@@ -1,5 +1,5 @@
 use anyhow::{bail, Context, Result};
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, Local, TimeZone};
 use reqwest::blocking::{multipart::Form, Client};
 use serde::Deserialize;
 use serde_json::json;
@@ -10,7 +10,7 @@ pub struct Requests {
 }
 
 pub enum DroptimeData {
-    Available(DateTime<Utc>),
+    Available(DateTime<Local>),
     Unavailable(String),
 }
 
@@ -168,7 +168,7 @@ impl Requests {
         match status.as_u16() {
             200 => {
                 let epoch: AvailableDroptime = serde_json::from_str(&body)?;
-                let droptime = Utc.timestamp(epoch.unix, 0);
+                let droptime = Local.timestamp(epoch.unix, 0);
                 Ok(DroptimeData::Available(droptime))
             }
             400 => {

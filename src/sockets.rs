@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, Local};
 use native_tls::TlsConnector;
 use serde_json::json;
 use std::{net::ToSocketAddrs, sync::Arc};
@@ -13,14 +13,14 @@ use tokio::{
 
 pub struct ResData {
     pub status: u16,
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: DateTime<Local>,
     pub account_idx: usize,
 }
 
 pub async fn snipe_executor(
     name: &str,
     bearer_tokens: &[String],
-    snipe_time: DateTime<Utc>,
+    snipe_time: DateTime<Local>,
     is_gc: bool,
 ) -> Result<Vec<ResData>> {
     let req_count = if is_gc { 6 } else { 3 };
@@ -48,21 +48,21 @@ pub async fn snipe_executor(
             let mut buf = [0; 12];
             let handshake_time = snipe_time - Duration::seconds(32);
             let handle: JoinHandle<Result<_, anyhow::Error>> = tokio::task::spawn(async move {
-                let sleep_duration = (handshake_time - Utc::now())
+                let sleep_duration = (handshake_time - Local::now())
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
                 let socket = TcpStream::connect(&addr).await?;
                 let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
                 socket.write_all(&payload).await?;
-                let sleep_duration = (snipe_time - Utc::now())
+                let sleep_duration = (snipe_time - Local::now())
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
                 socket.write_all(b"\r\n").await?;
                 c.wait().await;
                 socket.read_exact(&mut buf).await?;
-                let timestamp = Utc::now();
+                let timestamp = Local::now();
                 let res = String::from_utf8_lossy(&buf[..]);
                 let status: u16 = res[9..].parse()?;
                 let res_data = ResData {
