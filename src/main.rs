@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     type SnipeTask = config::SnipeTask;
     let args = cli::Args::new();
     let mut config =
-        config::new().with_context(|| format!("Failed to parse `{}`", constants::CONFIG_PATH))?;
+        config::new().with_context(|| format!("Failed to parse {}", constants::CONFIG_PATH))?;
     let task = &config.mode;
     if task != &SnipeTask::Giftcode && config.account_entry.len() > 1 {
         bail!("Unable to use more than one normal account");
@@ -114,13 +114,13 @@ async fn main() -> Result<()> {
                     requestor
                         .authenticate_mojang(email, password, &account.sq_ans)
                         .with_context(|| {
-                            format!("Failed to authenticate the Mojang account `{}`", email)
+                            format!("Failed to authenticate the Mojang account {}", email)
                         })?
                 } else {
                     let authenticator = msauth::Auth::new(email, password)
                         .with_context(|| "Error creating Microsoft authenticator")?;
                     match authenticator.authenticate().with_context(|| {
-                        format!("Failed to authenticate the Microsoft account `{}`", email)
+                        format!("Failed to authenticate the Microsoft account {}", email)
                     }) {
                         Ok(x) => x,
                         Err(y) => {
@@ -137,7 +137,7 @@ async fn main() -> Result<()> {
                     requestor
                         .check_name_change_eligibility(&bearer)
                         .with_context(|| {
-                            format!("Failed to check name change eligibility of `{}`", email)
+                            format!("Failed to check name change eligibility of {}", email)
                         })?;
                 }
                 bearer
@@ -196,7 +196,7 @@ async fn main() -> Result<()> {
                     )
                     .with_context(|| {
                         format!(
-                            "Failed to change the skin of `{}`",
+                            "Failed to change the skin of {}",
                             config.account_entry[account_idx].email.as_ref().unwrap()
                         )
                     })?;
