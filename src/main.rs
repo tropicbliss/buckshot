@@ -57,10 +57,15 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
-        writeln!(stdout(), "Offset: {} ms", config.offset)?;
         let local_time: DateTime<Local> = DateTime::from(droptime);
         let formatted_droptime = local_time.format("%F %T");
-        writeln!(stdout(), "Sniping {} at {}", name, formatted_droptime)?;
+        writeln!(
+            stdout(),
+            "Sniping {} at {} with an offset of {} ms",
+            name,
+            formatted_droptime,
+            config.offset
+        )?;
         let snipe_time = droptime - Duration::milliseconds(i64::from(config.offset));
         let setup_time = snipe_time - Duration::hours(12);
         if Utc::now() < setup_time {
