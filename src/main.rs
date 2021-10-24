@@ -16,6 +16,7 @@ use std::{
 };
 
 #[tokio::main]
+#[allow(clippy::too_many_lines)]
 async fn main() -> Result<()> {
     type SnipeTask = config::SnipeTask;
     let args = cli::Args::new();
