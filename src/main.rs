@@ -8,8 +8,7 @@ mod requests;
 mod sockets;
 
 use anyhow::{bail, Context, Result};
-use chrono::{Duration, Utc};
-use chrono_humanize::HumanTime;
+use chrono::{DateTime, Duration, Local, Utc};
 use console::style;
 use std::{
     io::{stdout, Write},
@@ -46,33 +45,22 @@ async fn main() -> Result<()> {
         writeln!(stdout(), "Initialising...")?;
         let droptime = match requestor
             .check_name_availability_time(&name)
-            .with_context(|| format!(r#"Failed to get the droptime of "{}""#, name))?
+            .with_context(|| format!("Failed to get the droptime of {}", name))?
         {
             requests::DroptimeData::Available(droptime) => droptime,
             requests::DroptimeData::Unavailable(error) => {
                 writeln!(
                     stdout(),
                     "{}",
-                    style(format!(
-                        r#"Failed to get the droptime of "{}": {}"#,
-                        name, error
-                    ))
-                    .red()
+                    style(format!("Failed to get the droptime of {}: {}", name, error)).red()
                 )?;
                 continue;
             }
         };
-        writeln!(stdout(), "Sniping with an offset of {} ms", config.offset)?;
-        let formatted_droptime = droptime.format("%F %T");
-        let wait_time = droptime - Utc::now();
-        let formatted_wait_time = HumanTime::from(wait_time);
-        writeln!(
-            stdout(),
-            r#"Sniping "{}" {} | sniping at {} (utc)"#,
-            name,
-            formatted_wait_time,
-            formatted_droptime
-        )?;
+        writeln!(stdout(), "Offset: {} ms", config.offset)?;
+        let local_time: DateTime<Local> = DateTime::from(droptime);
+        let formatted_droptime = local_time.format("%F %T");
+        writeln!(stdout(), "Sniping {} at {}", name, formatted_droptime)?;
         let snipe_time = droptime - Duration::milliseconds(i64::from(config.offset));
         let setup_time = snipe_time - Duration::hours(12);
         if Utc::now() < setup_time {
@@ -82,16 +70,12 @@ async fn main() -> Result<()> {
             sleep(sleep_duration);
             if let requests::DroptimeData::Unavailable(error) = requestor
                 .check_name_availability_time(&name)
-                .with_context(|| format!(r#"Failed to get the droptime of "{}""#, name))?
+                .with_context(|| format!("Failed to get the droptime of {}", name))?
             {
                 writeln!(
                     stdout(),
                     "{}",
-                    style(format!(
-                        r#"Failed to get the droptime of "{}": {}"#,
-                        name, error
-                    ))
-                    .red()
+                    style(format!("Failed to get the droptime of {}: {}", name, error)).red()
                 )?;
                 continue;
             }
@@ -154,7 +138,7 @@ async fn main() -> Result<()> {
         let is_gc = task == &SnipeTask::Giftcode;
         let res_data = sockets::snipe_executor(&name, &bearer_tokens, snipe_time, is_gc)
             .await
-            .with_context(|| format!(r#"Failed to execute the snipe of "{}""#, name))?;
+            .with_context(|| format!("Failed to execute the snipe of {}", name))?;
         for res in res_data {
             let formatted_timestamp = res.timestamp.format("%F %T%.6f");
             match res.status {
@@ -183,7 +167,7 @@ async fn main() -> Result<()> {
             writeln!(
                 stdout(),
                 "{}",
-                style(format!(r#"Successfully sniped "{}"!"#, name)).green()
+                style(format!("Successfully sniped {}!", name)).green()
             )?;
             if let Some(skin) = &config.skin {
                 let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
@@ -204,7 +188,7 @@ async fn main() -> Result<()> {
             }
             break;
         }
-        writeln!(stdout(), r#"Failed to snipe "{}""#, name)?;
+        writeln!(stdout(), "Failed to snipe {}", name)?;
     }
     Ok(())
 }

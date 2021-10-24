@@ -9,7 +9,6 @@ description = "A fast and capable Minecraft name sniper"
 [dependencies]
 anyhow = "1.0"
 chrono = "0.4"
-chrono-humanize = "0.2"
 console = "0.15"
 dialoguer = "0.9"
 lazy_static = "1.4"
