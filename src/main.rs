@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
     let requestor = requests::Requests::new()?;
     for (count, name) in name_list.into_iter().enumerate() {
         if count != 0 {
-            print!("Moving on to next name...");
+            writeln!(stdout(), "Moving on to next name...")?;
             writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
             sleep(std::time::Duration::from_secs(20));
         }
