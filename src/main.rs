@@ -46,14 +46,18 @@ async fn main() -> Result<()> {
         writeln!(stdout(), "Initialising...")?;
         let droptime = match requestor
             .check_name_availability_time(&name)
-            .with_context(|| format!("Failed to get the droptime of {}", name))?
+            .with_context(|| format!(r#"Failed to get the droptime of "{}""#, name))?
         {
             requests::DroptimeData::Available(droptime) => droptime,
             requests::DroptimeData::Unavailable(error) => {
                 writeln!(
                     stdout(),
                     "{}",
-                    style(format!("Failed to get droptime of {}: {}", name, error)).red()
+                    style(format!(
+                        r#"Failed to get the droptime of "{}": {}"#,
+                        name, error
+                    ))
+                    .red()
                 )?;
                 continue;
             }
@@ -78,12 +82,16 @@ async fn main() -> Result<()> {
             sleep(sleep_duration);
             if let requests::DroptimeData::Unavailable(error) = requestor
                 .check_name_availability_time(&name)
-                .with_context(|| format!("Failed to get the droptime of {}", name))?
+                .with_context(|| format!(r#"Failed to get the droptime of "{}""#, name))?
             {
                 writeln!(
                     stdout(),
                     "{}",
-                    style(format!("Failed to get droptime of {}: {}", name, error)).red()
+                    style(format!(
+                        r#"Failed to get the droptime of "{}": {}"#,
+                        name, error
+                    ))
+                    .red()
                 )?;
                 continue;
             }
@@ -146,7 +154,7 @@ async fn main() -> Result<()> {
         let is_gc = task == &SnipeTask::Giftcode;
         let res_data = sockets::snipe_executor(&name, &bearer_tokens, snipe_time, is_gc)
             .await
-            .with_context(|| format!("Failed to execute the snipe of {}", name))?;
+            .with_context(|| format!(r#"Failed to execute the snipe of "{}""#, name))?;
         for res in res_data {
             let formatted_timestamp = res.timestamp.format("%F %T%.6f");
             match res.status {
@@ -175,7 +183,7 @@ async fn main() -> Result<()> {
             writeln!(
                 stdout(),
                 "{}",
-                style(format!("Successfully sniped {}!", name)).green()
+                style(format!(r#"Successfully sniped "{}"!"#, name)).green()
             )?;
             if let Some(skin) = &config.skin {
                 let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
@@ -196,7 +204,7 @@ async fn main() -> Result<()> {
             }
             break;
         }
-        writeln!(stdout(), "Failed to snipe {}", name)?;
+        writeln!(stdout(), r#"Failed to snipe "{}""#, name)?;
     }
     Ok(())
 }
