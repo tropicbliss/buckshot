@@ -142,7 +142,7 @@ impl<'a> Auth<'a> {
             .collect();
         Ok(param
             .remove("access_token")
-            .ok_or_else(|| anyhow!("Unable to extract access_token from JSON"))?
+            .ok_or_else(|| anyhow!("Unable to extract access_token from URL"))?
             .to_string())
     }
 
