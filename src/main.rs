@@ -85,7 +85,7 @@ async fn main() -> Result<()> {
                 continue;
             }
         }
-        let mut bearer_tokens = Vec::with_capacity(config.account_entry.len());
+        let mut bearer_tokens = Vec::new();
         let mut account_idx = 0;
         for (count, account) in config.account_entry.clone().iter().enumerate() {
             if count != 0 {
