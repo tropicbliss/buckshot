@@ -7,7 +7,6 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
     sync::Barrier,
-    task::JoinHandle,
     time::sleep,
 };
 
@@ -47,37 +46,40 @@ pub async fn snipe_executor(
             let c = barrier.clone();
             let mut buf = [0; 12];
             let handshake_time = snipe_time - Duration::seconds(32);
-            let handle: JoinHandle<Result<_, anyhow::Error>> = tokio::task::spawn(async move {
+            let handle = tokio::task::spawn(async move {
                 let sleep_duration = (handshake_time - Local::now())
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
-                let socket = TcpStream::connect(&addr).await?;
-                let mut socket = cx.connect("api.minecraftservices.com", socket).await?;
-                socket.write_all(&payload).await?;
+                let socket = TcpStream::connect(&addr).await.unwrap();
+                let mut socket = cx
+                    .connect("api.minecraftservices.com", socket)
+                    .await
+                    .unwrap();
+                socket.write_all(&payload).await.unwrap();
                 let sleep_duration = (snipe_time - Local::now())
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
-                socket.write_all(b"\r\n").await?;
+                socket.write_all(b"\r\n").await.unwrap();
                 c.wait().await;
-                socket.read_exact(&mut buf).await?;
+                socket.read_exact(&mut buf).await.unwrap();
                 let timestamp = Local::now();
                 let res = String::from_utf8_lossy(&buf[..]);
-                let status: u16 = res[9..].parse()?;
+                let status: u16 = res[9..].parse().unwrap();
                 let res_data = ResData {
                     status,
                     timestamp,
                     account_idx,
                 };
-                Ok(res_data)
+                res_data
             });
             handles.push(handle);
         }
     }
     let mut res_vec = Vec::with_capacity(req_count * bearer_tokens.len());
     for handle in handles {
-        let res_data = handle.await??;
+        let res_data = handle.await?;
         res_vec.push(res_data);
     }
     res_vec.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
