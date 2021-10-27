@@ -51,22 +51,35 @@ pub async fn snipe_executor(
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
-                let socket = TcpStream::connect(&addr).await.unwrap();
+                let socket = TcpStream::connect(&addr)
+                    .await
+                    .expect("Failed to establish a TCP connection with api.minecraftservices.com");
                 let mut socket = cx
                     .connect("api.minecraftservices.com", socket)
                     .await
-                    .unwrap();
-                socket.write_all(&payload).await.unwrap();
+                    .expect("Failed to initiate a TLS handshake with api.minecraftservices.com");
+                socket
+                    .write_all(&payload)
+                    .await
+                    .expect("Failed to write to buffer");
                 let sleep_duration = (snipe_time - Local::now())
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
-                socket.write_all(b"\r\n").await.unwrap();
+                socket
+                    .write_all(b"\r\n")
+                    .await
+                    .expect("Failed to write to buffer");
                 c.wait().await;
-                socket.read_exact(&mut buf).await.unwrap();
+                socket
+                    .read_exact(&mut buf)
+                    .await
+                    .expect("Failed to read from buffer");
                 let timestamp = Local::now();
                 let res = String::from_utf8_lossy(&buf[..]);
-                let status: u16 = res[9..].parse().unwrap();
+                let status: u16 = res[9..]
+                    .parse()
+                    .expect("Failed to parse HTTP status code from string");
                 let res_data = ResData {
                     status,
                     timestamp,
