@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
         }
         writeln!(stdout(), "Initialising...")?;
         let droptime = match requestor
-            .check_name_availability_time(&name)
+            .check_name_availability_time(name)
             .with_context(|| format!("Failed to get the droptime of {}", name))?
         {
             requests::DroptimeData::Available(droptime) => droptime,
@@ -75,7 +75,7 @@ async fn main() -> Result<()> {
                 .unwrap_or(std::time::Duration::ZERO);
             sleep(sleep_duration);
             if let requests::DroptimeData::Unavailable(error) = requestor
-                .check_name_availability_time(&name)
+                .check_name_availability_time(name)
                 .with_context(|| format!("Failed to get the droptime of {}", name))?
             {
                 writeln!(
@@ -142,7 +142,7 @@ async fn main() -> Result<()> {
         writeln!(stdout(), "Setup complete")?;
         let mut is_success = None;
         let is_gc = task == &SnipeTask::Giftcode;
-        let res_data = sockets::snipe_executor(&name, &bearer_tokens, snipe_time, is_gc)
+        let res_data = sockets::snipe_executor(name, &bearer_tokens, snipe_time, is_gc)
             .await
             .with_context(|| format!("Failed to execute the snipe of {}", name))?;
         for res in res_data {
