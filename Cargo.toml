@@ -1,6 +1,6 @@
 [package]
 name = "buckshot"
-version = "4.0.3"
+version = "4.0.4"
 authors = ["tropicbliss <tropicbliss@protonmail.com>"]
 edition = "2021"
 license = "MIT"

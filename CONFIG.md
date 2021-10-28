@@ -26,11 +26,10 @@ Offset refers to the the time between the snipe request leaving your computer/se
 
 ### Options
 
-| Option        | Default         | Description                                                                                                            |
-| ------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `mode`        | mandatory field | Sniping mode. Choose between `mj` (Mojang authentication), `ms` (Microsoft authentication), or `prename` (GC sniping). |
-| `offset`      | mandatory field | Snipe offset                                                                                                           |
-| `name_queue ` | `[]`            | Enables name queueing.                                                                                                 |
+| Option   | Default         | Description                                                                                                            |
+| -------- | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `mode`   | mandatory field | Sniping mode. Choose between `mj` (Mojang authentication), `ms` (Microsoft authentication), or `prename` (GC sniping). |
+| `offset` | mandatory field | Snipe offset                                                                                                           |
 
 ### Examples
 
@@ -144,6 +143,39 @@ password = "youaremylittlepogchamp"
 
 [[account_entry]]
 bearer = "minecraft access token"
+```
+
+## Name Queue
+
+An optional module that alows you to specify a name queue, in which the sniper will snipe names specified on the queue sequentially.
+
+### Options
+
+| Option               | Default         | Description                                                                                            |
+| -------------------- | --------------- | ------------------------------------------------------------------------------------------------------ |
+| `queue`              | `[]`            | Specifies name queue.                                                                                  |
+| `never_stop_sniping` | mandatory field | When enabled, the sniper will continue to snipe names from the queue even after a snipe is successful. |
+
+### Examples
+
+#### If the sniper successfully snipes "Dream", the sniper will stop sniping
+
+```toml
+# config.toml
+
+[name_queue]
+queue = ["Dream", "Marc"]
+never_stop_sniping = false
+```
+
+#### If the sniper successfully snipes "Dream" and there are more accounts available to snipe with, attempt to snipe "Marc"
+
+```toml
+# config.toml
+
+[name_queue]
+queue = ["Dream", "Marc"]
+never_stop_sniping = true
 ```
 
 ## Skin

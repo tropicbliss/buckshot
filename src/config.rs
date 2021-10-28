@@ -10,7 +10,13 @@ struct PrivateConfig {
     #[serde(deserialize_with = "to_task")]
     mode: SnipeTask,
     skin: Option<Skin>,
-    name_queue: Option<Vec<String>>,
+    name_queue: Option<NameQueue>,
+}
+
+#[derive(Deserialize)]
+pub struct NameQueue {
+    pub queue: Vec<String>,
+    pub never_stop_sniping: bool,
 }
 
 #[derive(Deserialize)]
@@ -20,7 +26,7 @@ pub struct Config {
     pub offset: u32,
     pub mode: SnipeTask,
     pub skin: Option<Skin>,
-    pub name_queue: Option<Vec<String>>,
+    pub name_queue: Option<NameQueue>,
 }
 
 #[derive(PartialEq)]
@@ -130,7 +136,7 @@ pub fn new() -> Result<Config> {
         bail!("No accounts provided in config file");
     }
     if let Some(count) = &cfg.name_queue {
-        if count.is_empty() {
+        if count.queue.is_empty() {
             bail!("No name provided in name queue");
         }
     }

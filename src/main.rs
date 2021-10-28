@@ -30,8 +30,8 @@ async fn main() -> Result<()> {
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
-    } else if let Some(x) = config.name_queue.clone() {
-        x
+    } else if let Some(x) = &config.name_queue {
+        x.queue.clone()
     } else {
         let name = cli::get_name_choice().with_context(|| "Failed to get name choice")?;
         vec![name]
@@ -190,6 +190,12 @@ async fn main() -> Result<()> {
                         )
                     })?;
                 writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
+            }
+            if let Some(name_queue) = &config.name_queue {
+                if name_queue.never_stop_sniping && !config.account_entry.is_empty() {
+                    config.account_entry.remove(account_idx);
+                    continue;
+                }
             }
             break;
         }

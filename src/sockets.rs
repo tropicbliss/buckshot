@@ -80,12 +80,11 @@ pub async fn snipe_executor(
                 let status: u16 = res[9..]
                     .parse()
                     .expect("Failed to parse HTTP status code from string");
-                let res_data = ResData {
+                ResData {
                     status,
                     timestamp,
                     account_idx,
-                };
-                res_data
+                }
             });
             handles.push(handle);
         }
