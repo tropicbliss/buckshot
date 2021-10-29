@@ -23,8 +23,11 @@ async fn main() -> Result<()> {
     let mut config =
         config::new().with_context(|| format!("Failed to parse {}", constants::CONFIG_PATH))?;
     let task = &config.mode;
-    if task != &SnipeTask::Giftcode && config.account_entry.len() > 1 {
-        bail!("Unable to use more than one normal account");
+    if task != &SnipeTask::Giftcode
+        && config.account_entry.len() > 1
+        && (config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping)
+    {
+        bail!("Unable to use more than one normal account"); // Warn instead
     } else if config.account_entry.len() > 10 {
         bail!("Unable to use more than 10 prename accounts");
     }
@@ -89,23 +92,33 @@ async fn main() -> Result<()> {
         let mut bearer_tokens = Vec::new();
         let mut account_idx = 0;
         for (count, account) in config.account_entry.clone().iter().enumerate() {
-            if count != 0 {
-                writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
-                sleep(std::time::Duration::from_secs(20));
-            }
             let bearer_token = if let Some(bearer) = account.bearer.clone() {
                 bearer
             } else {
+                if count != 0 {
+                    writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
+                    sleep(std::time::Duration::from_secs(20));
+                }
                 let (email, password) = (
                     account.email.as_ref().unwrap(),
                     account.password.as_ref().unwrap(),
                 );
                 let bearer = if task == &SnipeTask::Mojang {
-                    requestor
+                    match requestor
                         .authenticate_mojang(email, password, &account.sq_ans)
                         .with_context(|| {
                             format!("Failed to authenticate the Mojang account {}", email)
-                        })?
+                        }) {
+                        Ok(x) => x,
+                        Err(y) => {
+                            if config.account_entry.len() == 1 {
+                                bail!(y);
+                            }
+                            writeln!(stdout(), "{}", style("Failed to authenticate a Mojang account, moving on to next account...").red())?;
+                            config.account_entry.remove(account_idx);
+                            continue;
+                        }
+                    }
                 } else {
                     let authenticator = msauth::Auth::new(email, password)
                         .with_context(|| "Error creating Microsoft authenticator")?;
@@ -115,7 +128,7 @@ async fn main() -> Result<()> {
                         Ok(x) => x,
                         Err(y) => {
                             if config.account_entry.len() == 1 {
-                                bail!(y)
+                                bail!(y);
                             }
                             writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, moving on to next account...").red())?;
                             config.account_entry.remove(account_idx);
@@ -124,16 +137,34 @@ async fn main() -> Result<()> {
                     }
                 };
                 if task != &SnipeTask::Giftcode {
-                    requestor
+                    if let Err(y) = requestor
                         .check_name_change_eligibility(&bearer)
                         .with_context(|| {
                             format!("Failed to check name change eligibility of {}", email)
-                        })?;
+                        })
+                    {
+                        if config.account_entry.len() == 1 {
+                            bail!(y);
+                        }
+                        writeln!(
+                            stdout(),
+                            "{}",
+                            style(format!(
+                                "Failed to check name change eligibility of {}",
+                                email
+                            ))
+                        )?;
+                        config.account_entry.remove(account_idx);
+                        continue;
+                    }
                 }
                 bearer
             };
-            account_idx += 1;
             bearer_tokens.push(bearer_token);
+            if task != &SnipeTask::Giftcode {
+                break;
+            }
+            account_idx += 1;
         }
         if bearer_tokens.is_empty() {
             bail!("No Microsoft accounts left to use");
@@ -192,9 +223,9 @@ async fn main() -> Result<()> {
                     })?;
                 writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
             }
+            config.account_entry.remove(account_idx);
             if let Some(name_queue) = &config.name_queue {
                 if name_queue.never_stop_sniping && !config.account_entry.is_empty() {
-                    config.account_entry.remove(account_idx);
                     continue;
                 }
             }

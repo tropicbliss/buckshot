@@ -13,7 +13,7 @@ struct PrivateConfig {
     name_queue: Option<NameQueue>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct NameQueue {
     pub queue: Vec<String>,
     pub never_stop_sniping: bool,
