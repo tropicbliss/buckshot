@@ -23,13 +23,12 @@ async fn main() -> Result<()> {
     let mut config =
         config::new().with_context(|| format!("Failed to parse {}", constants::CONFIG_PATH))?;
     let task = &config.mode;
-    if task != &SnipeTask::Giftcode
-        && config.account_entry.len() > 1
-        && (config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping)
-    {
-        bail!("Unable to use more than one normal account"); // Warn instead
-    } else if config.account_entry.len() > 10 {
-        bail!("Unable to use more than 10 prename accounts");
+    if config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping {
+        if task != &SnipeTask::Giftcode && config.account_entry.len() > 1 {
+            bail!("Unable to use more than one normal account");
+        } else if config.account_entry.len() > 10 {
+            bail!("Unable to use more than 10 prename accounts");
+        }
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
@@ -161,7 +160,9 @@ async fn main() -> Result<()> {
                 bearer
             };
             bearer_tokens.push(bearer_token);
-            if task != &SnipeTask::Giftcode {
+            if task != &SnipeTask::Giftcode
+                || (task == &SnipeTask::Giftcode && bearer_tokens.len() == 10)
+            {
                 break;
             }
             account_idx += 1;
