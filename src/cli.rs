@@ -8,6 +8,10 @@ pub struct Args {
     /// An optional argument for specifying the name you want to snipe
     #[structopt(short, long)]
     pub name: Option<String>,
+
+    /// An optional argument for specifying the UNIX timestamp for name droptime
+    #[structopt(short, long)]
+    pub timestamp: Option<i64>
 }
 
 impl Args {

@@ -8,7 +8,7 @@ mod requests;
 mod sockets;
 
 use anyhow::{bail, Context, Result};
-use chrono::{Duration, Local};
+use chrono::{Duration, Local, TimeZone};
 use console::style;
 use std::{
     io::{stdout, Write},
@@ -47,18 +47,19 @@ async fn main() -> Result<()> {
             sleep(std::time::Duration::from_secs(20));
         }
         writeln!(stdout(), "Initialising...")?;
-        let droptime = match requestor
-            .check_name_availability_time(name)
-            .with_context(|| format!("Failed to get the droptime of {}", name))?
-        {
-            requests::DroptimeData::Available(droptime) => droptime,
-            requests::DroptimeData::Unavailable(error) => {
-                writeln!(
-                    stdout(),
-                    "{}",
-                    style(format!("Failed to get the droptime of {}: {}", name, error)).red()
-                )?;
-                continue;
+        let droptime = if let Some(timestamp) = args.timestamp {
+            Local.timestamp(timestamp, 0)
+        } else {
+            match requestor.check_name_availability_time(name).with_context(|| format!("Failed to get the droptime of {}", name))? {
+                requests::DroptimeData::Available(droptime) => droptime,
+                requests::DroptimeData::Unavailable(error) => {
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        style(format!("Failed to get the droptime of {}: {}", name, error)).red()
+                    )?;
+                    continue;
+                }
             }
         };
         let formatted_droptime = droptime.format("%F %T");
@@ -76,16 +77,18 @@ async fn main() -> Result<()> {
                 .to_std()
                 .unwrap_or(std::time::Duration::ZERO);
             sleep(sleep_duration);
-            if let requests::DroptimeData::Unavailable(error) = requestor
-                .check_name_availability_time(name)
-                .with_context(|| format!("Failed to get the droptime of {}", name))?
-            {
-                writeln!(
-                    stdout(),
-                    "{}",
-                    style(format!("Failed to get the droptime of {}: {}", name, error)).red()
-                )?;
-                continue;
+            if args.timestamp.is_none() {
+                if let requests::DroptimeData::Unavailable(error) = requestor
+                    .check_name_availability_time(name)
+                    .with_context(|| format!("Failed to get the droptime of {}", name))?
+                {
+                    writeln!(
+                        stdout(),
+                        "{}",
+                        style(format!("Failed to get the droptime of {}: {}", name, error)).red()
+                    )?;
+                    continue;
+                }
             }
         }
         let mut bearer_tokens = Vec::new();
