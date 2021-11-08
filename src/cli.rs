@@ -10,7 +10,7 @@ pub struct Args {
     pub name: Option<String>,
 
     /// An optional argument for specifying the UNIX timestamp for name droptime
-    #[structopt(short, long)]
+    #[structopt(short, long, requires = "name")]
     pub timestamp: Option<i64>
 }
 
