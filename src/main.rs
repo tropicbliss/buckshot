@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     type SnipeTask = config::SnipeTask;
     let args = cli::Args::new();
     let mut config =
-        config::new().with_context(|| format!("Failed to parse {}", constants::CONFIG_PATH))?;
+        config::new().with_context(|| format!("Failed to get config options from {}", constants::CONFIG_PATH))?;
     let task = &config.mode;
     if config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping {
         if task != &SnipeTask::Giftcode && config.account_entry.len() > 1 {
