@@ -7,9 +7,9 @@ mod msauth;
 mod requests;
 mod sockets;
 
+use ansi_term::Colour::{Cyan, Green, Red};
 use anyhow::{bail, Context, Result};
 use chrono::{Duration, Local, TimeZone};
-use console::style;
 use std::{
     io::{stdout, Write},
     thread::sleep,
@@ -63,7 +63,7 @@ async fn main() -> Result<()> {
                     writeln!(
                         stdout(),
                         "{}",
-                        style(format!("Failed to get the droptime of {}: {}", name, error)).red()
+                        Red.paint(format!("Failed to get the droptime of {}: {}", name, error))
                     )?;
                     continue;
                 }
@@ -92,7 +92,7 @@ async fn main() -> Result<()> {
                     writeln!(
                         stdout(),
                         "{}",
-                        style(format!("Failed to get the droptime of {}: {}", name, error)).red()
+                        Red.paint(format!("Failed to get the droptime of {}: {}", name, error))
                     )?;
                     continue;
                 }
@@ -123,7 +123,7 @@ async fn main() -> Result<()> {
                             if config.account_entry.len() == 1 {
                                 bail!(y);
                             }
-                            writeln!(stdout(), "{}", style("Failed to authenticate a Mojang account, moving on to next account...").red())?;
+                            writeln!(stdout(), "{}", Red.paint("Failed to authenticate a Mojang account, moving on to next account..."))?;
                             config.account_entry.remove(account_idx);
                             continue;
                         }
@@ -139,7 +139,7 @@ async fn main() -> Result<()> {
                             if config.account_entry.len() == 1 {
                                 bail!(y);
                             }
-                            writeln!(stdout(), "{}", style("Failed to authenticate a Microsoft account, moving on to next account...").red())?;
+                            writeln!(stdout(), "{}", Red.paint("Failed to authenticate a Microsoft account, moving on to next account..."))?;
                             config.account_entry.remove(account_idx);
                             continue;
                         }
@@ -158,7 +158,7 @@ async fn main() -> Result<()> {
                         writeln!(
                             stdout(),
                             "{}",
-                            style(format!(
+                            Red.paint(format!(
                                 "Failed to check name change eligibility of {}",
                                 email
                             ))
@@ -180,7 +180,7 @@ async fn main() -> Result<()> {
         if bearer_tokens.is_empty() {
             bail!("No Microsoft accounts left to use");
         }
-        writeln!(stdout(), "{}", style("Successfully signed in").green())?;
+        writeln!(stdout(), "{}", Green.paint("Successfully signed in"))?;
         writeln!(stdout(), "Setup complete")?;
         let mut is_success = None;
         let is_gc = task == &SnipeTask::Giftcode;
@@ -194,9 +194,9 @@ async fn main() -> Result<()> {
                     writeln!(
                         stdout(),
                         "[{}] {} @ {}",
-                        style("success").green(),
-                        style("200").green(),
-                        style(format!("{}", formatted_timestamp)).cyan()
+                        Green.paint("success"),
+                        Green.paint("200"),
+                        Cyan.paint(format!("{}", formatted_timestamp))
                     )?;
                     is_success = Some(res.account_idx);
                 }
@@ -204,9 +204,9 @@ async fn main() -> Result<()> {
                     writeln!(
                         stdout(),
                         "[{}] {} @ {}",
-                        style("fail").red(),
-                        style(format!("{}", status)).red(),
-                        style(format!("{}", formatted_timestamp)).cyan()
+                        Red.paint("fail"),
+                        Red.paint(format!("{}", status)),
+                        Cyan.paint(format!("{}", formatted_timestamp))
                     )?;
                 }
             }
@@ -215,7 +215,7 @@ async fn main() -> Result<()> {
             writeln!(
                 stdout(),
                 "{}",
-                style(format!("Successfully sniped {}!", name)).green()
+                Green.paint(format!("Successfully sniped {}!", name))
             )?;
             if let Some(skin) = &config.skin {
                 let skin_model = if skin.slim { "slim" } else { "classic" }.to_string();
@@ -232,7 +232,7 @@ async fn main() -> Result<()> {
                             config.account_entry[account_idx].email.as_ref().unwrap()
                         )
                     })?;
-                writeln!(stdout(), "{}", style("Successfully changed skin").green())?;
+                writeln!(stdout(), "{}", Green.paint("Successfully changed skin"))?;
             }
             config.account_entry.remove(account_idx);
             if let Some(name_queue) = &config.name_queue {
