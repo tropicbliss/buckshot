@@ -1,3 +1,4 @@
+use crate::constants::IO_TIMEOUT;
 use anyhow::Result;
 use chrono::{DateTime, Duration, Local};
 use native_tls::TlsConnector;
@@ -7,7 +8,7 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
     sync::Barrier,
-    time::sleep,
+    time::{sleep, timeout},
 };
 
 pub struct ResData {
@@ -51,29 +52,33 @@ pub async fn snipe_executor(
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
-                let socket = TcpStream::connect(&addr)
+                let socket = timeout(IO_TIMEOUT, TcpStream::connect(&addr))
                     .await
+                    .expect("Connect timeout")
                     .expect("Failed to establish a TCP connection with api.minecraftservices.com");
-                let mut socket = cx
-                    .connect("api.minecraftservices.com", socket)
+                let mut socket =
+                    timeout(IO_TIMEOUT, cx.connect("api.minecraftservices.com", socket))
+                        .await
+                        .expect("Connect timeout")
+                        .expect(
+                            "Failed to initiate a TLS handshake with api.minecraftservices.com",
+                        );
+                timeout(IO_TIMEOUT, socket.write_all(&payload))
                     .await
-                    .expect("Failed to initiate a TLS handshake with api.minecraftservices.com");
-                socket
-                    .write_all(&payload)
-                    .await
+                    .expect("Write timeout")
                     .expect("Failed to write to buffer");
                 let sleep_duration = (snipe_time - Local::now())
                     .to_std()
                     .unwrap_or(std::time::Duration::ZERO);
                 sleep(sleep_duration).await;
-                socket
-                    .write_all(b"\r\n")
+                timeout(IO_TIMEOUT, socket.write_all(b"\r\n"))
                     .await
+                    .expect("Write timeout")
                     .expect("Failed to write to buffer");
                 c.wait().await;
-                socket
-                    .read_exact(&mut buf)
+                timeout(IO_TIMEOUT, socket.read_exact(&mut buf))
                     .await
+                    .expect("Read timeout")
                     .expect("Failed to read from buffer");
                 let timestamp = Local::now();
                 let res = String::from_utf8_lossy(&buf[..]);

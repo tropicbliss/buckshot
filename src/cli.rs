@@ -11,7 +11,7 @@ pub struct Args {
 
     /// An optional argument for specifying the UNIX timestamp for name droptime
     #[structopt(short, long, requires = "name")]
-    pub timestamp: Option<i64>
+    pub timestamp: Option<i64>,
 }
 
 impl Args {

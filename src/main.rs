@@ -20,8 +20,12 @@ use std::{
 async fn main() -> Result<()> {
     type SnipeTask = config::SnipeTask;
     let args = cli::Args::new();
-    let mut config =
-        config::new().with_context(|| format!("Failed to get config options from {}", constants::CONFIG_PATH))?;
+    let mut config = config::new().with_context(|| {
+        format!(
+            "Failed to get config options from {}",
+            constants::CONFIG_PATH
+        )
+    })?;
     let task = &config.mode;
     if config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping {
         if task != &SnipeTask::Giftcode && config.account_entry.len() > 1 {
@@ -50,7 +54,10 @@ async fn main() -> Result<()> {
         let droptime = if let Some(timestamp) = args.timestamp {
             Local.timestamp(timestamp, 0)
         } else {
-            match requestor.check_name_availability_time(name).with_context(|| format!("Failed to get the droptime of {}", name))? {
+            match requestor
+                .check_name_availability_time(name)
+                .with_context(|| format!("Failed to get the droptime of {}", name))?
+            {
                 requests::DroptimeData::Available(droptime) => droptime,
                 requests::DroptimeData::Unavailable(error) => {
                     writeln!(
