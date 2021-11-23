@@ -1,4 +1,4 @@
-use crate::constants::IO_TIMEOUT;
+use crate::constants::{BARRIER_THRESHOLD, IO_TIMEOUT};
 use anyhow::Result;
 use chrono::{DateTime, Duration, Local};
 use native_tls::TlsConnector;
@@ -22,6 +22,7 @@ pub async fn snipe_executor(
     bearer_tokens: &[String],
     snipe_time: DateTime<Local>,
     is_gc: bool,
+    spread: u32,
 ) -> Result<Vec<ResData>> {
     let req_count = if is_gc { 6 } else { 3 };
     let addr = "api.minecraftservices.com:443"
@@ -32,7 +33,13 @@ pub async fn snipe_executor(
     let cx = tokio_native_tls::TlsConnector::from(cx);
     let cx = Arc::new(cx);
     let mut handles = Vec::with_capacity(req_count * bearer_tokens.len());
-    let barrier = Arc::new(Barrier::new(req_count * bearer_tokens.len()));
+    let barrier_count = if spread <= BARRIER_THRESHOLD {
+        req_count * bearer_tokens.len()
+    } else {
+        0
+    };
+    let barrier = Arc::new(Barrier::new(barrier_count));
+    let mut snipe_time = snipe_time;
     for (account_idx, bearer_token) in bearer_tokens.iter().enumerate() {
         let payload = if is_gc {
             let post_body = json!({ "profileName": name }).to_string();
@@ -91,6 +98,8 @@ pub async fn snipe_executor(
                     account_idx,
                 }
             });
+            // Before you rag on me for not using +=, += doesn't work here
+            snipe_time = snipe_time + Duration::milliseconds(i64::from(spread));
             handles.push(handle);
         }
     }

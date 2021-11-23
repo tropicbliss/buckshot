@@ -184,9 +184,10 @@ async fn main() -> Result<()> {
         writeln!(stdout(), "Setup complete")?;
         let mut is_success = None;
         let is_gc = task == &SnipeTask::Giftcode;
-        let res_data = sockets::snipe_executor(name, &bearer_tokens, snipe_time, is_gc)
-            .await
-            .with_context(|| format!("Failed to execute the snipe of {}", name))?;
+        let res_data =
+            sockets::snipe_executor(name, &bearer_tokens, snipe_time, is_gc, config.spread)
+                .await
+                .with_context(|| format!("Failed to execute the snipe of {}", name))?;
         for res in res_data {
             let formatted_timestamp = res.timestamp.format("%F %T%.6f");
             match res.status {

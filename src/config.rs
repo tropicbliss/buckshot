@@ -11,6 +11,7 @@ struct PrivateConfig {
     mode: SnipeTask,
     skin: Option<Skin>,
     name_queue: Option<NameQueue>,
+    spread: u32,
 }
 
 #[derive(Deserialize, Clone)]
@@ -27,6 +28,7 @@ pub struct Config {
     pub mode: SnipeTask,
     pub skin: Option<Skin>,
     pub name_queue: Option<NameQueue>,
+    pub spread: u32,
 }
 
 #[derive(PartialEq)]
@@ -112,6 +114,7 @@ impl From<PrivateConfig> for Config {
             mode: item.mode,
             skin: item.skin,
             name_queue: item.name_queue,
+            spread: item.spread,
         }
     }
 }
