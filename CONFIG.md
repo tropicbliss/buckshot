@@ -22,7 +22,7 @@ Any field marked with "mandatory field" must be filled up by the user.
 
 ## Config
 
-Offset refers to the the time between the snipe request leaving your computer/server and when Mojang's server receives the first byte of information. The higher the ping, the higher the offset. There is no set value or an accurate way to calculate offset. It is determined through trial and error, by analysing the timestamps after unsuccessful snipes and sticking to the offset used if a snipe is successful. It is arguably the most important variable that decides whether your snipe is successful or not in a competitive sniping scene.
+Offset refers to the time between the snipe request leaving your computer/server and when Mojang's server receives the first byte of information. The higher the ping, the higher the offset. There is no set value or an accurate way to calculate offset. It is determined through trial and error, by analysing the timestamps after unsuccessful snipes and sticking to the offset used if a snipe is successful. It is arguably the most important variable that decides whether your snipe is successful or not in a competitive sniping scene.
 
 Take note that these fields should be situated above the modules or else the sniper will be unable to parse them correctly.
 
@@ -83,7 +83,7 @@ name_queue = ["Dream", "Marc"]
 
 ## Account Entry
 
-The `account_entry` module is special. You can have multiple of these modules in your config file if you are sniping with multiple accounts. Take note that if you are GC sniping, make sure that your giftcode is redeemed at `minecraft.net` before sniping.
+The `account_entry` module is special. You can have multiple of these modules in your config file if you are sniping with multiple accounts. Take note that if you are GC sniping, make sure that your gift code is redeemed at `minecraft.net` before sniping.
 
 ### Escapable characters
 
@@ -150,7 +150,7 @@ bearer = "minecraft access token"
 
 ## Name Queue
 
-An optional module that alows you to specify a name queue, in which the sniper will snipe names specified on the queue sequentially.
+An optional module that allows you to specify a name queue, in which the sniper will snipe names specified on the queue sequentially.
 
 ### Options
 
