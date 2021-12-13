@@ -33,7 +33,7 @@ Run `./buckshot --help`.
 
 ## Compiling from source
 
-If you are on another platform, compile the server yourself to try it out:
+If you are on another platform, compile the binary yourself to try it out:
 
 ```sh
 git clone https://github.com/tropicbliss/buckshot
@@ -43,4 +43,4 @@ cargo build --release
 
 Compiling from source requires the latest stable version of Rust. Older Rust versions may be able to compile `buckshot`, but they are not guaranteed to keep working.
 
-The server executable will be located in `target/release`.
+The binary will be located in `target/release`.
