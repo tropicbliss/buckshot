@@ -108,6 +108,6 @@ pub async fn snipe_executor(
         let res_data = handle.await?;
         res_vec.push(res_data);
     }
-    res_vec.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+    res_vec.sort_unstable_by(|a, b| a.timestamp.cmp(&b.timestamp));
     Ok(res_vec)
 }
