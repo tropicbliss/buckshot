@@ -5,11 +5,11 @@ use structopt::StructOpt;
 #[derive(StructOpt)]
 #[structopt(author, about)]
 pub struct Args {
-    /// An optional argument for specifying the name you want to snipe
+    /// Name to snipe
     #[structopt(short, long)]
     pub name: Option<String>,
 
-    /// An optional argument for specifying the UNIX timestamp for name droptime
+    /// UNIX timestamp of name droptime
     #[structopt(short, long, requires = "name")]
     pub timestamp: Option<i64>,
 }
