@@ -200,20 +200,24 @@ impl<'a> Auth<'a> {
             .send()?;
         let status = res.status();
         let text = res.text()?;
-        if status.as_u16() == 401 {
-            let err: FailedAuthData = serde_json::from_str(&text)?;
-            if err.x_err == 2_148_916_233 {
-                bail!("This account doesn't have an Xbox account");
+        match status.as_u16() {
+            401 => {
+                let err: FailedAuthData = serde_json::from_str(&text)?;
+                if err.x_err == 2_148_916_233 {
+                    bail!("This account doesn't have an Xbox account");
+                }
+                if err.x_err == 2_148_916_238 {
+                    bail!("The account is a child (under 18) and cannot proceed unless the account is added to a family by an adult");
+                }
+                bail!("Something went wrong: XErr: {}", err.x_err);
             }
-            if err.x_err == 2_148_916_238 {
-                bail!("The account is a child (under 18) and cannot proceed unless the account is added to a family by an adult");
+            200 => {
+                let auth_data: AuthData = serde_json::from_str(&text)?;
+                Ok(auth_data.token)
             }
-            bail!("Something went wrong");
-        } else if status.as_u16() == 200 {
-            let auth_data: AuthData = serde_json::from_str(&text)?;
-            Ok(auth_data.token)
-        } else {
-            bail!("HTTP {}", status);
+            _ => {
+                bail!("HTTP {}", status);
+            }
         }
     }
 
