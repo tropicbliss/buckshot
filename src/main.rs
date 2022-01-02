@@ -50,10 +50,10 @@ async fn main() -> Result<()> {
             writeln!(stdout(), "Waiting 20 seconds to prevent rate limiting...")?;
             sleep(std::time::Duration::from_secs(20));
         }
-        writeln!(stdout(), "Initialising...")?;
         let droptime = if let Some(timestamp) = args.timestamp {
             Local.timestamp(timestamp, 0)
         } else {
+            writeln!(stdout(), "Initializing...")?;
             match requestor
                 .check_name_availability_time(name)
                 .with_context(|| format!("Failed to get the droptime of {}", name))?
