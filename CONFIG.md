@@ -1,4 +1,4 @@
-# Configuration
+# Config Guide
 
 To get started configuring buckshot, create the following file in the same folder as the sniper: `config.toml`.
 
@@ -30,7 +30,7 @@ Take note that these fields should be situated above the modules or else the sni
 
 | Option   | Default         | Description                                                                                                            |
 | -------- | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `spread` | mandatory field | Delay in milliseconds between each snipe request. Set to 0 if unsure.                                                  |
+| `spread` | 0               | Delay in milliseconds between each snipe request. Set to 0 if unsure.                                                  |
 | `mode`   | mandatory field | Sniping mode. Choose between `mj` (Mojang authentication), `ms` (Microsoft authentication), or `prename` (GC sniping). |
 | `offset` | mandatory field | Snipe offset                                                                                                           |
 
