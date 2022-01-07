@@ -11,6 +11,7 @@ struct PrivateConfig {
     mode: SnipeTask,
     skin: Option<Skin>,
     name_queue: Option<NameQueue>,
+    #[serde(default)]
     spread: u32,
 }
 
