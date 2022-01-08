@@ -9,7 +9,6 @@ touch config.toml
 All configuration for buckshot is done in this [TOML](https://github.com/toml-lang/toml) file:
 
 ```toml
-spread = 0
 offset = 0
 mode = "ms"
 
