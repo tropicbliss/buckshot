@@ -24,7 +24,7 @@ pub async fn snipe_executor(
     is_gc: bool,
     spread: u32,
 ) -> Result<Vec<ResData>> {
-    let req_count = if is_gc { 6 } else { 3 };
+    let req_count = if is_gc { 5 } else { 3 };
     let addr = "api.minecraftservices.com:443"
         .to_socket_addrs()?
         .next()
