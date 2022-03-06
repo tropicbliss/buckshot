@@ -27,10 +27,10 @@ async fn main() -> Result<()> {
         )
     })?;
     let task = &config.mode;
-    if config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping {
-        if config.account_entry.len() > 3 {
-            bail!("Unable to use more than three accounts");
-        }
+    if (config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping)
+        && config.account_entry.len() > 3
+    {
+        bail!("Unable to use more than three accounts");
     }
     let name_list = if let Some(name) = args.name {
         vec![name]
