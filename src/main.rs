@@ -28,10 +28,8 @@ async fn main() -> Result<()> {
     })?;
     let task = &config.mode;
     if config.name_queue.is_none() || !config.name_queue.clone().unwrap().never_stop_sniping {
-        if task != &SnipeTask::Giftcode && config.account_entry.len() > 1 {
-            bail!("Unable to use more than one normal account");
-        } else if config.account_entry.len() > 10 {
-            bail!("Unable to use more than 10 prename accounts");
+        if config.account_entry.len() > 3 {
+            bail!("Unable to use more than three accounts");
         }
     }
     let name_list = if let Some(name) = args.name {
